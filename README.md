@@ -1,5 +1,5 @@
 # HaitiWater
-Mémoire UCL 2018-2019 - Développement d'une application web pour la gestion et distribution de l'eau potable en Haïti
+Mémoire UCL 2019-2020 - Développement d'une application web pour la gestion et distribution de l'eau potable en Haïti
 ***
 ## Documentation
 La [documentation destinée aux utilisateurs et aux développeurs](https://haitiwater.readthedocs.io/fr/latest/) est hébergée sur readthedocs.io
