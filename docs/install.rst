@@ -126,6 +126,10 @@ En vous positionnant au chemin (dernier laissé précédemment) ``../HaitiWater/
   
     $ python3 manage.py loaddata initial_data.json
     
+  * Créer les tables virtuelles dans la base de données. Uutiliser l'accès à la base de données décrit dans le fichier ``settings.py`` et rentrer le mot de passe <PASSWORD> si/quand il vous est demandé. ::
+  
+    $ psql -p <PORT> -U <SUPERUSER> -d haitiwater -f views.sql
+    
   * Lancer le serveur ::
   
     $ python3 manage.py runserver
