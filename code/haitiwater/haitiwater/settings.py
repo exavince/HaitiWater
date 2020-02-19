@@ -130,9 +130,9 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'haitiwater',
         'HOST': 'localhost',
-        'PORT': '5433',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'PORT': '5432',
+        'USER': 'exavince',
+        'PASSWORD': 'password',
     },
 }
 
