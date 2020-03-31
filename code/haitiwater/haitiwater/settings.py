@@ -131,8 +131,8 @@ DATABASES = {
         'NAME': 'haitiwater',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'exavince',
-        'PASSWORD': 'password',
+        'USER': 'nahomie',
+        'PASSWORD': 'nahomie',
     },
 }
 
