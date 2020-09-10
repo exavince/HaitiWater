@@ -18,7 +18,7 @@ idna==2.7
 jdcal==1.4
 odfpy==1.3.6
 openpyxl==2.5.9
-Pillow=7.2.0
+Pillow==7.2.0
 psycopg2==2.8.6
 python-dateutil==2.8
 pytz==2018.6
@@ -28,6 +28,7 @@ requests==2.20.0
 rjsmin==1.0.12
 six==1.15.0
 tablib==0.12.1
+testresources==2.0.1
 unicodecsv==0.14.1
 urllib3==1.24
 virtualenv==16.0.0

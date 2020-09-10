@@ -104,7 +104,7 @@ En vous positionnant au chemin (dernier laissé précédemment) ``../HaitiWater/
         env\Scripts\activate
 
       Linux ::
-
+	$ sudo apt install libp-dev
         $ source env/bin/activate
       
   * Naviguer jusqu'au projet ::
