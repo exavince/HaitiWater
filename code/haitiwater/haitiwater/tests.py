@@ -5,9 +5,9 @@ from django.core.management import call_command
 from django.test import TestCase
 from django.test.client import Client
 
-from apps.consumers.models import Consumer
-from apps.financial.models import Invoice
-from apps.water_network.models import Element, ElementType, ElementStatus, Zone
+from ..apps.consumers.models import Consumer
+from ..apps.financial.models import Invoice
+from ..apps.water_network.models import Element, ElementType, ElementStatus, Zone
 
 
 class GeneralTests(TestCase):

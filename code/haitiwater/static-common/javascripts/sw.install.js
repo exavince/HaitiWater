@@ -3,7 +3,7 @@ $( document ).ready(function () {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker
             .register('/sw.js')
-            .then(function(reg) {
+            .then(reg => {
                 if(reg.installing) {
                     console.log('Service worker installing');
                 } else if(reg.waiting) {

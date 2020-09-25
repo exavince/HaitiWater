@@ -158,7 +158,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LOGIN_REDIRECT_URL = '/accueil'
-LOGOUT_REDIRECT_URL = '/accueil'
+LOGOUT_REDIRECT_URL = '/login'
 
 # Free email stuff # TODO use environment variable
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
