@@ -11,7 +11,7 @@
 		<title>HaïtiWater {{ project_version }}</title>
 		<meta name="keywords" content="Haïti water management system" />
 		<meta name="description" content="Système de gestion d'eau en Haïti">
-        <link rel="manifest" href="{% static 'manifest.json' %}">
+        <link rel="manifest" href="{% static 'manifest.json' %}" crossorigin="use-credentials">
 
         <!-- Favicon -->
         <link rel="shortcut icon" type="image/png" href="{% static "images/favicon.ico" %}"/>
@@ -70,8 +70,6 @@
             {# Scripts often needed, requested in main template for preload #}
             <script src="{% static "javascripts/tables/genericTableHandler.js" %}"></script>
             <script src="{% static "javascripts/tables/genericModalHandler.js" %}"></script>
-
-            {# Service worker installation #}
             <script src="{% static "javascripts/sw.install.js" %}"></script>
         {% endcompress %}
 

@@ -1,19 +1,15 @@
 const cacheVersion = 'v4';
 const userCache = 'user_1';
-const userPages = ['login'];
+const userPages = ['/accueil/','/offline/'];
+let needDisconnect = false;
 
 self.addEventListener('install', event => {
     // Cache the offline page by default
     event.waitUntil(
         caches.open(cacheVersion).then(cache => {
-            return cache.addAll([
-                '/offline/',
-                '/static/report.js',
-                '/static/monthlyReportFormHandler.js',
-                '/static/monthlyReportEditFormHandler.js',
-                '/static/vendor/bootstrap-wizard/jquery.bootstrap.wizard.js',
-                '/static/vendor/bootstrap-multiselect/bootstrap-multiselect.js'
-            ]).catch(error => {
+            return cache.addAll(
+                userPages
+            ).catch(error => {
                 console.error(error)
             });
         }).catch(function (error) {
@@ -21,6 +17,7 @@ self.addEventListener('install', event => {
         })
     );
 });
+
 
 self.addEventListener('activate', (evt) => {
     let cacheCleanedPromise = caches.keys().then(keys => {
@@ -35,11 +32,11 @@ self.addEventListener('activate', (evt) => {
 
 
 self.addEventListener('fetch', event => {
+    console.log('nav : '+navigator.onLine + '   needDC : ' +needDisconnect);
     if (event.request.url.includes("/static/") ||
         event.request.url.includes(".js") ||
         event.request.url.includes(".wof"))
     {
-        // For static elements, try to match in the cache, else fetch and cache
         event.respondWith(
             caches.match(event.request).then(cacheResponse => {
                 return cacheResponse || fetch(event.request).then(networkResponse => {
@@ -78,34 +75,40 @@ self.addEventListener('fetch', event => {
                         });
                         return networkResponse;
                     }).catch(() => {
+                        needDisconnect = true;
                         return Response.redirect('/offline/');
                     });
                 })
             );
         }
         else {
-            event.respondWith(
-                caches.match(event.request).then(cacheResponse => {
-                    return cacheResponse || fetch(event.request).then(networkResponse => {
-                        const clonedResponse = networkResponse.clone();
-                        caches.open(userCache).then(cache => {
-                            cache.put(event.request, clonedResponse).catch(error => {
-                                console.error(error)
-                            });
-                        });
-                        return networkResponse;
+            if (needDisconnect) {
+                event.respondWith(
+                    fetch(event.request).then(() => {
+                        needDisconnect = false;
+                        return Response.redirect('/logout/');
                     }).catch(() => {
-                        return Response.redirect('/offline/');
-                    });
-                })
-            );
+                        return caches.match('/offline/');
+                    })
+                )
+            }
+            else {
+                event.respondWith(
+                    caches.match(event.request).then(cacheResponse => {
+                        return cacheResponse || fetch(event.request).then(networkResponse => {
+                            const clonedResponse = networkResponse.clone();
+                            caches.open(userCache).then(cache => {
+                                cache.put(event.request, clonedResponse).catch(error => {
+                                    console.error(error)
+                                });
+                            });
+                            return networkResponse;
+                        }).catch(() => {
+                            return Response.redirect('/offline/');
+                        });
+                    })
+                );
+            }
         }
-        /*event.respondWith(
-            caches.match(event.request).then(cacheResponse => {
-                return cacheResponse || fetch(event.request).catch(() => {
-                    return Response.redirect('/offline/');
-                });
-            })
-        );*/
     }
 });
