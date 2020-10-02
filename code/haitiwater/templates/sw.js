@@ -1,38 +1,36 @@
 const cacheVersion = 'v4';
 const userCache = 'user_1';
-const userPages = ['/accueil/','/offline/'];
+const userPages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
 let needDisconnect = false;
+let connected = false;
 
 self.addEventListener('install', event => {
     // Cache the offline page by default
-    event.waitUntil(
-        caches.open(cacheVersion).then(cache => {
-            return cache.addAll(
-                userPages
-            ).catch(error => {
-                console.error(error)
-            });
-        }).catch(function (error) {
-            console.error(error)
-        })
-    );
-});
-
-
-self.addEventListener('activate', (evt) => {
-    let cacheCleanedPromise = caches.keys().then(keys => {
+     let cacheCleanedPromise = caches.keys().then(keys => {
         keys.forEach(key => {
             if (key !== cacheVersion) {
                 return caches.delete(key);
             }
         });
     });
-    evt.waitUntil(cacheCleanedPromise);
+    event.waitUntil(cacheCleanedPromise);
+});
+
+
+self.addEventListener('activate', (evt) => {
+    caches.open(userCache).then(cache => {
+        cache.addAll(
+            userPages
+        ).catch(error => {
+            console.error(error)
+        });
+    }).catch(function (error) {
+        console.error(error)
+    })
 });
 
 
 self.addEventListener('fetch', event => {
-    console.log('nav : '+navigator.onLine + '   needDC : ' +needDisconnect);
     if (event.request.url.includes("/static/") ||
         event.request.url.includes(".js") ||
         event.request.url.includes(".wof"))
@@ -73,6 +71,7 @@ self.addEventListener('fetch', event => {
                                 console.error(error)
                             });
                         });
+                        connected = false;
                         return networkResponse;
                     }).catch(() => {
                         needDisconnect = true;
@@ -96,6 +95,20 @@ self.addEventListener('fetch', event => {
                 event.respondWith(
                     caches.match(event.request).then(cacheResponse => {
                         return cacheResponse || fetch(event.request).then(networkResponse => {
+                            if (url.includes('/accueil/')) {
+                                if (connected === false) {
+                                    connected = true;
+                                    caches.open(userCache).then(cache => {
+                                        cache.addAll(
+                                            userPages
+                                        ).catch(error => {
+                                            console.error(error)
+                                        });
+                                    }).catch(function (error) {
+                                        console.error(error)
+                                    })
+                                }
+                            }
                             const clonedResponse = networkResponse.clone();
                             caches.open(userCache).then(cache => {
                                 cache.put(event.request, clonedResponse).catch(error => {
