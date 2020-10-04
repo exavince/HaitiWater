@@ -1,8 +1,44 @@
 const cacheVersion = 'v4';
 const userCache = 'user_1';
 const userPages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
+const staticExt = ['.js','.woff','/static/'];
 let needDisconnect = false;
 let connected = false;
+
+const isStatic = event => {
+    for(const ext of staticExt) {
+        if(event.request.url.includes(ext)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const addCache = (cache, tab) => {
+    caches.open(cache).then(cache => {
+        cache.addAll(
+            tab
+        ).catch(error => {
+            console.error(error)
+        });
+    }).catch(function (error) {
+        console.error(error)
+    })
+}
+
+let cacheCleanedPromise = () => {
+    caches.keys().then(keys => {
+        keys.forEach(key => {
+            if (key === userCache) {
+               return caches.delete(key);
+            }
+        })
+    })
+}
+
+/*********************************************************************************
+ * Event listener
+ *********************************************************************************/
 
 self.addEventListener('install', event => {
     // Cache the offline page by default
@@ -17,24 +53,13 @@ self.addEventListener('install', event => {
 });
 
 
-self.addEventListener('activate', (evt) => {
-    caches.open(userCache).then(cache => {
-        cache.addAll(
-            userPages
-        ).catch(error => {
-            console.error(error)
-        });
-    }).catch(function (error) {
-        console.error(error)
-    })
+self.addEventListener('activate', event => {
+    Promise.all([addCache(userCache, userPages), addCache(cacheVersion, ['/offline/'])]);
 });
 
 
 self.addEventListener('fetch', event => {
-    if (event.request.url.includes("/static/") ||
-        event.request.url.includes(".js") ||
-        event.request.url.includes(".wof"))
-    {
+    if (isStatic(event)) {
         event.respondWith(
             caches.match(event.request).then(cacheResponse => {
                 return cacheResponse || fetch(event.request).then(networkResponse => {
@@ -54,29 +79,14 @@ self.addEventListener('fetch', event => {
     else {
         const url = event.request.url;
         if (url.includes('/logout/')) {
-            let cacheCleanedPromise = caches.keys().then(keys => {
-                keys.forEach(key => {
-                    if (key === userCache) {
-                        return caches.delete(key);
-                    }
-                });
-            });
-            event.waitUntil(cacheCleanedPromise);
+            Promise.resolve(cacheCleanedPromise());
             event.respondWith(
-                caches.match(event.request).then(cacheResponse => {
-                    return cacheResponse || fetch(event.request).then(networkResponse => {
-                        const clonedResponse = networkResponse.clone();
-                        caches.open(userCache).then(cache => {
-                            cache.put(event.request, clonedResponse).catch(error => {
-                                console.error(error)
-                            });
-                        });
-                        connected = false;
-                        return networkResponse;
-                    }).catch(() => {
-                        needDisconnect = true;
-                        return Response.redirect('/offline/');
-                    });
+                fetch(event.request).then(networkResponse => {
+                    connected = false;
+                    return networkResponse;
+                }).catch(() => {
+                    needDisconnect = true;
+                    return Response.redirect('/offline/');
                 })
             );
         }
@@ -98,15 +108,7 @@ self.addEventListener('fetch', event => {
                             if (url.includes('/accueil/')) {
                                 if (connected === false) {
                                     connected = true;
-                                    caches.open(userCache).then(cache => {
-                                        cache.addAll(
-                                            userPages
-                                        ).catch(error => {
-                                            console.error(error)
-                                        });
-                                    }).catch(function (error) {
-                                        console.error(error)
-                                    })
+                                    Promise.resolve(addCache(userCache, userPages))
                                 }
                             }
                             const clonedResponse = networkResponse.clone();
