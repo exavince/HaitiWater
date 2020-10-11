@@ -121,6 +121,7 @@ venv.bak/
 
 #IDE config files
 .idea
+.vscode
 
 #Migrations file
 **/migrations/**
