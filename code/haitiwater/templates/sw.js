@@ -4,6 +4,38 @@ const userPages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/',
 const staticExt = ['.js','.woff','/static/'];
 let needDisconnect = false;
 let connected = false;
+let request = self.indexedDB.open('EXAMPLE_DB', 1);
+
+request.onsuccess = event => {
+    console.log('[onsuccess]', request.result);
+    let products = [
+        {id: 1, name: 'Red Men T-Shirt', price: '$3.99'},
+        {id: 2, name: 'Pink Women Shorts', price: '$5.99'},
+        {id: 3, name: 'Nike white Shoes', price: '$300'}];
+
+    let db = event.target.result;
+    let transaction = db.transaction('products', 'readwrite');
+
+    transaction.onsuccess = function(event) {
+        console.log('[Transaction] ALL DONE!');
+    };
+
+    let productsStore = transaction.objectStore('products');
+
+    products.forEach(function(product){
+        let db_op_req = productsStore.add(product); // IDBRequest
+    });
+}
+
+request.onerror = event => {
+    console.log('[onerror]', request.error);
+}
+
+request.onupgradeneeded = event => {
+    let db = event.target.result;
+    let store = db.createObjectStore('products', {keyPath: 'id', autoIncrement: true});
+    store.createIndex('products_id', 'id', {unique: true});
+}
 
 const isStatic = event => {
     for(const ext of staticExt) {
