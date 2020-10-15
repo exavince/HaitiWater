@@ -13,4 +13,5 @@ urlpatterns = [
     url(r'log/$', exports.compute_logs, name='compute_logs'),
     url(r'details/$', exports.details, name="details"),
     url(r'outlets/', exports.outlets, name="outlets"),
+    url(r'get-zone/', exports.get_zone, name="get-zone"),
 ]

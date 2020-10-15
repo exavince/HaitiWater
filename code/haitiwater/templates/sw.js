@@ -141,6 +141,7 @@ self.addEventListener('fetch', event => {
                                 if (connected === false) {
                                     connected = true;
                                     Promise.resolve(addCache(userCache, userPages))
+                                    Promise.resolve(addCache(cacheVersion, ['/offline/']))
                                 }
                             }
                             const clonedResponse = networkResponse.clone();

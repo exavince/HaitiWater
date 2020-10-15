@@ -2,6 +2,7 @@ import json
 
 from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.core import serializers
 
 from ..consumers.models import Consumer
 from ..financial.models import Invoice, Payment
