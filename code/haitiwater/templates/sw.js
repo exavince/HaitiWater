@@ -10,10 +10,9 @@ let connected = false;
 let db = new Dexie("user_db");
 db.version(1).stores({
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel',
-    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,zone,argent_du',
-    rapport: 'id,type,urgence,element,description,statut,photo',
+    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone',
+    ticket: 'id,urgence,emplacement,type,commentaire,statut,photo',
     water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zonu_up',
-
 });
 
 const zoneHandler = () => {
@@ -32,7 +31,44 @@ const zoneHandler = () => {
             }
         })
     })
+
+    fetch('http://127.0.0.1:8000/api/get-zone/?name=consumer').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.consumer.add({
+                    id:entry[0],
+                    nom:entry[1],
+                    prenom:entry[2],
+                    genre:entry[3],
+                    adresse:entry[4],
+                    telephone:entry[5],
+                    membres:entry[6],
+                    sortie_eau:entry[7],
+                    argent_du:entry[8],
+                    zone:entry[9],
+                })
+            }
+        })
+    })
+
+    fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.ticket.add({
+                    id:entry[0],
+                    urgence:entry[1],
+                    emplacement:entry[2],
+                    type:entry[3],
+                    commentaire:entry[4],
+                    statut:entry[5],
+                    photo:entry[6],
+                })
+            }
+        })
+    })
 }
+
+zoneHandler();
 
 const consumerHandler = () => {
 
