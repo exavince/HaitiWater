@@ -128,7 +128,8 @@ def table(request):
 
     params = parse(request)
     table_name = params["table_name"]
-    last_draw = request.GET.get('draw', "0")  # 1 ?
+    last_draw = "0"
+    # last_draw = request.GET.get('draw', "0")  # 1 ?
     json_object = {
         "draw": str(int(last_draw) + 1),
         "editable": True,  # custom field, true to display edit/delete buttons
