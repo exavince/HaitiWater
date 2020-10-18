@@ -1,41 +1,49 @@
+importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
+
 const cacheVersion = 'v4';
 const userCache = 'user_1';
 const userPages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
 const staticExt = ['.js','.woff','/static/'];
 let needDisconnect = false;
 let connected = false;
-let request = self.indexedDB.open('EXAMPLE_DB', 1);
 
-request.onsuccess = event => {
-    console.log('[onsuccess]', request.result);
-    let products = [
-        {id: 1, name: 'Red Men T-Shirt', price: '$3.99'},
-        {id: 2, name: 'Pink Women Shorts', price: '$5.99'},
-        {id: 3, name: 'Nike white Shoes', price: '$300'}];
+let db = new Dexie("user_db");
+db.version(1).stores({
+    zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel',
+    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,zone,argent_du',
+    rapport: 'id,type,urgence,element,description,statut,photo',
+    water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zonu_up',
 
-    let db = event.target.result;
-    let transaction = db.transaction('products', 'readwrite');
+});
 
-    transaction.onsuccess = function(event) {
-        console.log('[Transaction] ALL DONE!');
-    };
-
-    let productsStore = transaction.objectStore('products');
-
-    products.forEach(function(product){
-        let db_op_req = productsStore.add(product); // IDBRequest
-    });
+const zoneHandler = () => {
+    fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.zone.add({
+                    id:entry[0],
+                    name:entry[1],
+                    cout_fontaine:entry[2],
+                    mois_fontaine:entry[3],
+                    cout_kiosque:entry[4],
+                    mois_kiosque:entry[5],
+                    cout_mensuel:entry[6],
+                })
+            }
+        })
+    })
 }
 
-request.onerror = event => {
-    console.log('[onerror]', request.error);
+const consumerHandler = () => {
+
 }
 
-request.onupgradeneeded = event => {
-    let db = event.target.result;
-    let store = db.createObjectStore('products', {keyPath: 'id', autoIncrement: true});
-    store.createIndex('products_id', 'id', {unique: true});
+
+
+const dbHandler = () => {
+
 }
+
 
 const isStatic = event => {
     for(const ext of staticExt) {
