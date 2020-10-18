@@ -1,5 +1,5 @@
 importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
-
+const test = 'essai';
 const cacheVersion = 'v4';
 const userCache = 'user_1';
 const userPages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
