@@ -1,43 +1,19 @@
-async function getData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('water_element');
-    let result = [];
-
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.type,
-            row.place,
-            row.users,
-            row.state,
-            row.m3,
-            row.gallons,
-            row.gestionnaire,
-            row.zone_up,
-        ]);
-    });
-
-    return result;
-}
-
 function setWaterDataTableURL(month){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=water_element&month=" + month;
     $('#datatable-water_element').DataTable().ajax.url(dataURL).load();
 }
 
-async function drawWaterElementTable(withManagers, withActions, gis){
+function drawWaterElementTable(withManagers, withActions, gis){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
-
     console.log("Request data from: " + dataURL);
     let configuration;
     if(gis){
-        configuration = await getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
+        configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
     }
     else {
-        configuration = await getWaterDatatableConfiguration(dataURL, withManagers, withActions);
+        configuration = getWaterDatatableConfiguration(dataURL, withManagers, withActions);
     }
     $('#datatable-water_element').DataTable(configuration);
 
@@ -65,88 +41,7 @@ async function drawWaterElementTable(withManagers, withActions, gis){
     prettifyHeader('water_element');
 }
 
-async function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
-    let config = {
-        lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
-        ],
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'print',
-                exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
-                },
-            },
-            {
-                text: 'Volume total',
-                attr:{
-                    id: 'water-element-month-selector',
-                }
-            },
-            'pageLength',
-
-        ],
-        sortable: true,
-        processing: true,
-        serverSide: false,
-        responsive: true,
-        autoWidth: true,
-        scrollX:        true,
-        scrollCollapse: true,
-        paging:         true,
-        pagingType: 'full_numbers',
-        fixedColumns:   {
-            leftColumns: 1,
-            rightColumns: 1
-        },
-        columnDefs: [
-            {
-                targets: -1, // Actions column
-                data: null,
-                sortable: false,
-                defaultContent: getActionButtonsHTML('modalWaterElement'),
-            },
-            {
-                targets: -2, // Zone column
-                visible: true,
-                defaultContent: 'Pas de zone',
-
-            },
-            {
-                targets: -3, // Manager column
-                defaultContent: 'Pas de gestionnaire',
-                visible: withManagers,
-            }
-            ],
-        language: getDataTableFrenchTranslation(),
-        data: await getData(),
-
-        //Callbacks on fetched data
-        "createdRow": function (row, data, index) {
-            $('td', row).eq(5).addClass('text-center');
-            $('td', row).eq(6).addClass('text-center');
-            //Hide actions if column hidden
-            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
-                $('td', row).eq(8).addClass('hidden');
-            }
-            if (withManagers) {
-                $('td', row).eq(7).addClass('text-center');
-            }
-        },
-        "initComplete": function(settings, json){
-            // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
-            if(!withActions){
-                $('#datatable-water_element').DataTable().column(-1).visible(false);
-
-            }
-        }
-    };
-    return config;
-}
-
-function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
+function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
     let config = {
         lengthMenu: [
             [ 10, 25, 50, -1 ],
@@ -198,6 +93,90 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
             {
                 targets: -3, // Manager column
                 defaultContent: 'Pas de gestionnaire',
+                visible: withManagers,
+            }
+            ],
+        language: getDataTableFrenchTranslation(),
+        ajax: {
+            url: dataURL
+        },
+
+        //Callbacks on fetched data
+        "createdRow": function (row, data, index) {
+            $('td', row).eq(5).addClass('text-center');
+            $('td', row).eq(6).addClass('text-center');
+            //Hide actions if column hidden
+            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
+                $('td', row).eq(8).addClass('hidden');
+            }
+            if (withManagers) {
+                $('td', row).eq(7).addClass('text-center');
+            }
+        },
+        "initComplete": function(settings, json){
+            // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
+            console.log(json['editable']);
+            if(!withActions || !(json.hasOwnProperty('editable') && json['editable'])){
+                $('#datatable-water_element').DataTable().column(-1).visible(false);
+
+            }
+        }
+    };
+    return config;
+}
+
+function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
+    let config = {
+        lengthMenu: [
+            [ 10, 25, 50, -1 ],
+            [ '10', '25', '50', 'Tout afficher' ]
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'print',
+                exportOptions: {
+                    columns: [0,1,2,3,4,5,6,7],
+                },
+            },
+            {
+                text: 'Volume total',
+                attr:{
+                    id: 'water-element-month-selector',
+                }
+            },
+            'pageLength',
+
+        ],
+        sortable: true,
+        processing: true,
+        serverSide: false,
+        responsive: true,
+        autoWidth: true,
+        scrollX:        true,
+        scrollCollapse: true,
+        paging:         true,
+        pagingType: 'full_numbers',
+        fixedColumns:   {
+            leftColumns: 1,
+            rightColumns: 1
+        },
+        columnDefs: [
+            {
+                targets: -1, // Actions column
+                data: null,
+                sortable: false,
+                defaultContent: getActionButtonsHTML('modalWaterElement'),
+            },
+            {
+                targets: -2, // Zone column
+                visible: true,
+                defaultContent: 'Pas de zone',
+
+            },
+            {
+                targets: -3, // Manager column
+                defaultContent: 'Pas de gestionnaire',
                 visible: false,
             },
             {
@@ -206,7 +185,10 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
             }
             ],
         language: getDataTableFrenchTranslation(),
-        data: data,
+        ajax: {
+            url: dataURL
+        },
+
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {
             $('td', row).eq(5).addClass('text-center');
