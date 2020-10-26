@@ -4,7 +4,7 @@
 
 {% block page_import %}
     <script src="{% static "zoneManagement.js"%}"></script>
-    <script src="{% static "zoneTableGenerator.js" %}"></script>
+    <script src="{% static "offline_zoneTableGenerators.js" %}"></script>
     <script src="{% static "vendor/select2/select2.js" %}"></script>
     <link href="{% static "vendor/select2/select2.css" %}" rel="stylesheet">
 {% endblock %}
@@ -47,7 +47,7 @@
                     <h2 class="panel-subtitle">Cliquez sur un gestionnaire pour filtrer les éléments</h2>
                 </header>
                 <div class="panel-body">
-                    {% include 'managers_table.html' %}
+                    {% include 'offline_managers_table.html' %}
                 </div>
             </section>
         </div>
@@ -65,7 +65,7 @@
             <h2 class="panel-title">Éléments du réseau</h2>
         </header>
         <div class="panel-body">
-            {% include "water_element_table.html" %}
+            {% include "offline_water_element_table.html" %}
         </div>
     </section>
 

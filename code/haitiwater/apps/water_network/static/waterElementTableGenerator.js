@@ -1,47 +1,25 @@
-async function getData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('water_element');
-    let result = [];
-
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.type,
-            row.place,
-            row.users,
-            row.state,
-            row.m3,
-            row.gallons,
-            row.gestionnaire,
-            row.zone_up,
-        ]);
-    });
-
-    return result;
-}
-
 function setWaterDataTableURL(month){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=water_element&month=" + month;
     $('#datatable-water_element').DataTable().ajax.url(dataURL).load();
 }
 
-async function drawWaterElementTable(withManagers, withActions, gis){
+function drawWaterElementTable(withManagers, withActions, gis){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
-
     console.log("Request data from: " + dataURL);
     let configuration;
     if(gis){
-        configuration = await getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
+        configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
     }
     else {
-        configuration = await getWaterDatatableConfiguration(dataURL, withManagers, withActions);
+        configuration = getWaterDatatableConfiguration(dataURL, withManagers, withActions);
     }
+    console.log(configuration);
+
     $('#datatable-water_element').DataTable(configuration);
 
-    let table = $('#datatable-water_element').DataTable();
+    let table = $('#datatable-water_element');
     $('#datatable-water_element tbody').on( 'click', 'tr', function () {
         if ( $(this).hasClass('selected') ) {
             $(this).removeClass('selected');
@@ -62,10 +40,12 @@ async function drawWaterElementTable(withManagers, withActions, gis){
         let data = table.row($(this).closest('tr')).data();
         editElement(data);
     } );
+
+    attachMonthSelectorHandler();
     prettifyHeader('water_element');
 }
 
-async function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
+function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
     let config = {
         lengthMenu: [
             [ 10, 25, 50, -1 ],
@@ -90,7 +70,7 @@ async function getWaterDatatableConfiguration(dataURL, withManagers, withActions
         ],
         sortable: true,
         processing: true,
-        serverSide: false,
+        serverSide: true,
         responsive: true,
         autoWidth: true,
         scrollX:        true,
@@ -121,7 +101,9 @@ async function getWaterDatatableConfiguration(dataURL, withManagers, withActions
             }
             ],
         language: getDataTableFrenchTranslation(),
-        data: await getData(),
+        ajax: {
+            url: dataURL
+        },
 
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {
@@ -137,7 +119,8 @@ async function getWaterDatatableConfiguration(dataURL, withManagers, withActions
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
-            if(!withActions){
+            console.log(json['editable']);
+            if(!withActions || !(json.hasOwnProperty('editable') && json['editable'])){
                 $('#datatable-water_element').DataTable().column(-1).visible(false);
 
             }
@@ -206,7 +189,10 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
             }
             ],
         language: getDataTableFrenchTranslation(),
-        data: data,
+        ajax: {
+            url: dataURL
+        },
+
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {
             $('td', row).eq(5).addClass('text-center');
@@ -230,10 +216,6 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
     };
     return config;
 }
-
-$(document).ready(function() {
-    attachMonthSelectorHandler();
-});
 
 function attachMonthSelectorHandler(){
     let button = $('#water-element-month-selector');

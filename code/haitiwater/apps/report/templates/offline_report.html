@@ -13,7 +13,8 @@
 
     <script src="{% static "problemReportFormHandler.js" %}"></script>
     <script src="{% static "reportTableHandler.js" %}"></script>
-    <script src="{% static "supportTicketTableHandler.js" %}"></script>
+    <script src="{% static "offline_supportTicketTableHandler.js" %}"></script>
+    <script src="{% static "dexie.js" %}"></script>
     <script src="{% static "javascripts/tables/genericTableHandler.js" %}"></script>
     <script src="{% static "javascripts/tables/genericModalHandler.js" %}"></script>
     <script src="{% static "vendor/jquery-datatables/media/js/jquery.dataTables.min.js" %}"></script>
@@ -39,7 +40,7 @@
             <section class="panel" data-intro="Vous pouvez envoyer votre rapport mensuel, ou signaler un problème avec un élement du réseau de distribution.">
                 <header class="panel-heading">
                     <div class="panel-actions">
-                        <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
+                        <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser""></a>
                     </div>
 
                     <h2 class="panel-title">Envoyer un rapport</h2>
@@ -58,7 +59,7 @@
                 <section class="panel" data-intro="Vous pouvez éditer les rapports mensuels récents pour modifier des informations en cas d'erreur.">
                     <header class="panel-heading">
                         <div class="panel-actions">
-                            <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
+                            <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser""></a>
                         </div>
 
                         <h2 class="panel-title">Rapports mensuels récents</h2>

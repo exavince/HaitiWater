@@ -2,25 +2,32 @@
 {% load staticfiles %}
 {% load django_tables2 %}
 {% load compress %}
-{% load group_filter %}
+
+{% block page_import %}
+    <script src="{% static "javascripts/tables/genericTableHandler.js" %}"></script>
+    <script src="{% static "offline_consumerTableHandler.js" %}"></script>
+    <script src="{% static "dexie.js" %}"></script>
+    <script src="{% static "consumerFormHandler.js"%}"></script>
+    <script src="{% static "consumers.js" %}"></script>
+
+    <script src="{% static "vendor/jquery-datatables/media/js/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "vendor/jquery-datatables-bs3/assets/js/datatables.js" %}"></script>
+
+    <link rel="stylesheet" href="{% static "vendor/jquery-datatables-bs3/assets/css/datatables.css" %}"/>
+{% endblock %}
 
 {% block page_name %}
-    <link href="{% static "water_network.css" %}">
-    <script src="{% static "waterNetwork.js" %}"></script>
-    Réseau de distribution
+    Consommateurs
 {% endblock %}
 
 {% block page_content %}
-
-    {% if user.is_authenticated %}
 
     <div class="row">
         <div class="col-md-6">
             {% include "components/graphs/block_all_graphs.html" %}
         </div>
-
         <div class="col-md-6">
-            <section class="panel" data-intro="Des informations rapides vous sont proposées">
+            <section class="panel" data-intro="Des informations rapides sont disponibles sur les consommateurs de la zone">
                 <header class="panel-heading">
                     <div class="panel-actions form-inline">
                         <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser""></a>
@@ -32,13 +39,13 @@
                     <div class="widget-summary">
                         <div class="widget-summary-col widget-summary-col-icon">
                             <div class="summary-icon-sm bg-primary">
-                                <i class="fa fa-users"></i>
+                                <i class="fa fa-home"></i>
                             </div>
                         </div>
                         <div class="widget-summary-col">
                             <div class="summary">
                                 <h4 class="title">Nous avons</h4>
-                                <div class="info">{{consumers}} consommateurs</div>
+                                <div class="info">{{ consumer_groups }} foyers consommant de l'eau</div>
                             </div>
                         </div>
                     </div>
@@ -46,13 +53,13 @@
                     <div class="widget-summary">
                         <div class="widget-summary-col widget-summary-col-icon">
                             <div class="summary-icon-sm bg-primary">
-                                <i class="fa fa-tint"></i>
+                                <i class="fa fa-users"></i>
                             </div>
                         </div>
                         <div class="widget-summary-col">
                             <div class="summary">
-                                <h4 class="title">Le réseau compte</h4>
-                                <div class="info">{{water_outlets}} points d'eau</div>
+                                <h4 class="title">Nous avons</h4>
+                                <div class="info">{{ consumer_individuals }} consommateurs individuels</div>
                             </div>
                         </div>
                     </div>
@@ -60,13 +67,13 @@
                     <div class="widget-summary">
                         <div class="widget-summary-col widget-summary-col-icon">
                             <div class="summary-icon-sm bg-primary">
-                                <i class="fa fa-water"></i>
+                                <i class="fa fa-money-bill"></i>
                             </div>
                         </div>
                         <div class="widget-summary-col">
                             <div class="summary">
-                                <h4 class="title">En {{ current_period }}, nous avons distribué</h4>
-                                <div class="info">{{distributed.0}} m³ ({{distributed.1}} gals) d'eau</div>
+                                <h4 class="title">Pour la période en cours ({{ current_period }})</h4>
+                                <div class="info">{{ unpaid_bills }} foyers n'ont pas payé</div>
                             </div>
                         </div>
                     </div>
@@ -75,28 +82,22 @@
         </div>
     </div>
 
-    <section class="panel" data-intro="Consultez, modifiez et supprimez les éléments du réseau de distribution d'eau potable.">
+    <section class="panel" data-intro="Vous pouvez consulter et modifier les consommateurs de votre zone.">
         <header class="panel-heading">
             <!-- Table block control actions -->
             <div class="panel-actions form-inline">
-                {% if user|has_group:"Gestionnaire de zone" %}
-                    <a id="call-water-modal" href="#modal-water-element" onclick="setupModalAdd()" class="modal-with-form fa fa-plus" data-toggle="tooltip" title="Ajouter"></a>
-                {% endif %}
-                <a id="print-water_element" class="fa fa-print clickable" data-toggle="tooltip" title="Imprimer la table"></a>
-                <a id="water_element-options" class="fas fa-cog clickable" data-toggle="tooltip" title="Options"></a>
-                <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
+                <a id="call-consumer-modal" href="#modal-consumer" onclick="setupModalConsumerAdd()" class="modal-with-form fa fa-plus" data-toggle="tooltip" title="Ajouter"></a>
+                <a id="print-consumer" href="#" class="fa fa-print clickable" data-toggle="tooltip" title="Imprimer la table"></a>
+                <a id="consumer-options" class="fas fa-cog clickable" data-toggle="tooltip" title="Options"></a>
+                <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser""></a>
             </div>
-            <h2 class="panel-title">Éléments du réseau</h2>
+            <h2 class="panel-title">Consommateurs</h2>
         </header>
         <div class="panel-body">
-            {% include "water_element_table.html" %}
+            {% include "consumer_table.html" %}
         </div>
     </section>
 
-    {% if user|has_group:"Gestionnaire de zone" %}
-        {% include 'water_element_modal.html' %}
-    {% endif %}
-    {% else %}
-        <h3>Contenu réservé, veuillez <a href="{% url 'login' %}">vous connecter</a></h3>
-    {% endif %}
+    {% include "consumer_modal.html" %}
+
 {% endblock %}

@@ -15,3 +15,14 @@ def index(request):
         'zone_name': get_zone(request)
     }
     return HttpResponse(template.render(context, request))
+
+
+@login_required(login_url='/login/')
+def offline(request):
+    template = loader.get_template('offline_zone_management.html')
+    context = {
+        'project_version': PROJECT_VERSION,
+        'project_name': PROJECT_NAME,
+        'zone_name': get_zone(request)
+    }
+    return HttpResponse(template.render(context, request))

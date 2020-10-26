@@ -1,8 +1,30 @@
-function drawManagerTable(){
+async function getManagerData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('manager');
+    let result = [];
+
+    await table.each(row => {
+        result.push([
+            row.id,
+            row.nom,
+            row.prenom,
+            row.telephone,
+            row.mail,
+            row.zone,
+            row.unknown,
+        ]);
+    });
+
+    return result;
+}
+
+async function drawManagerTable(){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=manager";
     console.log("Request data from: " + dataURL);
-    $('#datatable-manager').DataTable(getManagerDatatableConfiguration(dataURL));
+    let config = await getManagerDatatableConfiguration();
+    $('#datatable-manager').DataTable(config);
 
     let table = $('#datatable-manager').DataTable();
     $('#datatable-manager tbody').on( 'click', 'tr td:not(:last-child)', function () {
@@ -21,7 +43,7 @@ function drawManagerTable(){
     $('#datatable-manager tbody').on( 'click', '.remove-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
         if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
-            removeElement("manager", data[0].innerText);12
+            removeElement("manager", data[0].innerText);
         } else {}
     } );
     $('#datatable-manager tbody').on( 'click', '.edit-row', function () {
@@ -52,7 +74,7 @@ function filterWaterElementFromManager(managerTable){
 
 }
 
-function getManagerDatatableConfiguration(dataURL){
+async function getManagerDatatableConfiguration(dataURL){
     let config = {
         lengthMenu: [
             [ 10, 25, 50, -1 ],
@@ -70,7 +92,7 @@ function getManagerDatatableConfiguration(dataURL){
         ],
         "sortable": true,
         "processing": true,
-        "serverSide": true,
+        "serverSide": false,
         "responsive": false,
         "autoWidth": true,
         scrollX:        true,
@@ -89,7 +111,7 @@ function getManagerDatatableConfiguration(dataURL){
             },
             ],
         "language": getDataTableFrenchTranslation(),
-        "ajax": getAjaxController(dataURL),
+        "data": await getManagerData(),
 
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {
@@ -98,9 +120,7 @@ function getManagerDatatableConfiguration(dataURL){
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit the table
-            if(!(json.hasOwnProperty('editable') && json['editable'])){
-                $('#datatable-manager').find('tr:last-child th:last-child, td:last-child').remove();
-            }
+
         }
     };
     return config;
