@@ -4,15 +4,14 @@ async function getPaymentData(userID) {
     let table = db.table('payment');
     let result = [];
     let users = await table.where('user_id').equals(userID);
-    users.each(user => {
+    await users.each(user => {
         result.push([
             user.id,
             user.data,
             user.value,
             user.source,
         ]);
-    })
-    console.log(result);
+    });
 
     return result;
 }
@@ -21,12 +20,12 @@ async function drawPaymentTable(userID) {
 
     let datatable = $('#datatable-payment');
 
-    let configuration = await getPaymentDatatableConfiguration(userID)
+    let configuration = await getPaymentDatatableConfiguration(userID);
     let table = datatable.DataTable(configuration);
 
     datatable.find('tbody').on( 'click', '.remove-row', function () {
         let data = table.row($(this).closest('tr')).data();
-        if (confirm("Voulez-vous supprimer: " + data[0] + ' ?')){
+        if (confirm("Voulez-vous supprimer: " + data[0] + ' ?')) {
             let consumerIdParameter = '&id_consumer=' + $('#input-payment-id-consumer');
             removeElement("payment", data[0], consumerIdParameter );
         } else {}
@@ -37,6 +36,8 @@ async function drawPaymentTable(userID) {
     } );
 
     prettifyHeader('payment');
+
+    return table;
 }
 
 async function getPaymentDatatableConfiguration(userID){

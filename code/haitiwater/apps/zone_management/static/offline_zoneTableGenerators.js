@@ -20,11 +20,7 @@ async function getZoneData() {
 }
 
 async function drawZoneTable(){
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=zone";
-    console.log("Request data from: " + dataURL);
     let config = await getZoneTableConfiguration();
-    console.log(config);
     let table = $('#datatable-zone').DataTable(config);
 
     $('#datatable-zone tbody').on( 'click', 'tr td:not(:last-child)', function () {

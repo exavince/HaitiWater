@@ -3,19 +3,20 @@ async function getConsumerDetailsData(userID) {
     let db = await dexie.open();
     let table = db.table('consumer_details');
     let result = [];
-    let user = await table.where("consumer_id").equals(userID)
-    result.push(
+    let users = await table.where("consumer_id").equals(userID);
+    await users.each(user => {
+        result.push(
         user.consumer_id,
         user.amount_due,
         user.validity,
-    );
-
-    console.log(result);
+        )
+    });
 
     return result;
 }
 
 let paymentTable = 'undefined';
+
 
 $(document).ready(function() {
     // Draw DataTables
@@ -32,13 +33,13 @@ $(document).ready(function() {
  * @param consumerTable to attach event to
  */
 function attachHandlers(zoneTable, consumerTable){
-    $('#datatable-consumer').first('tbody').on('click', 'tr td:not(:last-child)', function(){
+    $('#datatable-consumer').first('tbody').on('click', 'tr td:not(:last-child)', async function(){
         $('#consumer-payment-details').removeClass('hidden');
-        consumerDetails(consumerTable.row($(this).closest('tr')).data());
+        await consumerDetails(consumerTable.row($(this).closest('tr')).data());
     });
 
     $('#datatable-zone').first('tbody').on('click', 'tr td:not(:last-child)', function(){
-        let row = ($(this).closest('tr'));
+        ($(this).closest('tr'));
         filterConsumersFromZone(zoneTable);
     });
 }
@@ -68,10 +69,16 @@ function filterConsumersFromZone(zoneTable){
 async function consumerDetails(data){
     let userID = data[0];
     if (paymentTable === 'undefined') {
-        paymentTable = await drawPaymentTable();
+       paymentTable = await drawPaymentTable(null);
     }
-    setTableURL('payment', '&user=' + userID);
-    drawDataTable('payment');
+
+    await getPaymentData(userID).then(result => {
+        console.log('test');
+        console.log(result);
+        $('#datatable-payment').DataTable().clear();
+        $('#datatable-payment').DataTable().rows.add(result).draw();
+    });
+
     $('#input-payment-id-consumer').val(userID);
 
     let userName = data[1] + " " + data[2];

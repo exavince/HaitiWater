@@ -1,6 +1,6 @@
 let paymentTable = 'undefined';
 
-$(document).ready(async function() {
+$(document).ready(function() {
     // Draw DataTables
     let zoneTable = drawZoneTable();
     let consumerTable = drawConsumerTable(false);
@@ -50,8 +50,9 @@ function filterConsumersFromZone(zoneTable){
 function consumerDetails(data){
     let userID = data[0];
     if (paymentTable === 'undefined') {
-        paymentTable = drawPaymentTable(userID);
+        paymentTable = drawPaymentTable();
     }
+    setTableURL('payment', '&user=' + userID);
     drawDataTable('payment');
     $('#input-payment-id-consumer').val(userID);
 
