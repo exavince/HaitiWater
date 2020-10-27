@@ -1,4 +1,7 @@
 async function getConsumerDetailsData(userID) {
+    if (userID === null) {
+        return [];
+    }
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
     let table = db.table('consumer_details');
@@ -73,8 +76,6 @@ async function consumerDetails(data){
     }
 
     await getPaymentData(userID).then(result => {
-        console.log('test');
-        console.log(result);
         $('#datatable-payment').DataTable().clear();
         $('#datatable-payment').DataTable().rows.add(result).draw();
     });

@@ -1,4 +1,9 @@
 importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
+importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
+
+import {StaleWhileRevalidate} from 'workbox-strategies';
+
+
 const test = 'essai';
 const cacheVersion = 'v4';
 const userCache = 'user_1';

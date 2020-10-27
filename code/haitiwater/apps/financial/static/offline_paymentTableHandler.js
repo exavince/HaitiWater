@@ -1,4 +1,7 @@
 async function getPaymentData(userID) {
+    if (userID === null) {
+        return [];
+    }
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
     let table = db.table('payment');
