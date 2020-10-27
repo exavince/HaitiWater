@@ -1,20 +1,28 @@
 importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
+workbox.loadModule('workbox-strategies');
 
-import {StaleWhileRevalidate} from 'workbox-strategies';
 
 
-const test = 'essai';
-const cacheVersion = 'v4';
+/*********************************************************************************
+ * Variable globale
+ *********************************************************************************/
+const cacheVersion = 'static';
 const userCache = 'user_1';
-const userPages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
+const onlinePages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
+const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
 let needDisconnect = false;
 let connected = false;
+let offlineMode = false;
 let dbVersion = 1;
 let db = new Dexie("user_db");
 
 
+
+/*********************************************************************************
+ * IndexDB
+ *********************************************************************************/
 db.version(dbVersion).stores({
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel',
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone',
@@ -151,17 +159,21 @@ const populateDB = () => {
     waterElement_handler();
 }
 
-populateDB();
-
-const isStatic = event => {
-    for(const ext of staticExt) {
-        if(event.request.url.includes(ext)) {
-            return true;
-        }
-    }
-    return false;
+const emptyDB = () => {
+    db.zone.clear();
+    db.consumer.clear();
+    db.ticket.clear();
+    db.water_element.clear();
+    db.manager.clear();
+    db.consumer_details.clear();
+    db.payment.clear();
 }
 
+
+
+/*********************************************************************************
+ * Utils
+ *********************************************************************************/
 const addCache = (cache, tab) => {
     caches.open(cache).then(cache => {
         cache.addAll(
@@ -177,102 +189,76 @@ const addCache = (cache, tab) => {
 let cacheCleanedPromise = () => {
     caches.keys().then(keys => {
         keys.forEach(key => {
-            if (key === userCache) {
-               return caches.delete(key);
-            }
-        })
-    })
-}
-
-/*********************************************************************************
- * Event listener
- *********************************************************************************/
-
-self.addEventListener('install', event => {
-    // Cache the offline page by default
-     let cacheCleanedPromise = caches.keys().then(keys => {
-        keys.forEach(key => {
             if (key !== cacheVersion) {
                 return caches.delete(key);
             }
         });
     });
-    event.waitUntil(cacheCleanedPromise);
+}
+
+
+
+/*********************************************************************************
+ * Event listener
+ *********************************************************************************/
+self.addEventListener('install', async () => {
+    // Cache the offline page by default
+    await cacheCleanedPromise();
 });
 
 
-self.addEventListener('activate', event => {
-    Promise.all([addCache(userCache, userPages), addCache(cacheVersion, ['/offline/'])]);
+self.addEventListener('activate', async () => {
+    await addCache(cacheVersion, ['/offline/']);
+    await addCache(userCache, onlinePages);
+    populateDB();
 });
 
 
-self.addEventListener('fetch', event => {
-    if (isStatic(event)) {
+self.addEventListener('fetch', async event => {
+    const {request} = event;
+    const url = event.request.url;
+
+    if (url.includes('/static/')) {
+        event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
+    }
+    else if (url.includes('/logout/')) {
+        await cacheCleanedPromise();
         event.respondWith(
-            caches.match(event.request).then(cacheResponse => {
-                return cacheResponse || fetch(event.request).then(networkResponse => {
-                    const clonedResponse = networkResponse.clone();
-                    caches.open(cacheVersion).then(cache => {
-                        cache.put(event.request, clonedResponse).catch(error => {
-                            console.error(error)
-                        });
-                    });
-                    return networkResponse;
-                }).catch(error => {
-                    console.error(error)
-                });
+            fetch(event.request).then(networkResponse => {
+                emptyDB();
+                connected = false;
+                return networkResponse;
+            }).catch(() => {
+                needDisconnect = true;
+                emptyDB();
+                return caches.match('/offline/');
             })
         );
     }
+    else if (needDisconnect) {
+        event.respondWith(
+            fetch(event.request).then(() => {
+                needDisconnect = false;
+                return Response.redirect('/logout/');
+            }).catch(() => {
+                return caches.match('/offline/');
+            })
+        )
+    }
     else {
-        const url = event.request.url;
-        if (url.includes('/logout/')) {
-            Promise.resolve(cacheCleanedPromise());
-            event.respondWith(
-                fetch(event.request).then(networkResponse => {
-                    connected = false;
-                    return networkResponse;
-                }).catch(() => {
-                    needDisconnect = true;
-                    return Response.redirect('/offline/');
+        if (url.includes('/accueil/')) {
+            if (connected === false) {
+                connected = true;
+                populateDB();
+                await addCache(userCache, onlinePages);
+                await addCache(cacheVersion, ['/offline/']);
+            }
+        }
+        event.respondWith(
+            new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
+                .catch(() => {
+                    return caches.match('/offline/');
                 })
-            );
-        }
-        else {
-            if (needDisconnect) {
-                event.respondWith(
-                    fetch(event.request).then(() => {
-                        needDisconnect = false;
-                        return Response.redirect('/logout/');
-                    }).catch(() => {
-                        return caches.match('/offline/');
-                    })
-                )
-            }
-            else {
-                event.respondWith(
-                    caches.match(event.request).then(cacheResponse => {
-                        return cacheResponse || fetch(event.request).then(networkResponse => {
-                            if (url.includes('/accueil/')) {
-                                if (connected === false) {
-                                    connected = true;
-                                    Promise.resolve(addCache(userCache, userPages))
-                                    Promise.resolve(addCache(cacheVersion, ['/offline/']))
-                                }
-                            }
-                            const clonedResponse = networkResponse.clone();
-                            caches.open(userCache).then(cache => {
-                                cache.put(event.request, clonedResponse).catch(error => {
-                                    console.error(error)
-                                });
-                            });
-                            return networkResponse;
-                        }).catch(() => {
-                            return Response.redirect('/offline/');
-                        });
-                    })
-                );
-            }
-        }
+        );
     }
 });
