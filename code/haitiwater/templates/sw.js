@@ -246,19 +246,41 @@ self.addEventListener('fetch', async event => {
         )
     }
     else {
-        if (url.includes('/accueil/')) {
-            if (connected === false) {
-                connected = true;
-                populateDB();
-                await addCache(userCache, onlinePages);
-                await addCache(cacheVersion, ['/offline/']);
+        if(offlineMode) {
+            if(url.includes('/reseau/gis')) {
+                event.respondWith(caches.match('/reseau/offline'));
+            }
+            else if (url.includes('/reseau/')) {
+                event.respondWith(caches.match('/reseau/offline'));
+            }
+            else if(url.includes('/gestion/')) {
+                event.respondWith(caches.match('/gestion/offline'));
+            }
+            else if(url.includes('/rapport/')) {
+                event.respondWith(caches.match('/rapport/offline'));
+            }
+            else if(url.includes('/consommateurs/')) {
+                event.respondWith(caches.match('/consommateurs/offline'));
+            }
+            else if(url.includes('/finances/')) {
+                event.respondWith(caches.match('/finances/offline'));
             }
         }
-        event.respondWith(
-            new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
-                .catch(() => {
-                    return caches.match('/offline/');
-                })
-        );
+        else {
+            if (url.includes('/accueil/')) {
+                if (connected === false) {
+                    connected = true;
+                    populateDB();
+                    await addCache(userCache, onlinePages);
+                    await addCache(cacheVersion, ['/offline/']);
+                }
+            }
+            event.respondWith(
+                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
+                    .catch(() => {
+                        return caches.match('/offline/');
+                    })
+            );
+        }
     }
 });
