@@ -9,12 +9,13 @@ workbox.loadModule('workbox-strategies');
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
-const onlinePages = ['/accueil/','/offline/','/reseau/','/reseau/gis','/gestion/','/historique/','/rapport/','/consommateurs/','/finances/','/aide/','/profil/editer/'];
+const onlinePages = ['/accueil/','/offline/','/aide/'];
+const doublePages= ['/reseau', 'gestion', '/rapport', '/consommateurs', '/finances'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
 let needDisconnect = false;
 let connected = false;
-let offlineMode = false;
+let offlineMode = true;
 let dbVersion = 1;
 let db = new Dexie("user_db");
 
@@ -196,6 +197,15 @@ let cacheCleanedPromise = () => {
     });
 }
 
+const isPage = (event,tab) => {
+    for(const ext of tab) {
+        if(event.request.url.includes(ext)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 
 
 /*********************************************************************************
@@ -210,9 +220,24 @@ self.addEventListener('install', async () => {
 self.addEventListener('activate', async () => {
     await addCache(cacheVersion, ['/offline/']);
     await addCache(userCache, onlinePages);
+    await addCache(userCache, offlinePages);
     populateDB();
 });
 
+const handlerCb = async ({url, request, event, params}) => {
+  response = await caches.open('user_1').then(cache => {
+      return cache.match('gestion/offline');
+  })
+  console.log(response)
+  return new Response(response.body)
+};
+
+/*workbox.routing.registerRoute(
+  new RegExp('/gestion/'),
+  handlerCb
+);
+
+*/
 
 self.addEventListener('fetch', async event => {
     const {request} = event;
@@ -245,42 +270,56 @@ self.addEventListener('fetch', async event => {
             })
         )
     }
-    else {
-        if(offlineMode) {
-            if(url.includes('/reseau/gis')) {
-                event.respondWith(caches.match('/reseau/offline'));
-            }
-            else if (url.includes('/reseau/')) {
-                event.respondWith(caches.match('/reseau/offline'));
-            }
-            else if(url.includes('/gestion/')) {
-                event.respondWith(caches.match('/gestion/offline'));
-            }
-            else if(url.includes('/rapport/')) {
-                event.respondWith(caches.match('/rapport/offline'));
-            }
-            else if(url.includes('/consommateurs/')) {
-                event.respondWith(caches.match('/consommateurs/offline'));
-            }
-            else if(url.includes('/finances/')) {
-                event.respondWith(caches.match('/finances/offline'));
-            }
+    else if (!offlineMode) {
+        console.log('online part');
+        if(connected === false) {
+            connected = true;
+            populateDB();
+            await addCache(userCache, onlinePages);
+            await addCache(cacheVersion, ['/offline/']);
+        }
+        if(url.includes('/accueil/'|'/profil/editer'|'/aide/')) {
+            event.respondWith(
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event,request})
+                    .catch(() => {
+                        return caches.match('/offline/')
+                    })
+            )
         }
         else {
-            if (url.includes('/accueil/')) {
-                if (connected === false) {
-                    connected = true;
-                    populateDB();
-                    await addCache(userCache, onlinePages);
-                    await addCache(cacheVersion, ['/offline/']);
-                }
-            }
-            event.respondWith(
-                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
-                    .catch(() => {
-                        return caches.match('/offline/');
-                    })
-            );
+            new workbox.strategies.CacheFirst({cacheName:'user_v1'}).handle({event, request})
+                .catch(() => {
+                    if(url.includes('/reseau/')) {return caches.match('/reseau/offline')}
+                    else if(url.includes('/gestion/')) {return caches.match('/gestion/offline')}
+                    else if(url.includes('/historique/')) {return caches.match('/historique/offline')}
+                    else if(url.includes('/rapport/')) {return caches.match('/rapport/offline')}
+                    else if(url.includes('/consommateurs/')) {return caches.match('/consommateurs/offline')}
+                    else if(url.includes('/finances/')) {return caches.match('/finances/offline')}
+                })
         }
     }
+    else {
+        if(false) {
+            console.log("first part: " +url);
+            event.respondWith(new workbox.strategies.CacheOnly({cacheName:'user_1'}).handle({event, request})
+                .catch(() => {
+                    return caches.match('/gestion/offline');
+                })
+            )
+        }
+        else {
+            console.log("second part: " +url);
+            event.respondWith(
+                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event,request})
+                    .catch(async () => {
+                        response = await caches.open('user_1').then(cache => {
+                            return cache.match('gestion/offline');
+                        })
+                        return new Response(response.body)
+                    })
+            )
+        }
+    }
+
+
 });
