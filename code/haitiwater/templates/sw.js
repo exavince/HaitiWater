@@ -9,12 +9,13 @@ workbox.loadModule('workbox-strategies');
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
-const onlinePages = ['/accueil/','/offline/','/aide/'];
-const doublePages= ['/reseau', 'gestion', '/rapport', '/consommateurs', '/finances'];
+const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
+const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
 let needDisconnect = false;
 let connected = false;
+let dataLoaded = false;
 let offlineMode = true;
 let dbVersion = 1;
 let db = new Dexie("user_db");
@@ -160,14 +161,14 @@ const populateDB = () => {
     waterElement_handler();
 }
 
-const emptyDB = () => {
-    db.zone.clear();
-    db.consumer.clear();
-    db.ticket.clear();
-    db.water_element.clear();
-    db.manager.clear();
-    db.consumer_details.clear();
-    db.payment.clear();
+const emptyDB = async () => {
+    await db.zone.clear();
+    await db.consumer.clear();
+    await db.ticket.clear();
+    await db.water_element.clear();
+    await db.manager.clear();
+    await db.consumer_details.clear();
+    await db.payment.clear();
 }
 
 
@@ -197,15 +198,23 @@ let cacheCleanedPromise = () => {
     });
 }
 
-const isPage = (event,tab) => {
-    for(const ext of tab) {
-        if(event.request.url.includes(ext)) {
+const isDoublePages = (url) => {
+    for(const ext of doublePages) {
+        if(url.includes(ext)) {
             return true;
         }
     }
     return false;
 }
 
+const isOnlinePages = (url) => {
+    for(const ext of onlinePages) {
+        if(url.includes(ext)) {
+            return true;
+        }
+    }
+    return false;
+};
 
 
 /*********************************************************************************
@@ -221,41 +230,46 @@ self.addEventListener('activate', async () => {
     await addCache(cacheVersion, ['/offline/']);
     await addCache(userCache, onlinePages);
     await addCache(userCache, offlinePages);
-    populateDB();
+    await populateDB();
+    connected = true;
 });
 
-const handlerCb = async ({url, request, event, params}) => {
-  response = await caches.open('user_1').then(cache => {
-      return cache.match('gestion/offline');
-  })
-  console.log(response)
-  return new Response(response.body)
-};
-
-/*workbox.routing.registerRoute(
-  new RegExp('/gestion/'),
-  handlerCb
-);
-
-*/
 
 self.addEventListener('fetch', async event => {
     const {request} = event;
     const url = event.request.url;
 
-    if (url.includes('/static/')) {
+    if (!connected) {
+        fetch('http://127.0.0.1:8000/api/graph/?type=consumer_gender_pie')
+            .then(async networkResponse => {
+                if(networkResponse.status == 200) {
+                    connected = true;
+                    if(!dataLoaded) {
+                        await addCache(userCache, onlinePages);
+                        await addCache(userCache, offlinePages);
+                        await populateDB();
+                        dataLoaded = true;
+                        console.log('populate');
+                    }
+                }
+            })
+    }
+
+    if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
     }
-    else if (url.includes('/logout/')) {
+    else if (url.includes('/logout')) {
         await cacheCleanedPromise();
+        await emptyDB();
+        connected = false;
+        dataLoaded = false;
         event.respondWith(
             fetch(event.request).then(networkResponse => {
-                emptyDB();
-                connected = false;
+                offlineMode = false;
+                needDisconnect = false;
                 return networkResponse;
             }).catch(() => {
                 needDisconnect = true;
-                emptyDB();
                 return caches.match('/offline/');
             })
         );
@@ -270,56 +284,140 @@ self.addEventListener('fetch', async event => {
             })
         )
     }
-    else if (!offlineMode) {
-        console.log('online part');
-        if(connected === false) {
-            connected = true;
-            populateDB();
-            await addCache(userCache, onlinePages);
-            await addCache(cacheVersion, ['/offline/']);
-        }
-        if(url.includes('/accueil/'|'/profil/editer'|'/aide/')) {
+    else if (url.includes('/api/table') || url.includes('.png')) {
+        event.respondWith(new workbox.strategies.NetworkOnly().handle({event, request}));
+    }
+    else if (offlineMode) {
+        if(url.includes('/reseau')) {
             event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event,request})
-                    .catch(() => {
-                        return caches.match('/offline/')
-                    })
+                caches.open('user_1').then(async cache => {
+                    let response = await cache.match('/reseau/offline') || caches.match('/offline/');
+                    return new Response(response.body);
+                })
             )
         }
-        else {
-            new workbox.strategies.CacheFirst({cacheName:'user_v1'}).handle({event, request})
-                .catch(() => {
-                    if(url.includes('/reseau/')) {return caches.match('/reseau/offline')}
-                    else if(url.includes('/gestion/')) {return caches.match('/gestion/offline')}
-                    else if(url.includes('/historique/')) {return caches.match('/historique/offline')}
-                    else if(url.includes('/rapport/')) {return caches.match('/rapport/offline')}
-                    else if(url.includes('/consommateurs/')) {return caches.match('/consommateurs/offline')}
-                    else if(url.includes('/finances/')) {return caches.match('/finances/offline')}
+        else if (url.includes('/gestion')) {
+            event.respondWith(
+                caches.open('user_1').then(async cache => {
+                    let response = await cache.match('/gestion/offline') || caches.match('/offline/');
+                    return new Response(response.body);
                 })
+            )
+        }
+        else if (url.includes('/rapport')) {
+            event.respondWith(
+                caches.open('user_1').then(async cache => {
+                    let response = await cache.match('/rapport/offline') || caches.match('/offline/');
+                    return new Response(response.body);
+                })
+            )
+        }
+        else if (url.includes('/consommateurs')) {
+            event.respondWith(
+                caches.open('user_1').then(async cache => {
+                    let response = await cache.match('/consommateurs/offline') || caches.match('/offline/');
+                    return new Response(response.body);
+                })
+            )
+        }
+        else if (url.includes('/finances')) {
+            event.respondWith(
+                caches.open('user_1').then(async cache => {
+                    let response = await cache.match('/finances/offline') || caches.match('/offline/');
+                    return new Response(response.body);;
+                })
+            )
+        }
+        else if (url.includes('/login')) {
+            event.respondWith(
+              new workbox.strategies.NetworkOnly().handle({event, request})
+                  .catch(async () => {
+                        response = await caches.open('user_1').then(cache => {
+                            return cache.match('/offline/');
+                        })
+                        return new Response(response.body)
+                    })
+            );
+        }
+        else if (url.includes('/api/graph')) {
+            event.respondWith(new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request}));
+        }
+        else {
+            event.respondWith(
+                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
+                    .catch(() => {
+                        return caches.match('/offline/');
+                    })
+            );
         }
     }
     else {
-        if(false) {
-            console.log("first part: " +url);
-            event.respondWith(new workbox.strategies.CacheOnly({cacheName:'user_1'}).handle({event, request})
-                .catch(() => {
-                    return caches.match('/gestion/offline');
-                })
-            )
-        }
-        else {
-            console.log("second part: " +url);
+        if(url.includes('/reseau')) {
             event.respondWith(
-                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event,request})
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
                     .catch(async () => {
                         response = await caches.open('user_1').then(cache => {
-                            return cache.match('gestion/offline');
+                            return cache.match('/reseau/offline') || caches.match('/offline/');
+                        })
+                        return new Response(response.body)
+                    })
+            );
+        }
+        else if (url.includes('/gestion')) {
+            event.respondWith(
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                    .catch(async () => {
+                        response = await caches.open('user_1').then(cache => {
+                            return cache.match('/gestion/offline') || caches.match('/offline/');
                         })
                         return new Response(response.body)
                     })
             )
         }
+        else if (url.includes('/rapport')) {
+            event.respondWith(
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                    .catch(async () => {
+                        response = await caches.open('user_1').then(cache => {
+                            return cache.match('/rapport/offline') || caches.match('/offline/');
+                        })
+                        return new Response(response.body)
+                    })
+            )
+        }
+        else if (url.includes('/consommateurs')) {
+            event.respondWith(
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                    .catch(async () => {
+                        response = await caches.open('user_1').then(cache => {
+                            return cache.match('/consommateurs/offline') || caches.match('/offline/');
+                        })
+                        return new Response(response.body)
+                    })
+            )
+        }
+        else if (url.includes('/finances')) {
+            event.respondWith(
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                    .catch(async () => {
+                        response = await caches.open('user_1').then(cache => {
+                            return cache.match('/finances/offline') || caches.match('/offline/');
+                        })
+                        return new Response(response.body)
+                    })
+            )
+        }
+        else if (url.includes('/api/graph')) {
+            event.respondWith(new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request}));
+        }
+        else {
+            event.respondWith(
+                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
+                    .catch(() => {
+                        return caches.match('/offline/');
+                    })
+            );
+        }
     }
-
-
 });
+
