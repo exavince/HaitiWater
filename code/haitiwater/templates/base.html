@@ -71,8 +71,7 @@
             <script src="{% static "javascripts/tables/genericTableHandler.js" %}"></script>
             <script src="{% static "javascripts/tables/genericModalHandler.js" %}"></script>
             <script src="{% static "javascripts/sw.install.js" %}"></script>
-            <script type="text/javascript" src="{% static 'javascripts/idb.js' %}"></script>
-            <script type="text/javascript" src="{% static 'javascripts/idbop.js' %}"></script>
+            <script src="{% static 'javascripts/idb.js' %}"></script>
         {% endcompress %}
 
         {% block page_import %}
@@ -113,6 +112,18 @@
                                     </div>
                                     <div class="content">
                                         <ul id="notification-content"></ul>
+                                    </div>
+                                </div>
+                            </li>
+                            <li>
+                                <a id="offline-parent" href="#" class="dropdown-toggle notification-icon" data-toggle="dropdown">
+                                    <i class="fa fa-satellite-dish"></i>
+                                    <span id="alert-offline" class="badge">o</span>
+                                </a>
+                                <div class="dropdown-menu notification-menu">
+                                    <div class="notification-title">
+                                        <span class="pull-right label label-default" id="offline-badge">?</span>
+                                        Mode de navigation
                                     </div>
                                 </div>
                             </li>

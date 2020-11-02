@@ -5,6 +5,12 @@ from ..utils.get_data import is_user_zone, is_user_fountain, get_outlets
 
 success_200 = HttpResponse(status=200)
 
+def check_authentication(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("notConnected", status=403)
+    else:
+        return HttpResponse("connected", status=200)
+
 
 def get_zone(request):
     if not request.user.is_authenticated:

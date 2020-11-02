@@ -14,5 +14,5 @@ urlpatterns = [
     url(r'details/$', exports.details, name="details"),
     url(r'outlets/', exports.outlets, name="outlets"),
     url(r'get-zone/', offline.get_zone, name="get-zone"),
-    url(r'infos', offline.details, name="get-infos"),
+    url(r'check-authentication', offline.check_authentication, name="check_authentication"),
 ]

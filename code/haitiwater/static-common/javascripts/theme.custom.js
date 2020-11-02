@@ -16,14 +16,19 @@ $( document ).ready(function() {
 
     $('[data-toggle="tooltip"]').tooltip();
 
+    if(localStorage.getItem('offlineMode') === null) {
+        localStorage.setItem('offlineMode', 'false');
+    }
+
     setupNotifications();
+    setupOfflineMode();
+
 });
 
 /**
  * Requests notification computings and modifies the counters to alert the user
  */
 function setupNotifications(){
-    let notificationParent = $('#notification-parent');
     let notificationList = $('#notification-content');
     let alertBadge = $('#alert-badge');
     let classicBadge = $('#classic-badge');
@@ -35,12 +40,50 @@ function setupNotifications(){
     alertBadge.html(notificationCounter);
 
     if (notificationCounter > 0){
-        notificationParent.find('.badge').removeClass('hidden');
+        alertBadge.removeClass('hidden');
     }
     else {
-        notificationParent.find('.badge').addClass('hidden');
+        alertBadge.addClass('hidden');
     }
 
+}
+
+function setupOfflineMode(){
+    let offlineParent = $('#offline-parent');
+    let alertOffline = $('#alert-offline');
+    let offlineBadge = $('#offline-badge');
+    const channel = new BroadcastChannel('sw-messages');
+
+    if (localStorage.getItem('offlineMode') === 'true'){
+        alertOffline.css('background-color', "red");
+        offlineBadge.html("Offline");
+        alertOffline.html("X");
+    }
+    else {
+        offlineBadge.html("Online");
+        alertOffline.html("V");
+        alertOffline.css('background-color', "green");
+    }
+
+    offlineParent.on('click', () => {
+        if (localStorage.getItem('offlineMode') === 'false'){
+            localStorage.setItem('offlineMode', 'true');
+            alertOffline.css('background-color', "red");
+            offlineBadge.html("Offline");
+            alertOffline.html("X");
+        }
+        else {
+            localStorage.setItem('offlineMode', 'false');
+            offlineBadge.html("Online");
+            alertOffline.html("V");
+            alertOffline.css('background-color', "green");
+        }
+        channel.postMessage({
+            title: 'navigationMode',
+            offlineMode: localStorage.getItem('offlineMode'),
+        });
+        console.log('Mode sended by client offlineMode = ' + localStorage.getItem('offlineMode'));
+    });
 }
 
 /**
