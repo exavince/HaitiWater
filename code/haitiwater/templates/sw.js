@@ -12,8 +12,7 @@ const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
 const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
-const channel = new BroadcastChannel('sw-messages');
-let cookieDate = null;
+let channel = new BroadcastChannel('sw-messages');
 let needDisconnect = false;
 let connected = false;
 let dataLoaded = false;
@@ -287,22 +286,15 @@ const getOfflineData = () => {
         addCache(userCache, offlinePages),
         addCache(cacheVersion, staticFiles),
         populateDB(),
-    ]).then(() => {
+    ]).then(async () => {
         dataLoaded = true;
         lastUpdate = {
-            year: new Date().getFullYear(),
-            month: new Date().getMonth()+1,
-            day: new Date().getDate(),
-            hours: new Date().getHours(),
-            minutes: new Date().getMinutes(),
+            year: await new Date().getFullYear(),
+            month: await new Date().getMonth()+1,
+            day: await new Date().getDate(),
+            hours: await new Date().getHours(),
+            minutes: await new Date().getMinutes(),
         }
-        channel.postMessage({
-                title: 'updateIndexDB',
-                date: lastUpdate,
-        });
-        fetch('/api/graph/?type=consumer_gender_pie').then(networkResponse => {
-            caches.open(userCache).then(cache => {cache.addAll(['/api/graph/?type=consumer_gender_pie', '/api/graph/?type=average_monthly_volume_per_zone'])});
-        })
     })
 }
 
@@ -323,10 +315,10 @@ self.addEventListener('activate', async () => {
         fetch('http://127.0.0.1:8000/api/check-authentication')
             .then(async networkResponse => {
                 if(networkResponse.status == 200) {
-                    console.log('test auth', networkResponse.status);
                     connected = true;
                     if (!dataLoaded) {
                         await getOfflineData();
+                        dataLoaded = true;
                     }
                 }
             })
@@ -342,12 +334,13 @@ self.addEventListener('fetch', async event => {
     const url = event.request.url;
 
     if (!connected) {
-        fetch('http://127.0.0.1:8000/api/check-authentication')
+        await fetch('http://127.0.0.1:8000/api/check-authentication')
             .then(async networkResponse => {
                 if(networkResponse.status == 200) {
                     connected = true;
-                    if (dataLoaded = false) {
+                    if (!dataLoaded) {
                         await getOfflineData();
+                        dataLoaded = true;
                     }
                 }
             })
@@ -427,7 +420,7 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
                 caches.open('user_1').then(async cache => {
                     let response = await cache.match('/finances/offline') || caches.match('/offline/');
-                    return new Response(response.body);;
+                    return new Response(response.body);
                 })
             )
         }
@@ -526,9 +519,13 @@ self.addEventListener('fetch', async event => {
 
 channel.addEventListener('message', event => {
   if (event.data.title === 'navigationMode') {
-	    if(event.data.offlineMode === 'true') {offlineMode = true;}
-	    else {offlineMode = false}
+	    offlineMode = event.data.offlineMode === 'true';
     }
-	console.log(offlineMode, event.data);
+  else if(event.data.title === 'updatedDB') {
+      channel.postMessage({
+                title: 'updateIndexDB',
+                date: lastUpdate
+        });
+  }
 });
 
