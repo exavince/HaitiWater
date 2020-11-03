@@ -88,14 +88,12 @@ function setupOfflineMode(channel){
             alertOffline.css('background-color', "red");
             offlineBadge.html("Offline");
             alertOffline.html("X");
-            $('flavoured-part').css('background-color', '#293241');
         }
         else {
             localStorage.setItem('offlineMode', 'false');
             offlineBadge.html("Online");
             alertOffline.html("V");
             alertOffline.css('background-color', "green");
-            $('#flavoured-part').css('background-color', 'red');
         }
         channel.postMessage({
             title: 'navigationMode',
