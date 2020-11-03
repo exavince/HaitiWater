@@ -16,12 +16,29 @@ $( document ).ready(function() {
 
     $('[data-toggle="tooltip"]').tooltip();
 
+    const channel = new BroadcastChannel('sw-messages');
     if(localStorage.getItem('offlineMode') === null) {
         localStorage.setItem('offlineMode', 'false');
     }
 
+    channel.addEventListener('message', event => {
+        if (event.data.title === 'updateIndexDB') {
+            console.log("date try: ", event.data);
+            if(event.data.date !== null) {
+                date = event.data.date;
+                $('#last-update').html(
+                    date.day.toString() + "-" +
+                    date.month.toString() + "-" +
+                    date.year.toString() + "  " +
+                    date.hours.toString() + ":" +
+                    date.minutes.toString()
+                );
+            }
+        }
+});
+
     setupNotifications();
-    setupOfflineMode();
+    setupOfflineMode(channel);
 
 });
 
@@ -48,11 +65,10 @@ function setupNotifications(){
 
 }
 
-function setupOfflineMode(){
+function setupOfflineMode(channel){
     let offlineParent = $('#offline-parent');
     let alertOffline = $('#alert-offline');
     let offlineBadge = $('#offline-badge');
-    const channel = new BroadcastChannel('sw-messages');
 
     if (localStorage.getItem('offlineMode') === 'true'){
         alertOffline.css('background-color', "red");
@@ -96,7 +112,7 @@ function notificationMonthlyReport(notificationList){
     if (hasMonthlyReport){
         let title = 'Rapport en attente';
         let msg = 'Un rapport est en attente, visitez la page des rapports pour l\'envoyer.'
-        monthlyReportNotification = formatNotification(title, msg)
+        let monthlyReportNotification = formatNotification(title, msg)
         appendNotification(notificationList, monthlyReportNotification);
         return true;
     }

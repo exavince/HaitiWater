@@ -13,10 +13,12 @@ const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/f
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
 const channel = new BroadcastChannel('sw-messages');
+let cookieDate = null;
 let needDisconnect = false;
 let connected = false;
 let dataLoaded = false;
-let offlineMode = false;
+let offlineMode = false
+let lastUpdate = null;
 let dbVersion = 1;
 let db = new Dexie("user_db");
 const staticFiles = [
@@ -224,13 +226,13 @@ const populateDB = () => {
 }
 
 const emptyDB = async () => {
-    await db.zone.clear();
-    await db.consumer.clear();
-    await db.ticket.clear();
-    await db.water_element.clear();
-    await db.manager.clear();
-    await db.consumer_details.clear();
-    await db.payment.clear();
+    db.zone.clear();
+    db.consumer.clear();
+    db.ticket.clear();
+    db.water_element.clear();
+    db.manager.clear();
+    db.consumer_details.clear();
+    db.payment.clear();
 }
 
 
@@ -278,6 +280,32 @@ const isOnlinePages = (url) => {
     return false;
 };
 
+const getOfflineData = () => {
+    Promise.all([
+        addCache(cacheVersion, ['/offline/']),
+        addCache(userCache, onlinePages),
+        addCache(userCache, offlinePages),
+        addCache(cacheVersion, staticFiles),
+        populateDB(),
+    ]).then(() => {
+        dataLoaded = true;
+        lastUpdate = {
+            year: new Date().getFullYear(),
+            month: new Date().getMonth()+1,
+            day: new Date().getDate(),
+            hours: new Date().getHours(),
+            minutes: new Date().getMinutes(),
+        }
+        channel.postMessage({
+                title: 'updateIndexDB',
+                date: lastUpdate,
+        });
+        fetch('/api/graph/?type=consumer_gender_pie').then(networkResponse => {
+            caches.open(userCache).then(cache => {cache.addAll(['/api/graph/?type=consumer_gender_pie', '/api/graph/?type=average_monthly_volume_per_zone'])});
+        })
+    })
+}
+
 
 /*********************************************************************************
  * Event listener
@@ -291,30 +319,14 @@ self.addEventListener('install', async () => {
 
 
 self.addEventListener('activate', async () => {
-    await Promise.all([
-        addCache(cacheVersion, ['/offline/']),
-        addCache(userCache, onlinePages),
-        addCache(userCache, offlinePages),
-        addCache(cacheVersion, staticFiles),
-        populateDB(),
-    ]).then(() => {
-        dataLoaded = true;
-    });
-
     if (!connected) {
         fetch('http://127.0.0.1:8000/api/check-authentication')
             .then(async networkResponse => {
                 if(networkResponse.status == 200) {
+                    console.log('test auth', networkResponse.status);
                     connected = true;
-                    if (dataLoaded = false) {
-                        Promise.all([
-                            addCache(cacheVersion, ['/offline/']),
-                            addCache(userCache, onlinePages),
-                            addCache(userCache, offlinePages),
-                            populateDB()
-                        ]).then(() => {
-                            dataLoaded = true;
-                        });
+                    if (!dataLoaded) {
+                        await getOfflineData();
                     }
                 }
             })
@@ -335,14 +347,7 @@ self.addEventListener('fetch', async event => {
                 if(networkResponse.status == 200) {
                     connected = true;
                     if (dataLoaded = false) {
-                        Promise.all([
-                            addCache(cacheVersion, ['/offline/']),
-                            addCache(userCache, onlinePages),
-                            addCache(userCache, offlinePages),
-                            populateDB()
-                        ]).then(() => {
-                            dataLoaded = true;
-                        })
+                        await getOfflineData();
                     }
                 }
             })
@@ -510,7 +515,7 @@ self.addEventListener('fetch', async event => {
         }
         else {
             event.respondWith(
-                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
+                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
                     .catch(() => {
                         return caches.match('/offline/');
                     })
