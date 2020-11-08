@@ -13,6 +13,7 @@ const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/f
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
 let channel = new BroadcastChannel('sw-messages');
+let lastPage = null;
 let needDisconnect = false;
 let connected = false;
 let dataLoaded = false;
@@ -96,6 +97,8 @@ db.version(dbVersion).stores({
     manager:'id,nom,prenom,telephone,mail,role,zone,unknown',
     consumer_details:'consumer_id,amount_due,validity',
     payment:'id,data,value,source,user_id',
+    edit_row:'++id, url, init, unsync',
+    push_row:'++id, url, init, unsync',
 });
 
 const consumerHandler = async () => {
@@ -303,7 +306,6 @@ const getOfflineData = () => {
  * Event listener
  *********************************************************************************/
 
-
 self.addEventListener('install', async () => {
     // Cache the offline page by default
     await cacheCleanedPromise();
@@ -327,7 +329,6 @@ self.addEventListener('activate', async () => {
             })
     }
 });
-
 
 self.addEventListener('fetch', async event => {
     const {request} = event;
@@ -379,9 +380,6 @@ self.addEventListener('fetch', async event => {
                 return caches.match('/offline/');
             })
         )
-    }
-    else if (url.includes('/api/table') || url.includes('.png')) {
-        event.respondWith(new workbox.strategies.NetworkOnly().handle({event, request}));
     }
     else if (offlineMode) {
         if(url.includes('/reseau')) {
@@ -449,8 +447,9 @@ self.addEventListener('fetch', async event => {
     }
     else {
         if(url.includes('/reseau')) {
+            lastPage = '/reseau/offline';
             event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
                         response = await caches.open('user_1').then(cache => {
                             return cache.match('/reseau/offline') || caches.match('/offline/');
@@ -460,8 +459,9 @@ self.addEventListener('fetch', async event => {
             );
         }
         else if (url.includes('/gestion')) {
+            lastPage = '/gestion/offline';
             event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
                         response = await caches.open('user_1').then(cache => {
                             return cache.match('/gestion/offline') || caches.match('/offline/');
@@ -471,8 +471,9 @@ self.addEventListener('fetch', async event => {
             )
         }
         else if (url.includes('/rapport')) {
+            lastPage = '/rapport/offline';
             event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
                         response = await caches.open('user_1').then(cache => {
                             return cache.match('/rapport/offline') || caches.match('/offline/');
@@ -482,8 +483,9 @@ self.addEventListener('fetch', async event => {
             )
         }
         else if (url.includes('/consommateurs')) {
+            lastPage = '/consommateurs/offline';
             event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
                         response = await caches.open('user_1').then(cache => {
                             return cache.match('/consommateurs/offline') || caches.match('/offline/');
@@ -493,8 +495,9 @@ self.addEventListener('fetch', async event => {
             )
         }
         else if (url.includes('/finances')) {
+            lastPage = '/finances/offline';
             event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
+                new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
                         response = await caches.open('user_1').then(cache => {
                             return cache.match('/finances/offline') || caches.match('/offline/');
@@ -503,8 +506,31 @@ self.addEventListener('fetch', async event => {
                     })
             )
         }
+        else if (url.includes('/login')) {
+            event.respondWith(
+              new workbox.strategies.NetworkOnly().handle({event, request})
+                  .catch(async () => {
+                        response = await caches.open(cacheVersion).then(cache => {
+                            return cache.match('/offline/');
+                        })
+                        return new Response(response.body)
+                    })
+            );
+        }
         else if (url.includes('/api/graph')) {
             event.respondWith(new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request}));
+        }
+        else if (url.includes('/api/table') || url.includes('.png')) {
+            event.respondWith(
+                new workbox.strategies.NetworkOnly().handle({event, request})
+                    .catch(() => {
+                        /*caches.open('user_1').then(async cache => {
+                            let response = await cache.match(lastPage) || caches.match('/offline/');
+                            return new Response(response.body);
+                        })*/
+                        console.error('cannot reach the dataTable online');
+                    })
+            );
         }
         else {
             event.respondWith(
@@ -518,14 +544,27 @@ self.addEventListener('fetch', async event => {
 });
 
 channel.addEventListener('message', event => {
-  if (event.data.title === 'navigationMode') {
+    if (event.data.title === 'navigationMode') {
 	    offlineMode = event.data.offlineMode === 'true';
     }
-  else if(event.data.title === 'updatedDB') {
-      channel.postMessage({
-                title: 'updateIndexDB',
-                date: lastUpdate
+    else if(event.data.title === 'updatedDB') {
+        channel.postMessage({
+            title: 'updateIndexDB',
+            date: lastUpdate
         });
-  }
+    }
 });
 
+self.addEventListener('sync', async event => {
+    if (event.tag === 'editRow') {
+        let tab = await db.edit_row.toArray();
+        console.log('mytab', tab);
+        tab.forEach(element => {
+            fetch(element.url, element.init).then(() => {
+                db.edit_row.delete(element.id);
+            }).catch(err => {
+                console.error('Cannot reach the network, data still need to be pushed');
+            })
+        });
+    }
+});

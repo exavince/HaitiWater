@@ -48,6 +48,7 @@
             <link rel="stylesheet" href="{% static "stylesheets/skins/default.css" %}"/>
         {% endcompress %}
 
+        <script src="https://unpkg.com/dexie@3.0.2/dist/dexie.js"></script>
         <!-- Vendors JS -->
         {% compress js %}
             <script src="{% static "vendor/jquery/jquery.js" %}"></script>
@@ -71,7 +72,6 @@
             <script src="{% static "javascripts/tables/genericTableHandler.js" %}"></script>
             <script src="{% static "javascripts/tables/genericModalHandler.js" %}"></script>
             <script src="{% static "javascripts/sw.install.js" %}"></script>
-            <script src="{% static 'javascripts/idb.js' %}"></script>
         {% endcompress %}
 
         {% block page_import %}

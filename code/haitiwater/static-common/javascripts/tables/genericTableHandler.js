@@ -53,31 +53,53 @@ function drawDataTable(tableName){
 function removeElement(table, id, otherParameters){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/remove/";
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                console.log("POST error on remove element");
-                new PNotify({
-                    title: 'Échec!',
-                    text: xhttp.responseText,
-                    type: 'error'
-                });
-            } else {
-                new PNotify({
-                    title: 'Succès!',
-                    text: 'Élément supprimé avec succès',
-                    type: 'success'
-                });
-                drawDataTable(table);
-            }
-        }
-    };
     if (typeof otherParameters === 'undefined') { otherParameters = ''; }
-    xhttp.send("table=" + table + "&id=" + id + otherParameters);
+    let request = "table=" + table + "&id=" + id + otherParameters;
+    var myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: request
+    };
+
+    navigator.serviceWorker.ready.then(async swRegistration => {
+        console.log('Entry inside add');
+        let dexie = await new Dexie('user_db');
+        console.log('Entry inside add 2');
+        let db = await dexie.open();
+        let db_table = db.table('edit_row');
+        console.log(db);
+        db_table.put({
+            url:postURL,
+            init:myInit,
+            unsync:true
+        });
+        new PNotify({
+            title: 'Succès!',
+            text: 'Élément supprimé avec succès',
+            type: 'success'
+        });
+        drawDataTable(table);
+        return swRegistration.sync.register('editRow');
+    }).catch(() => {
+        fetch(postURL, myInit).then(response => {
+            new PNotify({
+                title: 'Succès!',
+                text: 'Élément supprimé avec succès',
+                type: 'success'
+            });
+            drawDataTable(table);
+        }).catch(err => {
+            console.log("POST error on remove element");
+            new PNotify({
+                title: 'Échec!',
+                text: err,
+                type: 'error'
+            });
+        });
+    })
 }
 
 /**
@@ -145,22 +167,45 @@ function postNewRow(table, callback){
         return false;
     }
     beforeModalRequest();
+
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/add/";
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                if(xhttp.responseText !== ''){
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = xhttp.responseText;
-                } else {
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = xhttp.status + ': ' + xhttp.statusText;
-                }
-            } else {
+    var myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: request
+    };
+
+    navigator.serviceWorker.ready.then(async swRegistration => {
+        console.log('Entry inside add');
+        let dexie = await new Dexie('user_db');
+        console.log('Entry inside add 2');
+        let db = await dexie.open();
+        let db_table = db.table('edit_row');
+        console.log(db);
+        db_table.put({
+            url:postURL,
+            init:myInit,
+            unsync:true
+        });
+        console.log('Entry inside add 3');
+        document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+        dismissModal();
+        new PNotify({
+            title: 'Succès!',
+            text: 'Élément ajouté avec succès',
+            type: 'success'
+        });
+        drawDataTable(table);
+        console.log('Entry inside add 4');
+        return swRegistration.sync.register('editRow');
+    }).catch(() => {
+        console.log('Entry catch');
+        fetch(postURL, myInit)
+            .then(response => {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
                 dismissModal();
                 new PNotify({
@@ -169,12 +214,18 @@ function postNewRow(table, callback){
                     type: 'success'
                 });
                 drawDataTable(table);
-            }
-            afterModalRequest();
-            typeof callback === 'function' && callback(xhttp.responseText);
-        }
-    };
-    xhttp.send(request)
+            })
+            .catch(err => {
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+                if(xhttp.responseText !== ''){
+                    document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+                } else {
+                    document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+                }
+            })
+    });
+
+    afterModalRequest();
 }
 
 /**
@@ -187,35 +238,65 @@ function postEditRow(table, callback){
         return false;
     }
     beforeModalRequest();
+
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let postURL = baseURL + "/api/edit/?" + request;
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                if (xhttp.responseText) {
+    let postURL = baseURL + "/api/edit/?";
+    var myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: request
+    };
+
+    navigator.serviceWorker.ready.then(async swRegistration => {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('edit_row');
+        db_table.put({
+            url:postURL,
+            init:myInit,
+            unsync:true,
+        });
+        document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+        dismissModal();
+        new PNotify({
+            title: 'Succès!',
+            text: 'Élément édité avec succès',
+            type: 'success'
+        });
+        drawDataTable(table);
+        return swRegistration.sync.register('editRow');
+
+    }).catch(() => {
+        fetch(postURL,myInit)
+            .then(response => {
+                console.log('omh')
+                if (response.status !== 200) {
                     console.log("POST error on new element");
                     document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = xhttp.responseText;
+                    document.getElementById("form-" + table + "-error-msg").innerHTML = error;
                 }
-            } else {
-                document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                dismissModal();
-                new PNotify({
-                    title: 'Succès!',
-                    text: 'Élément édité avec succès',
-                    type: 'success'
-                });
+                else {
+                    document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+                    dismissModal();
+                    new PNotify({
+                        title: 'Succès!',
+                        text: 'Élément édité avec succès',
+                        type: 'success'
+                    });
+                }
                 drawDataTable(table);
-            }
-            afterModalRequest();
-            typeof callback === 'function' && callback();
-        }
-    };
-    xhttp.send(request)
+            })
+            .catch(error => {
+                console.log("POST error on new element");
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+                document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+            })
+    })
+    afterModalRequest();
+    typeof callback === 'function' && callback();
 }
 
 /**
