@@ -83,6 +83,7 @@ const staticFiles = [
   '/static/zoneTableGenerator.js',
   '/static/CACHE/css/29de54cb81d2.css',
   '/static/CACHE/js/0a55f327dfed.js',
+    '/static/CACHE/js/bf8351900f38.js',
 ];
 
 /*********************************************************************************
@@ -97,8 +98,7 @@ db.version(dbVersion).stores({
     manager:'id,nom,prenom,telephone,mail,role,zone,unknown',
     consumer_details:'consumer_id,amount_due,validity',
     payment:'id,data,value,source,user_id',
-    edit_row:'++id, url, init, unsync',
-    push_row:'++id, url, init, unsync',
+    update_queue:'++id, url, init, unsync',
 });
 
 const consumerHandler = async () => {
@@ -316,7 +316,7 @@ self.addEventListener('activate', async () => {
     if (!connected) {
         fetch('http://127.0.0.1:8000/api/check-authentication')
             .then(async networkResponse => {
-                if(networkResponse.status == 200) {
+                if(networkResponse.status === 200) {
                     connected = true;
                     if (!dataLoaded) {
                         await getOfflineData();
@@ -337,7 +337,7 @@ self.addEventListener('fetch', async event => {
     if (!connected) {
         await fetch('http://127.0.0.1:8000/api/check-authentication')
             .then(async networkResponse => {
-                if(networkResponse.status == 200) {
+                if(networkResponse.status === 200) {
                     connected = true;
                     if (!dataLoaded) {
                         await getOfflineData();
@@ -385,51 +385,45 @@ self.addEventListener('fetch', async event => {
         if(url.includes('/reseau')) {
             event.respondWith(
                 caches.open('user_1').then(async cache => {
-                    let response = await cache.match('/reseau/offline') || caches.match('/offline/');
-                    return new Response(response.body);
+                    return await cache.match('/reseau/offline');
                 })
             )
         }
         else if (url.includes('/gestion')) {
             event.respondWith(
                 caches.open('user_1').then(async cache => {
-                    let response = await cache.match('/gestion/offline') || caches.match('/offline/');
-                    return new Response(response.body);
+                    return await cache.match('/gestion/offline');
                 })
             )
         }
         else if (url.includes('/rapport')) {
             event.respondWith(
                 caches.open('user_1').then(async cache => {
-                    let response = await cache.match('/rapport/offline') || caches.match('/offline/');
-                    return new Response(response.body);
+                    return await cache.match('/rapport/offline');
                 })
             )
         }
         else if (url.includes('/consommateurs')) {
             event.respondWith(
                 caches.open('user_1').then(async cache => {
-                    let response = await cache.match('/consommateurs/offline') || caches.match('/offline/');
-                    return new Response(response.body);
+                    return await cache.match('/consommateurs/offline');
                 })
             )
         }
         else if (url.includes('/finances')) {
             event.respondWith(
                 caches.open('user_1').then(async cache => {
-                    let response = await cache.match('/finances/offline') || caches.match('/offline/');
-                    return new Response(response.body);
+                    return await cache.match('/finances/offline');
                 })
             )
         }
         else if (url.includes('/login')) {
             event.respondWith(
-              new workbox.strategies.NetworkOnly().handle({event, request})
-                  .catch(async () => {
-                        response = await caches.open('user_1').then(cache => {
+                new workbox.strategies.NetworkOnly().handle({event, request})
+                    .catch(async () => {
+                        return await caches.open('user_1').then(cache => {
                             return cache.match('/offline/');
                         })
-                        return new Response(response.body)
                     })
             );
         }
@@ -451,10 +445,9 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
-                        response = await caches.open('user_1').then(cache => {
-                            return cache.match('/reseau/offline') || caches.match('/offline/');
+                        return await caches.open('user_1').then(cache => {
+                            return cache.match('/reseau/offline');
                         })
-                        return new Response(response.body)
                     })
             );
         }
@@ -463,10 +456,9 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
-                        response = await caches.open('user_1').then(cache => {
-                            return cache.match('/gestion/offline') || caches.match('/offline/');
+                        return await caches.open('user_1').then(cache => {
+                            return cache.match('/gestion/offline');
                         })
-                        return new Response(response.body)
                     })
             )
         }
@@ -475,10 +467,20 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
-                        response = await caches.open('user_1').then(cache => {
-                            return cache.match('/rapport/offline') || caches.match('/offline/');
+                        return await caches.open('user_1').then(cache => {
+                            return cache.match('/rapport/offline');
                         })
-                        return new Response(response.body)
+                    })
+            )
+        }
+        else if (url.includes('/historique')) {
+            lastPage = '/historique/offline';
+            event.respondWith(
+                new workbox.strategies.NetworkOnly().handle({event, request})
+                    .catch(async () => {
+                        return await caches.open('user_1').then(cache => {
+                            return cache.match('/offline/');
+                        });
                     })
             )
         }
@@ -487,10 +489,9 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
-                        response = await caches.open('user_1').then(cache => {
-                            return cache.match('/consommateurs/offline') || caches.match('/offline/');
+                        return await caches.open('user_1').then(cache => {
+                            return cache.match('/consommateurs/offline');
                         })
-                        return new Response(response.body)
                     })
             )
         }
@@ -499,10 +500,9 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
-                        response = await caches.open('user_1').then(cache => {
-                            return cache.match('/finances/offline') || caches.match('/offline/');
+                        return await caches.open('user_1').then(cache => {
+                            return cache.match('/finances/offline');
                         })
-                        return new Response(response.body)
                     })
             )
         }
@@ -510,10 +510,9 @@ self.addEventListener('fetch', async event => {
             event.respondWith(
               new workbox.strategies.NetworkOnly().handle({event, request})
                   .catch(async () => {
-                        response = await caches.open(cacheVersion).then(cache => {
+                        return await caches.open(cacheVersion).then(cache => {
                             return cache.match('/offline/');
                         })
-                        return new Response(response.body)
                     })
             );
         }
@@ -525,8 +524,7 @@ self.addEventListener('fetch', async event => {
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(() => {
                         /*caches.open('user_1').then(async cache => {
-                            let response = await cache.match(lastPage) || caches.match('/offline/');
-                            return new Response(response.body);
+                            return await cache.match(lastPage);
                         })*/
                         console.error('cannot reach the dataTable online');
                     })
@@ -556,14 +554,23 @@ channel.addEventListener('message', event => {
 });
 
 self.addEventListener('sync', async event => {
-    if (event.tag === 'editRow') {
-        let tab = await db.edit_row.toArray();
-        console.log('mytab', tab);
+    if (event.tag === 'updateQueue') {
+        let tab = await db.update_queue.toArray();
+
         tab.forEach(element => {
-            fetch(element.url, element.init).then(() => {
-                db.edit_row.delete(element.id);
-            }).catch(err => {
-                console.error('Cannot reach the network, data still need to be pushed');
+            fetch(element.url, element.init).then(async () => {
+                console.log('[SYNC]', tab);
+                db.update_queue.delete(element.id);
+                channel.postMessage({
+                    title:'notification',
+                    unsync: await db.update_queue.count()
+                });
+            }).catch(async () => {
+                console.error('[SYNC]','Cannot reach the network, data still need to be pushed');
+                channel.postMessage({
+                    title:'notification',
+                    unsync: await db.update_queue.count()
+                });
             })
         });
     }

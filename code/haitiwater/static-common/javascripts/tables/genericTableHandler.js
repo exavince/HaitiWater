@@ -12,8 +12,7 @@ window.onload = function() {
 };
 
 function getAjaxController(dataURL){
-    return (
-    {
+    return ({
         url: dataURL,
         error: function (xhr, error, thrown) {
             if(xhr.status === 200) { return; } //301
@@ -54,37 +53,37 @@ function removeElement(table, id, otherParameters){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/remove/";
     if (typeof otherParameters === 'undefined') { otherParameters = ''; }
-    let request = "table=" + table + "&id=" + id + otherParameters;
     var myInit = {
         method: 'post',
         headers: {
             "Content-type": "application/x-www-form-urlencoded",
             'X-CSRFToken':getCookie('csrftoken')
         },
-        body: request
+        body: "table=" + table + "&id=" + id + otherParameters
     };
 
+    console.log('[DELETE]', myInit);
     navigator.serviceWorker.ready.then(async swRegistration => {
-        console.log('Entry inside add');
         let dexie = await new Dexie('user_db');
-        console.log('Entry inside add 2');
         let db = await dexie.open();
-        let db_table = db.table('edit_row');
-        console.log(db);
+        let db_table = db.table('update_queue');
+
         db_table.put({
             url:postURL,
             init:myInit,
             unsync:true
         });
+
         new PNotify({
             title: 'Succès!',
-            text: 'Élément supprimé avec succès',
+            text: 'Votre demande de suppression est bien enregitrée',
             type: 'success'
         });
+
         drawDataTable(table);
-        return swRegistration.sync.register('editRow');
+        return swRegistration.sync.register('updateQueue');
     }).catch(() => {
-        fetch(postURL, myInit).then(response => {
+        fetch(postURL, myInit).then(() => {
             new PNotify({
                 title: 'Succès!',
                 text: 'Élément supprimé avec succès',
@@ -92,7 +91,7 @@ function removeElement(table, id, otherParameters){
             });
             drawDataTable(table);
         }).catch(err => {
-            console.log("POST error on remove element");
+            console.log('[DELETE]', "POST error on remove element");
             new PNotify({
                 title: 'Échec!',
                 text: err,
@@ -162,12 +161,9 @@ function getRequest(table){
 function postNewRow(table, callback){
     let request = getRequest(table);
     if(!request){
-        // Form is not valid (missing/wrong fields)
-        console.log("invalid form");
+        console.log('[ADD]', "invalid form");
         return false;
     }
-    beforeModalRequest();
-
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/add/";
     var myInit = {
@@ -179,33 +175,32 @@ function postNewRow(table, callback){
         body: request
     };
 
+    beforeModalRequest();
+    console.log('[ADD]', myInit);
     navigator.serviceWorker.ready.then(async swRegistration => {
-        console.log('Entry inside add');
         let dexie = await new Dexie('user_db');
-        console.log('Entry inside add 2');
         let db = await dexie.open();
-        let db_table = db.table('edit_row');
-        console.log(db);
+        let db_table = db.table('update_queue');
+
         db_table.put({
             url:postURL,
             init:myInit,
             unsync:true
         });
-        console.log('Entry inside add 3');
+
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         dismissModal();
         new PNotify({
             title: 'Succès!',
-            text: 'Élément ajouté avec succès',
+            text: "Votre demande d'ajout est bien enregitrée",
             type: 'success'
         });
+
         drawDataTable(table);
-        console.log('Entry inside add 4');
-        return swRegistration.sync.register('editRow');
+        return swRegistration.sync.register('updateQueue');
     }).catch(() => {
-        console.log('Entry catch');
         fetch(postURL, myInit)
-            .then(response => {
+            .then(() => {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
                 dismissModal();
                 new PNotify({
@@ -222,6 +217,11 @@ function postNewRow(table, callback){
                 } else {
                     document.getElementById("form-" + table + "-error-msg").innerHTML = err;
                 }
+                new PNotify({
+                    title: 'Échec!',
+                    text: err,
+                    type: 'error'
+                });
             })
     });
 
@@ -238,7 +238,6 @@ function postEditRow(table, callback){
         return false;
     }
     beforeModalRequest();
-
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
     var myInit = {
@@ -250,29 +249,30 @@ function postEditRow(table, callback){
         body: request
     };
 
+    console.log('[EDIT]', myInit);
     navigator.serviceWorker.ready.then(async swRegistration => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
-        let db_table = db.table('edit_row');
+        let db_table = db.table('update_queue');
         db_table.put({
             url:postURL,
             init:myInit,
             unsync:true,
         });
+
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         dismissModal();
         new PNotify({
             title: 'Succès!',
-            text: 'Élément édité avec succès',
+            text: 'Votre demande de modification est bien enregitrée',
             type: 'success'
         });
-        drawDataTable(table);
-        return swRegistration.sync.register('editRow');
 
+        drawDataTable(table);
+        return swRegistration.sync.register('updateQueue');
     }).catch(() => {
         fetch(postURL,myInit)
             .then(response => {
-                console.log('omh')
                 if (response.status !== 200) {
                     console.log("POST error on new element");
                     document.getElementById("form-" + table + "-error").className = "alert alert-danger";
@@ -290,9 +290,14 @@ function postEditRow(table, callback){
                 drawDataTable(table);
             })
             .catch(error => {
-                console.log("POST error on new element");
+                console.log('[EDIT]',"POST error on new element");
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
                 document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+                new PNotify({
+                    title: 'Échec!',
+                    text: err,
+                    type: 'error'
+                });
             })
     })
     afterModalRequest();

@@ -34,17 +34,21 @@ $( document ).ready(function() {
                 );
             }
         }
+        else if (event.data.title === 'notification') {
+            localStorage.setItem('toUpdate', event.data.unsync);
+            $('#notification-content').html('');
+            setupNotifications();
+        }
     }
 
     setupNotifications();
     setupOfflineMode(channel);
-
 });
 
 /**
  * Requests notification computings and modifies the counters to alert the user
  */
-function setupNotifications(){
+async function setupNotifications(){
     let notificationList = $('#notification-content');
     let alertBadge = $('#alert-badge');
     let classicBadge = $('#classic-badge');
@@ -53,6 +57,9 @@ function setupNotifications(){
     if (notificationMonthlyReport(notificationList)) notificationCounter += 1;
 
     classicBadge.html(notificationCounter);
+    if (localStorage.getItem('toUpdate') !== null) {
+        classicBadge.html(localStorage.getItem('toUpdate'));
+    }
     alertBadge.html(notificationCounter);
 
     if (notificationCounter > 0){
@@ -61,7 +68,59 @@ function setupNotifications(){
     else {
         alertBadge.addClass('hidden');
     }
+}
 
+/**
+ * Adds a monthly report notification if one is waiting
+ * @return {boolean} true if a notification has been set, false otherwise
+ */
+function notificationMonthlyReport(notificationList){
+    let hasMonthlyReport = (localStorage.getItem('toUpdate') !== null && localStorage.getItem('toUpdate') !== '0');
+    if (hasMonthlyReport){
+        let title = 'Données non-synchronisées';
+        let msg = 'Cliquez pour essayer de synchroniser les données'
+        let monthlyReportNotification = formatNotification(title, msg)
+        appendNotification(notificationList, monthlyReportNotification);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Appends the notification to the list
+ * @param  {[type]} notificationList the list to which append the notification
+ * @param  {[type]} notification     a notification (use the format for better visuals)
+ */
+function appendNotification(notificationList, notification){
+    let wrappedNotification = '<li>' + notification + '</li>';
+    notificationList.append(wrappedNotification);
+}
+
+/**
+ * Format a notification to keep same visuals
+ * @param  {String} title The title (most visible) information
+ * @param  {String} msg   Message content
+ * @return {String}       The notification with its theme format
+ */
+function formatNotification(title, msg){
+    return '<a href="#" onclick="syncData()" id="notif-sync" class="clearfix">' +
+        '<div class="image">' + // available for a small picture or icon
+        '</div>' +
+        '<span class="title">'+ title +'</span>' +
+        '<span class="message">' + msg + '</span>' +
+    '</a>';
+}
+
+/**
+ * Intro.JS page tour start
+ */
+function startPageTour(){
+    introJs().setOptions({
+        nextLabel: 'Suivant',
+        prevLabel: 'Précédent',
+        skipLabel: 'Passer',
+        doneLabel: 'Terminer',
+    }).start();
 }
 
 function setupOfflineMode(channel){
@@ -110,55 +169,8 @@ function setupOfflineMode(channel){
         });
 }
 
-/**
- * Adds a monthly report notification if one is waiting
- * @return {boolean} true if a notification has been set, false otherwise
- */
-function notificationMonthlyReport(notificationList){
-    let hasMonthlyReport = (localStorage.getItem('monthlyReport') !== null);
-    if (hasMonthlyReport){
-        let title = 'Rapport en attente';
-        let msg = 'Un rapport est en attente, visitez la page des rapports pour l\'envoyer.'
-        let monthlyReportNotification = formatNotification(title, msg)
-        appendNotification(notificationList, monthlyReportNotification);
-        return true;
-    }
-    return false;
-}
-
-/**
- * Appends the notification to the list
- * @param  {[type]} notificationList the list to which append the notification
- * @param  {[type]} notification     a notification (use the format for better visuals)
- */
-function appendNotification(notificationList, notification){
-    let wrappedNotification = '<li>' + notification + '</li>';
-    notificationList.append(wrappedNotification);
-}
-
-/**
- * Format a notification to keep same visuals
- * @param  {String} title The title (most visible) information
- * @param  {String} msg   Message content
- * @return {String}       The notification with its theme format
- */
-function formatNotification(title, msg){
-    return '<a href="../rapport" class="clearfix">' +
-        '<div class="image">' + // available for a small picture or icon
-        '</div>' +
-        '<span class="title">'+ title +'</span>' +
-        '<span class="message">' + msg + '</span>' +
-    '</a>';
-}
-
-/**
- * Intro.JS page tour start
- */
-function startPageTour(){
-    introJs().setOptions({
-        nextLabel: 'Suivant',
-        prevLabel: 'Précédent',
-        skipLabel: 'Passer',
-        doneLabel: 'Terminer',
-    }).start();
+function syncData() {
+    navigator.serviceWorker.ready.then(async swRegistration => {
+        return swRegistration.sync.register('updateQueue');
+    })
 }
