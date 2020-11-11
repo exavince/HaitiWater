@@ -108,7 +108,6 @@ function setupModalConsumerEdit(data){
 
     form['input-address'].value = data[4];
     let currentPhone = data[5];
-    console.log(currentPhone);
     if(currentPhone !== '0' && currentPhone !== "")
         form['input-phone'].value = currentPhone;
     form['input-sub-consumers'].value = data[6];

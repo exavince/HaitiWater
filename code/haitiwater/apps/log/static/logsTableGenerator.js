@@ -13,7 +13,7 @@ function format ( d ) {
 function drawLogTable(){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=logs";
-    console.log("Request data from: " + dataURL);
+    console.log("[REQUEST DATA]" ,dataURL);
     let table = $('#datatable-logs').DataTable(getLogsTableConfiguration(dataURL));
 
     $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {
@@ -64,11 +64,9 @@ function requestHandler(url){
     };
 
     navigator.serviceWorker.ready.then(async swRegistration => {
-        console.log('[LOGS]', 1)
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
-        console.log('[LOGS]', 2)
         db_table.put({
             url:url,
             init:myInit,
@@ -76,16 +74,13 @@ function requestHandler(url){
         });
         drawDataTable('logs');
         drawDataTable('logs-history');
-        console.log('[LOGS]', 3)
         swRegistration.sync.register('updateQueue');
-        console.log('[LOGS]', 5)
     }).catch(() => {
-        console.log('[LOGS]', 4)
         fetch(url, myInit).then(() => {
             drawDataTable('logs');
             drawDataTable('logs-history');
         }).catch(err => {
-            console.log(this);
+            console.error(this);
             new PNotify({
                 title: 'Échec!',
                 text: "Opération impossible: " + err,

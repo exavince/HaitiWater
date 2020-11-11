@@ -16,7 +16,6 @@ async function getLogsHistoryData() {
     let table = db.table('logs_history');
     let result = [];
     await table.each(log => {
-        console.log(log);
         result.push(log);
     });
 
@@ -29,7 +28,6 @@ async function drawLogsHistoryTable(){
     $('#datatable-logs-history tbody').on( 'click', 'tr td:not(:last-child)', function () {
         var tr = $(this).closest('tr');
         var row = table.row(tr);
-        console.log(row.data());
 
         if (row.child.isShown()) {
             // This row is already open - close it
@@ -38,7 +36,6 @@ async function drawLogsHistoryTable(){
         }
         else {
             // Open this row
-            console.log(row.data());
             row.child( format(row.data()) ).show();
             tr.addClass('shown');
         }

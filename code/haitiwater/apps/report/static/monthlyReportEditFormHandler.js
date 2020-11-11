@@ -42,7 +42,6 @@ function postReportEdit(){
             afterModalRequest()
         }
     };
-    console.log(JSON.stringify(report));
     xhttp.send(JSON.stringify(report));
 }
 
@@ -57,13 +56,13 @@ function validateReport(data){
         if (!current.has_data) continue; //Skip validation if we don't have data to validate
 
         if(current.volume < 0 || current.price < 0 || current.revenue < 0){
-            console.log('Negative value');
+            console.error('Negative value');
             formErrorMsg.html('Les valeurs négatives ne sont pas acceptées.');
             formError.removeClass('hidden');
             return false;
         } else if(isNaN(current.volume) || isNaN(current.price) || isNaN(current.revenue) ||
                     current.volume.length <= 0 || current.price.length <= 0 || current.revenue.length <= 0){
-            console.log('NaN value');
+            console.error('NaN value');
             formErrorMsg.html('Seules les valeurs numériques positives sont acceptées');
             formError.removeClass('hidden');
         } else {
@@ -143,7 +142,7 @@ function cloneWaterOutletSection(n){
 function fillExistingData(data){
     let sections = $('.water-outlet');
     if(data.length !== sections.length){
-        console.log("Error parsing the data");
+        console.error("Error parsing the data");
         new PNotify({
             title: 'Échec!',
             text: "L'édition est impossible en raison d'une erreur interne",

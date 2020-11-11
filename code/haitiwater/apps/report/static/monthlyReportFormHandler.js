@@ -79,7 +79,6 @@ $(document).ready(function() {
 					}
 				}
 			};
-			console.log(JSON.stringify(monthlyReport));
 			xhttp.send(JSON.stringify(monthlyReport));
 		}
 		else {
@@ -91,7 +90,6 @@ $(document).ready(function() {
 		ev.preventDefault();
 		const validated = validate();
 		if (validated) {
-			console.log(JSON.stringify(monthlyReport));
 			localStorage.setItem('monthlyReport', JSON.stringify(monthlyReport));
 			new PNotify({
 				title: 'Succès!',
@@ -352,8 +350,6 @@ function validateStepThree(){
 		}
 		let id = $(this).attr('id').replace('bill-','');
 		let value = $(this).find('.real-bill').val();
-		console.log("value : " + value);
-		console.log("id : " + id);
 		if (value < 0 || value === ''){
 			$(this).find('.error').removeClass('hidden');
 			valid = false;
@@ -529,7 +525,6 @@ function setupStepThree(savedData){
 	billingWindow.empty(); // Flush old content
 
 	let checkboxActiveService = $('#checkbox-active-service');
-	console.log($('.water-outlet .bill'));
 	if (checkboxActiveService.is(':checked')){
 		// Service was active, ask user to input details
 		selectedOutlets.each(function(index){
@@ -543,7 +538,7 @@ function setupStepThree(savedData){
 			billingWindow.append(sectionHeader + createPanelBody(selectedOutlets[index].value));
 			billingWindow.append('</section>');
 		});
-		console.log(monthlyReport);
+
 		let details = monthlyReport.details;
 		for(var i = 0; i < details.length; i++){
 			let id = details[i].id;
@@ -563,7 +558,7 @@ function setupStepThree(savedData){
 	}
 	// Display text if we have no data for any element
 	if ($('.bill').length < 1){
-		console.log("empty");
+		console.error("empty");
 		billingWindow.html("<div class=\"well info text-center\">" +
 			"Vous n'avez aucun détail de recette à entrer puisque aucune donnée de volume n'a été collectée.<br>" +
 			"Si vous avez des volumes à entrer, revenez à l'étape 2.<br>" +

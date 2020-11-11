@@ -3,7 +3,7 @@
 function drawTicketTable(){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=ticket";
-    console.log("Request data from: " + dataURL);
+    console.log("[REQUEST DATA]" ,dataURL);
     $('#datatable-ticket').DataTable(getTicketDatatableConfiguration(dataURL));
 
     $('#datatable-ticket tbody').on( 'click', '.remove-row', function () {

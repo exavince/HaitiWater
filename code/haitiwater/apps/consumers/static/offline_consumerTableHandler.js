@@ -28,10 +28,6 @@ async function getConsumerData() {
  *
  */
 async function drawConsumerTable(fullView = true) {
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=consumer";
-    console.log(dataURL);
-
     let datatable = $('#datatable-consumer');
     let configuration = await getConsumerDatatableConfiguration(fullView);
     datatable.DataTable(configuration);

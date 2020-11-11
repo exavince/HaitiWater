@@ -6,7 +6,7 @@
 function drawConsumerTable(fullView = true) {
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=consumer";
-    console.log(dataURL);
+    console.log('[REQUEST DATA]', dataURL);
 
     let datatable = $('#datatable-consumer');
 

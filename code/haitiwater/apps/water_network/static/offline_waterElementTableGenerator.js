@@ -36,7 +36,6 @@ async function drawWaterElementTable(withManagers, withActions, gis){
     else {
         configuration = await getWaterDatatableConfiguration(withManagers, withActions);
     }
-    console.log(configuration);
 
     $('#datatable-water_element').DataTable(configuration);
 
@@ -231,7 +230,6 @@ async function getWaterDatatableGISConfiguration(withManagers, withActions){
 }
 
 function attachMonthSelectorHandler(){
-    console.log("attach month handler");
     let button = $('#water-element-month-selector');
     button.datepicker({
         format: "mm-yyyy",
@@ -239,12 +237,10 @@ function attachMonthSelectorHandler(){
         minViewMode: "months",
     });
     button.on('changeDate', function (e) {
-        console.log("click");
         let month = e.format();
         if (month.length < 1) {
             // Month de-selected
             month = 'none';
-            console.log(button);
             button[0].innerText = 'Volume total';
         }
         else {

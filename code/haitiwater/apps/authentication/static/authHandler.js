@@ -46,7 +46,6 @@ function buildRequest(username, password){
 }
 
 function authUser(){
-    console.log("Poke ?")
     let request = validateForm();
     if(!request){
         // Form is not valid (missing/wrong fields)
@@ -65,7 +64,6 @@ function authUser(){
                 text: 'La connexion a échoué',
                 type: 'failure'
                 });
-                console.log("POST error on connection");
             }
         } else {
             window.localStorage.setItem("token", JSON.parse(xhttp.response).token);

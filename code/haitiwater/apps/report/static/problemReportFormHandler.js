@@ -91,7 +91,6 @@ function setupTicketModalAdd() {
 }
 
 function setupModalEdit(data) {
-    console.log("modal edit");
     //Show add components
     $('#modal-title-add').addClass("hidden");
     $('#modal-submit-add').addClass("hidden");
@@ -109,7 +108,6 @@ function setupModalEdit(data) {
 
     showModal('#show-ticket-modal');
 
-    console.log(data);
 
     let form = document.forms["form-add-ticket"];
 

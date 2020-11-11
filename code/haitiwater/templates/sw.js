@@ -9,82 +9,84 @@ workbox.loadModule('workbox-strategies');
 const cacheVersion = 'static';
 const userCache = 'user_1';
 const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
-const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/'];
-const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
+const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
+const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline']
 const staticExt = ['.js','.woff','/static/'];
+let offlineMode = false;
 let userIDs = [];
 let channel = new BroadcastChannel('sw-messages');
 let lastPage = null;
 let needDisconnect = false;
 let connected = false;
 let dataLoaded = false;
-let offlineMode = false
 let lastUpdate = null;
 let dbVersion = 1;
 let db = new Dexie("user_db");
 const staticFiles = [
-  '/static/consumerFormHandler.js',
-  '/static/consumerTableHandler.js',
-  '/static/consumers.js',
-  '/static/dashboard.js',
-  '/static/dexie.js',
-  '/static/financial.js',
-  '/static/gis.js',
-  '/static/gisHelper.js',
-  '/static/help.css',
-  '/static/help.js',
-  '/static/javascripts/tables/genericModalHandler.js',
-  '/static/javascripts/tables/genericTableHandler.js',
-  '/static/javascripts/ui-elements/graph.js',
-  '/static/locale_fr.js',
-  '/static/logsHistoryTableGenerator.js',
-  '/static/logsTableGenerator.js',
-  '/static/managerModalHandler.js',
-  '/static/managersTableGenerator.js',
-  '/static/manifest.json',
-  '/static/monthlyReportEditFormHandler.js',
-  '/static/monthlyReportFormHandler.js',
-  '/static/offline_consumerTableHandler.js',
-  '/static/offline_financial.js',
-  '/static/offline_managersTableGenerator.js',
-  '/static/offline_paymentTableHandler.js',
-  '/static/offline_supportTicketTableHandler.js',
-  '/static/offline_waterElementTableGenerator.js',
-  '/static/offline_zoneTableGenerators.js',
-  '/static/paymentModalHandler.js',
-  '/static/paymentTableHandler.js',
-  '/static/problemReportFormHandler.js',
-  '/static/profileHandler.js',
-  '/static/report.js',
-  '/static/reportTableHandler.js',
-  '/static/supportTicketTableHandler.js',
-  '/static/vendor/bootstrap-datepicker/css/datepicker.css',
-  '/static/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js',
-  '/static/vendor/bootstrap-multiselect/bootstrap-multiselect.js',
-  '/static/vendor/bootstrap-wizard/jquery.bootstrap.wizard.js',
-  '/static/vendor/fontawesome/css/all.min.css',
-  '/static/vendor/fontawesome/webfonts/fa-solid-900.woff2',
-  '/static/vendor/fonts-google/open-sans.css',
-  '/static/vendor/intro/intro.min.css',
-  '/static/vendor/intro/intro.min.js',
-  '/static/vendor/jquery-datatables-bs3/assets/css/datatables.css',
-  '/static/vendor/jquery-datatables-bs3/assets/js/datatables.js',
-  '/static/vendor/jquery-datatables/media/js/jquery.dataTables.min.js',
-  '/static/vendor/leaflet/leaflet.css',
-  '/static/vendor/leaflet/leaflet.draw.css',
-  '/static/vendor/leaflet/leaflet.draw.js',
-  '/static/vendor/leaflet/leaflet.js',
-  '/static/vendor/select2/select2.css',
-  '/static/vendor/select2/select2.js',
-  '/static/waterElementFormHandler.js',
-  '/static/waterElementTableGenerator.js',
-  '/static/waterNetwork.js',
-  '/static/zoneManagement.js',
-  '/static/zoneModalHandler.js',
-  '/static/zoneTableGenerator.js',
-  '/static/CACHE/css/29de54cb81d2.css',
-  '/static/CACHE/js/0a55f327dfed.js',
-  '/static/CACHE/js/bf8351900f38.js',
+    '/static/consumerFormHandler.js',
+    '/static/consumerTableHandler.js',
+    '/static/consumers.js',
+    '/static/dashboard.js',
+    '/static/dexie.js',
+    '/static/financial.js',
+    '/static/gis.js',
+    '/static/gisHelper.js',
+    '/static/help.css',
+    '/static/help.js',
+    '/static/javascripts/tables/genericModalHandler.js',
+    '/static/javascripts/tables/genericTableHandler.js',
+    '/static/javascripts/ui-elements/graph.js',
+    '/static/locale_fr.js',
+    '/static/logsHistoryTableGenerator.js',
+    '/static/logsTableGenerator.js',
+    '/static/managerModalHandler.js',
+    '/static/managersTableGenerator.js',
+    '/static/manifest.json',
+    '/static/monthlyReportEditFormHandler.js',
+    '/static/monthlyReportFormHandler.js',
+    '/static/offline_consumerTableHandler.js',
+    '/static/offline_financial.js',
+    '/static/offline_logsTableGenerator.js',
+    '/static/offline_logsHistoryTableGenerator.js',
+    '/static/offline_managersTableGenerator.js',
+    '/static/offline_paymentTableHandler.js',
+    '/static/offline_supportTicketTableHandler.js',
+    '/static/offline_waterElementTableGenerator.js',
+    '/static/offline_zoneTableGenerators.js',
+    '/static/paymentModalHandler.js',
+    '/static/paymentTableHandler.js',
+    '/static/problemReportFormHandler.js',
+    '/static/profileHandler.js',
+    '/static/report.js',
+    '/static/reportTableHandler.js',
+    '/static/supportTicketTableHandler.js',
+    '/static/vendor/bootstrap-datepicker/css/datepicker.css',
+    '/static/vendor/bootstrap-datepicker/js/bootstrap-datepicker.js',
+    '/static/vendor/bootstrap-multiselect/bootstrap-multiselect.js',
+    '/static/vendor/bootstrap-wizard/jquery.bootstrap.wizard.js',
+    '/static/vendor/fontawesome/css/all.min.css',
+    '/static/vendor/fontawesome/webfonts/fa-solid-900.woff2',
+    '/static/vendor/fonts-google/open-sans.css',
+    '/static/vendor/intro/intro.min.css',
+    '/static/vendor/intro/intro.min.js',
+    '/static/vendor/jquery-datatables-bs3/assets/css/datatables.css',
+    '/static/vendor/jquery-datatables-bs3/assets/js/datatables.js',
+    '/static/vendor/jquery-datatables/media/js/jquery.dataTables.min.js',
+    '/static/vendor/leaflet/leaflet.css',
+    '/static/vendor/leaflet/leaflet.draw.css',
+    '/static/vendor/leaflet/leaflet.draw.js',
+    '/static/vendor/leaflet/leaflet.js',
+    '/static/vendor/select2/select2.css',
+    '/static/vendor/select2/select2.js',
+    '/static/waterElementFormHandler.js',
+    '/static/waterElementTableGenerator.js',
+    '/static/waterNetwork.js',
+    '/static/zoneManagement.js',
+    '/static/zoneModalHandler.js',
+    '/static/zoneTableGenerator.js',
+    '/static/CACHE/css/29de54cb81d2.css',
+    '/static/CACHE/js/0a55f327dfed.js',
+    '/static/CACHE/js/bf8351900f38.js',
 ];
 
 /*********************************************************************************
@@ -116,6 +118,8 @@ const logsHandler= fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(n
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_LOGS]', err);
 })
 
 const logsHistoryHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
@@ -132,6 +136,8 @@ const logsHistoryHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_LOGSH]', err);
 })
 
 const consumerHandler = fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
@@ -156,9 +162,9 @@ const consumerHandler = fetch('http://127.0.0.1:8000/api/get-consumers').then(ne
                 validity:entry.validity
             })
         }
-    }).catch(err => {
-        console.error('[GET_CONSUMER]', err);
     })
+}).catch(err => {
+    console.log('[SW_CONSUMER]', err);
 })
 
 const paymentHandler = fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
@@ -173,6 +179,8 @@ const paymentHandler = fetch('http://127.0.0.1:8000/api/get-payments').then(netw
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_PAYMENT]', err);
 })
 
 const zoneHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
@@ -189,6 +197,8 @@ const zoneHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_ZONE]', err);
 })
 
 const managerHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
@@ -206,6 +216,8 @@ const managerHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=manager')
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_MANAGER]', err);
 })
 
 const ticketHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
@@ -222,6 +234,8 @@ const ticketHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').t
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_TICKET]', err);
 })
 
 
@@ -241,6 +255,8 @@ const waterElement_handler = fetch('http://127.0.0.1:8000/api/get-zone/?name=wat
             })
         }
     })
+}).catch(err => {
+    console.log('[SW_WATER]', err);
 })
 
 const populateDB = Promise.all([
@@ -252,7 +268,9 @@ const populateDB = Promise.all([
     paymentHandler,
     logsHandler,
     logsHistoryHandler
-]);
+]).catch(err => {
+    console.log('[SW_POPULATEDB]', err);
+});
 
 const emptyDB = Promise.all([
     db.zone.clear(),
@@ -264,7 +282,9 @@ const emptyDB = Promise.all([
     db.payment.clear(),
     db.logs.clear(),
     db.logs_history.clear()
-]);
+]).catch(err => {
+    console.log('[SW_EMPTYDB]', err);
+});
 
 
 
@@ -278,9 +298,9 @@ const addCache = (cache, tab) => {
         ).catch(error => {
             console.error(error)
         });
-    }).catch(function (error) {
-        console.error(error)
-    })
+    }).catch(err => {
+        console.error('[SW_CACHEADD]', err);
+    });
 }
 
 let cacheCleanedPromise = () => {
@@ -312,6 +332,7 @@ const isOnlinePages = (url) => {
 };
 
 const getOfflineData = () => {
+    dataLoaded = true;
     Promise.all([
         addCache(cacheVersion, ['/offline/']),
         addCache(userCache, onlinePages),
@@ -319,7 +340,6 @@ const getOfflineData = () => {
         addCache(cacheVersion, staticFiles),
         populateDB,
     ]).then(async () => {
-        dataLoaded = true;
         lastUpdate = {
             year: await new Date().getFullYear(),
             month: await new Date().getMonth()+1,
@@ -327,9 +347,10 @@ const getOfflineData = () => {
             hours: await new Date().getHours(),
             minutes: await new Date().getMinutes(),
         }
-    }).catch(() => {
+    }).catch(err => {
         dataLoaded = false;
-    })
+        console.error('[SW_GETDATA]', err);
+    });
 }
 
 
@@ -348,13 +369,12 @@ self.addEventListener('activate', event => {
             if(networkResponse.status === 200) {
                 connected = true;
                 if (!dataLoaded) {
-                    dataLoaded = true;
-                    event.waitUntil(getOfflineData());
+                    getOfflineData();
                 }
             }
-        }).catch(error => {
-            console.error(error);
-        })
+        }).catch(err => {
+            console.error('[SW_CONNECTED]',err);
+        });
     }
 });
 
@@ -368,12 +388,11 @@ self.addEventListener('fetch', async event => {
             if(networkResponse.status === 200) {
                 connected = true;
                 if (!dataLoaded) {
-                    await event.waitUntil(getOfflineData());
-                    dataLoaded = true;
+                    event.waitUntil(getOfflineData());
                 }
             }
-        }).catch(error => {
-            console.error(error);
+        }).catch(err => {
+            console.error('[SW_CONNECTED]',err);
         })
     }
 
@@ -444,6 +463,13 @@ self.addEventListener('fetch', async event => {
                 })
             )
         }
+        else if (url.includes('/historique')) {
+            event.respondWith(
+                caches.open('user_1').then(async cache => {
+                    return await cache.match('/historique/offline');
+                })
+            )
+        }
         else if (url.includes('/login')) {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
@@ -506,7 +532,7 @@ self.addEventListener('fetch', async event => {
                 new workbox.strategies.NetworkOnly().handle({event, request})
                     .catch(async () => {
                         return await caches.open('user_1').then(cache => {
-                            return cache.match('/offline/');
+                            return cache.match('historique/offline/');
                         });
                     })
             )
@@ -593,7 +619,7 @@ self.addEventListener('sync', async event => {
                     unsync: await db.update_queue.count()
                 });
             }).catch(async () => {
-                console.error('[SYNC]','Cannot reach the network, data still need to be pushed');
+                console.log('[SYNC]','Cannot reach the network, data still need to be pushed');
                 channel.postMessage({
                     title:'notification',
                     unsync: await db.update_queue.count()

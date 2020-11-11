@@ -72,25 +72,21 @@ function requestHandler(url){
     };
 
     navigator.serviceWorker.ready.then(async swRegistration => {
-        console.log('[LOGS]', 1)
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
-        console.log('[LOGS]', 2)
         db_table.put({
             url:url,
             init:myInit,
             unsync:true
         });
-        console.log('[LOGS]', 3)
         return swRegistration.sync.register('updateQueue');
     }).catch(() => {
-        console.log('[LOGS]', 4)
         fetch(url, myInit).then(() => {
             drawDataTable('logs');
             drawDataTable('logs-history');
         }).catch(err => {
-            console.log(this);
+            console.error(this);
             new PNotify({
                 title: 'Échec!',
                 text: "Opération impossible: " + err,

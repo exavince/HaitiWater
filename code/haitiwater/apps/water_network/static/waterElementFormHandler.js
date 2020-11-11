@@ -60,7 +60,6 @@ function setupModalAdd(){
 }
 
 function setupModalEdit(data){
-    console.log(data);
     //Hide add components
     $('#modal-title-add').addClass("hidden");
     $('#modal-submit-add').addClass("hidden");

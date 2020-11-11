@@ -88,7 +88,7 @@ function requestFinancialDetails(userID){
                 $('#consumer-details-next-bill').html(financialDetails.validity);
             }
             else{
-                console.log(this);
+                console.error(this);
                 new PNotify({
                     title: 'Échec du téléchargement',
                     text: "Impossible de récupérer les détails financiers de l'utilisateur.",
