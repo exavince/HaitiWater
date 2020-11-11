@@ -1,21 +1,19 @@
 \documentclass{EPL-master-thesis-covers-FR}
 
-\title{HaïtiWater}
-\subtitle{Développement d'une application web pour gérer la distribution de l'eau en Haïti}
+\title{HaïtiWater 2.0}
+\subtitle{Evolution de l'application HaïtiWater vers une application entière  fonctionnelle hors-ligne}
 
-\author{Céline \textsc{Deknop}}
-\secondauthor{Adrien \textsc{Hallet}}
-\thirdauthor{Sébastien \textsc{Strebelle}} % Handcrafted third author :D
+\author{Vincent \textsc{Gradzielewski}}% Handcrafted third author :D
 
 \degreetitle{Master [120] en sciences informatiques}
 
 \supervisor{Kim \textsc{Mens}}
 \secondsupervisor{Sandra \textsc{Soares-Frazão}}
 
-\readerone{Olivier \textsc{Carlier}}
-\readertwo{Benoît \textsc{Duhoux}}
+\readerone{}
+\readertwo{}
 
-\years{2018-2019}
+\years{2020-2021}
 
 \usepackage{hyperref}
 \usepackage{cite}
@@ -51,31 +49,39 @@
 
 	\chapter*{Résumé}
 	\addcontentsline{toc}{chapter}{Résumé}
+	
+		Ce travail de fin d'études a été réalisé dans le cadre de mon Master en Sciences Informatiques à l'École Polytechnique de Louvain-la-neuve durant l'année académique 2020-2021.
+		
+		Dans ce mémoire je vais présenter mon travail qui consistait à reprendre l'application HaïtiWater développée précedemment par Adrien Hallet, Céline Deknop et Sebastien Strebelle afin de la faire évoluer vers une application web qui serait entièrement utilisable hors-ligne.
+		 
+		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par introduire le contexte haïtien et les raisons pour lesquels l'évolution de cette application était nécessaire. Ensuite je présenterai mes idées et réalisations en justifiant à chaque fois les différents choix d'implémentation qui on été fait et pourquoi j'ai utilisé certaines technologies plutot que d'autres. Je présenterai ensuite la validation de l'application et les feedbacks que j'ai reçu des utilisateurs. Puis je concluerai par une liste des améliorations possibles pour ce pr
 
-		Ce travail de fin d'études a été réalisé au terme de notre Master en Sciences Informatiques à l'École Polytechnique de Louvain durant l'année académique 2018-2019.
+		Tout le travail réaliser est disponible ici :
 
-		La gestion du réseau de distribution d'eau potable en Haïti ne dispose pas d'un système informatisé suffisant dans certaines parties du pays. Dans ce mémoire, nous allons présenter nos productions visant à proposer une application web palliant ce problème. Le contexte haïtien et les défis à relever sont d'abord exposés afin de comprendre ce qui fait d'Haïti un environnement particulier pour le développement d'un tel système. Sont ensuite présentées nos idées, propositions et réalisations en justifiant les différents choix d'implémentation et de technologies. Nous abordons par après la validation de l'application et les retours d'utilisateurs nous ayant permis d'améliorer l'outil. Nous concluons ce texte par le futur de ce travail, les possibilités et nos espoirs pour l'application web \emph{HaïtiWater}.
+\begin{itemize}
+	\item Github : \url{https://github.com/exavince/HaitiWater}
+	\item Par l'UCL : \url{https://haitiwater.sipr.ucl.ac.be}
+	\item En Haïti : \url{unknown}
+\end{itemize}		
 
-		La totalité des productions est disponible en ligne sur GitHub:\\ \url{https://github.com/AdrienHalletUCL/HaitiWater}
-
-		L'outil est hébergé par l'UCLouvain à l'adresse : \\ \url{https://haitiwater.sipr.ucl.ac.be}
-
-		Si vous souhaitez le visionner dans son ensemble, le nom d'utilisateur principal ainsi que son mot de passe est \emph{Protos}. Nous vous demandons cependant de ne pas modifier les données présentes, car elles sont réelles et ont été entrées dans le but de tester l'application sur place.
+		Si vous désirez tester l'application, il suffit de vous connecter sur un des liens cité précedemment de vous connecter à l'aide de l'uilisateur \emph{Protos} dont le mot de passe est également \emph{Protos}. Cependant je vous demanderai de ne pas modifier les données présentes car celle-ci ne sont pas des données fictives et on été entrée dans le but de tester l'application en Haïti.
+		
+		 le nom d'utilisateur principal ainsi que son mot de passe est \emph{Protos}. Nous vous demandons cependant de ne pas modifier les données présentes, car elles sont réelles et ont été entrées dans le but de tester l'application sur place.
 
 	\chapter*{Remerciements}
 	\addcontentsline{toc}{chapter}{Remerciements}
 
-		De nombreuses personnes ont participé à ce mémoire et l'outil HaïtiWater. Nous souhaitons prendre quelques instants pour les remercier.
+		De nombreuses personnes ont participé à ce mémoire et à l'évolution de l'application HaïtiWater. J'aimerais les remercier à travers ces quelques lignes.
 
-		Merci aux professeurs Kim Mens et Sandra Soares-Frazão pour leur indéfectible soutien, les conseils et apports tout au long de ces mois de travail.
+		Merci aux professeurs Kim Mens et Sandra Soares-Frazão pour toute l'aide et les conseils qu'ils m'ont apporté durant ce mémoire.
 
-		Merci à Benoît Duhoux et Olivier Carlier d'avoir accepté de lire ce travail et d'assister à la défense orale.
+		Merci à  d'avoir accepté de lire ce travail et d'assister à la défense orale.
 
-		Merci à Fritzno Louis pour son implication majeure dans la validation des fonctionnalités de l'application.
+		Merci à Nahomie Labonte pour son aide dans le listage des nouvelles fonctionnalités de l'application et dans leur priorization.
 
 		Merci à l'ONG Protos pour ce projet et leur aide, en particulier Johan Slimbrouck et Ilse Roels.
-
-		Merci aux Professeurs Nyankona Gonomy, Stephen Louis, Yves Zech, à Joseph Adermus et Mathieu Gerardson pour leurs apports respectifs à l'outil et leurs conseils.
+		
+		Merci à Celine Deknop, Adrien Hallet et Sébastien Strebelle pour leurs conseils et pour l'excelent travail réaliser pour créer l'application.
 
 		Merci à Edouard Haberer pour le logo de l'application et ses conseils.
 
@@ -88,20 +94,18 @@
 
 	\chapter{Introduction}
 
-		% Auteur: Sébastien
-		% Relu : Céline, Adrien
-
-		% Pages : 2 à 3
-
+		
 		\subsection*{Contexte}
-
-			Ce mémoire se situe dans le cadre d'un projet de développement financé par l'ARES-CCD dans le cadre de ses projets de synergie. Les partenaires du projet sont L'ONG Protos\footnote{\href{https://www.protos.ngo/fr/}{www.protos.ngo}}, L'UCL et l'UEH. L'un des objectifs de Protos est d'améliorer l'accès à l'eau potable en milieu rural afin d'aider le développement de plusieurs pays du monde. Un des pays dans lesquels Protos s'est engagée est Haïti et leur présence depuis quelques années a permis de produire un état des lieux nous permettant de comprendre la situation sur place~\cite{ref:analyse_contextuelle_commune}.
-
-			Une succession de crises politiques et catastrophes naturelles ces dernières décennies ont rendu l'accès à l'eau potable, entre autres, particulièrement complexe dans ce pays des Antilles. En 2010, un violent séisme a laissé le pays en ruine, détruisant beaucoup d'infrastructures, y compris de distribution d'eau. Des incertitudes politiques entravent la reconstruction de ces installations et les populations ne sont pas toujours aidées par les services publics pour assurer la distribution de l'eau, particulièrement dans les zones rurales. C'est une des raisons pour lesquelles l'ONG Protos est active dans le pays.
-			% trop chargé politiquement ?
-			% Adrien: Je trouvais aussi, j'ai reformulé d'un point de vue neutre pour quand même rester justes sans prendre parti. Je trouvais "chaos politique" un peu trop et j'ai nuancé la seconde partie du paragraphe
-
-			Protos a contacté l'UCL afin de se faire aider dans un projet de développement en Haïti. L'objectif est de réaliser un système logiciel pilote pour la gestion de la distribution d'eau potable en zone rurale. En effet, aucune gestion centralisée organisée par l'Etat n'existe pour ces zones, éloignées des grandes agglomérations. Des réseaux existent, constitués de points de prélèvement d'eau, de conduites de distribution d'eau et de fontaines situées dans les villages, mais la gestion publique de ceux-ci n'est pas opérationnelle. Dès lors, les organismes locaux en charge de ces réseaux en assurent la gestion de manière indépendante, en s'appuyant comme ils le peuvent sur les moyens et les acteurs locaux. Une des principales conséquences est un taux de recouvrement extrêmement faible des factures (inférieur à 20\% en moyenne).
+		
+			Ce mémoire appartient à un projet de développement financé par ARES-CCD avec quelques partenaires tels que Protos\footnote{\href{https://www.protos.ngo/fr/}{www.protos.ngo}}, l'UCL et l'UEH. 
+			
+			Protos est une ONG qui vise à améliorer l'accès à l'eau potable dans plusieurs pays du monde afin de les aider à se développer. 
+			
+			Suite à de nombreuses crises politiques et catastrophes naturelles qui ont détruit beaucoup d'infrastructure locale, l'accès à l'eau potables est devenu difficile en Haïti. De plus, des incertitudes politiques entravent la reconstruction de ces installations et les populations ne sont pas toujours aidées par les services publics pour assurer la distribution de l'eau. C'est pour cette rainson que l'ONG Protos est active dans le pays depuis quelques années et à permis aux anciens mémorants de créer l'application HaïtiWater.
+						
+			Il y a quelques années Protos est entré en contact avec l'UCL afin de réaliser un système logiciel pilote pour la gestion de la distribution d'eau potable en zone rurale.
+			
+			 En effet, aucune gestion centralisée organisée par l'Etat n'existe pour ces zones, éloignées des grandes agglomérations. Des réseaux existent, constitués de points de prélèvement d'eau, de conduites de distribution d'eau et de fontaines situées dans les villages, mais la gestion publique de ceux-ci n'est pas opérationnelle. Dès lors, les organismes locaux en charge de ces réseaux en assurent la gestion de manière indépendante, en s'appuyant comme ils le peuvent sur les moyens et les acteurs locaux. Une des principales conséquences est un taux de recouvrement extrêmement faible des factures (inférieur à 20\% en moyenne).
 
 			L'ONG Protos intervient dans ce cadre~\cite{ref:programme_protos}, pour proposer un appui à ces organismes locaux afin de mieux organiser cette distribution. Grâce à une meilleure organisation, il sera possible d'améliorer le taux de recouvrement des factures liées à la distribution d'eau, ce qui permettra d'assurer des rentrées financières à ces organismes qui sont également en charge de la maintenance physique des réseaux, mais sans recevoir de réels moyens de la part de l'Etat.
 

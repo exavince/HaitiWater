@@ -54,19 +54,27 @@ def get_zone(request):
 
     return HttpResponse(json.dumps(json_object), status=200)
 
-
-def details(request):
+def get_consumers(request):
     if not request.user.is_authenticated:
         return HttpResponse("Vous n'êtes pas connecté", status=403)
 
-    table_name = request.GET.get("table", None)
-    if table_name == "payment":
-        return get_payment_details(request)
-    elif table_name == "water_element":
-        return get_details_network(request)
-    else:
-        return HttpResponse("Impossible d'obtenir des détails pour la table " + table_name +
-                            ", elle n'est pas reconnue", status=400)
+    result = get_all_details_consumers(request)
+    json_object = {"data": result}
+
+    return HttpResponse(json.dumps(json_object), status=200)
+
+
+def get_payments(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Vous n'êtes pas connecté", status=403)
+
+    result = get_all_payments(request)
+    json_object = {"data": result}
+
+    return HttpResponse(json.dumps(json_object), status=200)
+
+
+
 
 
 

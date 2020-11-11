@@ -12,6 +12,7 @@ const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
 const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline']
 const staticExt = ['.js','.woff','/static/'];
+let userIDs = [];
 let channel = new BroadcastChannel('sw-messages');
 let lastPage = null;
 let needDisconnect = false;
@@ -83,14 +84,13 @@ const staticFiles = [
   '/static/zoneTableGenerator.js',
   '/static/CACHE/css/29de54cb81d2.css',
   '/static/CACHE/js/0a55f327dfed.js',
-    '/static/CACHE/js/bf8351900f38.js',
+  '/static/CACHE/js/bf8351900f38.js',
 ];
 
 /*********************************************************************************
  * IndexDB
  *********************************************************************************/
 db.version(dbVersion).stores({
-    connectionInfos: 'offlineMode',
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel',
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo',
@@ -98,144 +98,173 @@ db.version(dbVersion).stores({
     manager:'id,nom,prenom,telephone,mail,role,zone,unknown',
     consumer_details:'consumer_id,amount_due,validity',
     payment:'id,data,value,source,user_id',
+    logs:'id,time,type,user,summary,details',
+    logs_history:'id,time,type,user,summary,details,action',
     update_queue:'++id, url, init, unsync',
 });
 
-const consumerHandler = async () => {
-    await fetch('http://127.0.0.1:8000/api/get-zone/?name=consumer').then(networkResponse => {
-        networkResponse.json().then(result => {
-            for(let entry of result.data) {
-                db.consumer.add({
-                    id:entry[0],
-                    nom:entry[1],
-                    prenom:entry[2],
-                    genre:entry[3],
-                    adresse:entry[4],
-                    telephone:entry[5],
-                    membres:entry[6],
-                    sortie_eau:entry[7],
-                    argent_du:entry[8],
-                    zone:entry[9],
-                })
-                fetch('http://127.0.0.1:8000/api/details/?table=payment&id='+entry[0]).then(networkResponse => {
-                    networkResponse.json().then(infos => {
-                        db.consumer_details.add({
-                            consumer_id:entry[0],
-                            amount_due:infos.amount_due,
-                            validity:infos.validity
-                        })
-                    });
-                });
-                fetch('http://127.0.0.1:8000/api/get-zone/?name=payment&user='+entry[0]).then(networkResponse => {
-                    networkResponse.json().then(infos => {
-                        for(let info of infos.data) {
-                            db.payment.add({
-                                id:info[0],
-                                data:info[1],
-                                value:info[2],
-                                source:info[3],
-                                user_id:entry[0],
-                            })
-                        }
-                    })
-                })
-            }
-        })
+const logsHandler= fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let entry of result.data) {
+            db.logs.put({
+                id:entry.id,
+                time:entry.time,
+                type:entry.type,
+                user:entry.user,
+                summary:entry.summary,
+                details:entry.details,
+            })
+        }
     })
-}
+})
 
-const zoneHandler = () => {
-    fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
-        networkResponse.json().then(result => {
-            for (let entry of result.data) {
-                db.zone.add({
-                    id: entry[0],
-                    name: entry[1],
-                    cout_fontaine: entry[2],
-                    mois_fontaine: entry[3],
-                    cout_kiosque: entry[4],
-                    mois_kiosque: entry[5],
-                    cout_mensuel: entry[6],
-                })
-            }
-        })
+const logsHistoryHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let entry of result.data) {
+            db.logs_history.put({
+                id:entry.id,
+                time:entry.time,
+                type:entry.type,
+                user:entry.user,
+                summary:entry.summary,
+                details:entry.details,
+                action:entry.action,
+            })
+        }
     })
-}
+})
 
-const managerHandler = () => {
-    fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
-        networkResponse.json().then(result => {
-            for(let entry of result.data) {
-                db.manager.add({
-                    id:entry[0],
-                    nom:entry[1],
-                    prenom:entry[2],
-                    telephone:entry[3],
-                    mail:entry[4],
-                    role:entry[5],
-                    zone:entry[6],
-                    unknown:entry[7],
-                })
-            }
-        })
+const consumerHandler = fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let entry of result.data) {
+            db.consumer.put({
+                id:entry.consumer[0],
+                nom:entry.consumer[1],
+                prenom:entry.consumer[2],
+                genre:entry.consumer[3],
+                adresse:entry.consumer[4],
+                telephone:entry.consumer[5],
+                membres:entry.consumer[6],
+                sortie_eau:entry.consumer[7],
+                argent_du:entry.consumer[8],
+                zone:entry.consumer[9],
+            })
+
+            db.consumer_details.put({
+                consumer_id:entry.consumer[0],
+                amount_due:entry.consumer[8],
+                validity:entry.validity
+            })
+        }
+    }).catch(err => {
+        console.error('[GET_CONSUMER]', err);
     })
-}
+})
 
-const ticketHandler = () => {
-    fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
-        networkResponse.json().then(result => {
-            for(let entry of result.data) {
-                db.ticket.add({
-                    id:entry[0],
-                    urgence:entry[1],
-                    emplacement:entry[2],
-                    type:entry[3],
-                    commentaire:entry[4],
-                    statut:entry[5],
-                    photo:entry[6],
-                })
-            }
-        })
+const paymentHandler = fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let payment of result.data) {
+            db.payment.put({
+                id:payment.payments[0],
+                data:payment.payments[1],
+                value:payment.payments[2],
+                source:payment.payments[3],
+                user_id:payment.consumer_id,
+            })
+        }
     })
-}
+})
 
-const waterElement_handler = () => {
-    fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
-        networkResponse.json().then(result => {
-            for(let entry of result.data) {
-                db.water_element.add({
-                    id:entry[0],
-                    type:entry[1],
-                    place:entry[2],
-                    users:entry[3],
-                    state:entry[4],
-                    m3:entry[5],
-                    gallons:entry[6],
-                    gestionnaire:entry[7],
-                    zone_up:entry[8],
-                })
-            }
-        })
+const zoneHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for (let entry of result.data) {
+            db.zone.put({
+                id: entry[0],
+                name: entry[1],
+                cout_fontaine: entry[2],
+                mois_fontaine: entry[3],
+                cout_kiosque: entry[4],
+                mois_kiosque: entry[5],
+                cout_mensuel: entry[6],
+            })
+        }
     })
-}
+})
 
-const populateDB = () => {
-    consumerHandler();
-    zoneHandler();
-    managerHandler();
-    ticketHandler();
-    waterElement_handler();
-}
+const managerHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let entry of result.data) {
+            db.manager.put({
+                id:entry[0],
+                nom:entry[1],
+                prenom:entry[2],
+                telephone:entry[3],
+                mail:entry[4],
+                role:entry[5],
+                zone:entry[6],
+                unknown:entry[7],
+            })
+        }
+    })
+})
 
-const emptyDB = async () => {
-    db.zone.clear();
-    db.consumer.clear();
-    db.ticket.clear();
-    db.water_element.clear();
-    db.manager.clear();
-    db.consumer_details.clear();
-    db.payment.clear();
-}
+const ticketHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let entry of result.data) {
+            db.ticket.put({
+                id:entry[0],
+                urgence:entry[1],
+                emplacement:entry[2],
+                type:entry[3],
+                commentaire:entry[4],
+                statut:entry[5],
+                photo:entry[6],
+            })
+        }
+    })
+})
+
+
+const waterElement_handler = fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
+    networkResponse.json().then(result => {
+        for(let entry of result.data) {
+            db.water_element.put({
+                id:entry[0],
+                type:entry[1],
+                place:entry[2],
+                users:entry[3],
+                state:entry[4],
+                m3:entry[5],
+                gallons:entry[6],
+                gestionnaire:entry[7],
+                zone_up:entry[8],
+            })
+        }
+    })
+})
+
+const populateDB = Promise.all([
+    consumerHandler,
+    zoneHandler,
+    managerHandler,
+    ticketHandler,
+    waterElement_handler,
+    paymentHandler,
+    logsHandler,
+    logsHistoryHandler
+]);
+
+const emptyDB = Promise.all([
+    db.zone.clear(),
+    db.consumer.clear(),
+    db.ticket.clear(),
+    db.water_element.clear(),
+    db.manager.clear(),
+    db.consumer_details.clear(),
+    db.payment.clear(),
+    db.logs.clear(),
+    db.logs_history.clear()
+]);
 
 
 
@@ -288,7 +317,7 @@ const getOfflineData = () => {
         addCache(userCache, onlinePages),
         addCache(userCache, offlinePages),
         addCache(cacheVersion, staticFiles),
-        populateDB(),
+        populateDB,
     ]).then(async () => {
         dataLoaded = true;
         lastUpdate = {
@@ -298,6 +327,8 @@ const getOfflineData = () => {
             hours: await new Date().getHours(),
             minutes: await new Date().getMinutes(),
         }
+    }).catch(() => {
+        dataLoaded = false;
     })
 }
 
@@ -306,48 +337,44 @@ const getOfflineData = () => {
  * Event listener
  *********************************************************************************/
 
-self.addEventListener('install', async () => {
-    // Cache the offline page by default
-    await cacheCleanedPromise();
+self.addEventListener('install', event => {
+    event.waitUntil(cacheCleanedPromise());
 });
 
 
-self.addEventListener('activate', async () => {
+self.addEventListener('activate', event => {
     if (!connected) {
-        fetch('http://127.0.0.1:8000/api/check-authentication')
-            .then(async networkResponse => {
-                if(networkResponse.status === 200) {
-                    connected = true;
-                    if (!dataLoaded) {
-                        await getOfflineData();
-                        dataLoaded = true;
-                    }
+        fetch('http://127.0.0.1:8000/api/check-authentication').then(networkResponse => {
+            if(networkResponse.status === 200) {
+                connected = true;
+                if (!dataLoaded) {
+                    dataLoaded = true;
+                    event.waitUntil(getOfflineData());
                 }
-            })
-            .catch(error => {
-                console.error(error);
-            })
+            }
+        }).catch(error => {
+            console.error(error);
+        })
     }
 });
+
 
 self.addEventListener('fetch', async event => {
     const {request} = event;
     const url = event.request.url;
 
     if (!connected) {
-        await fetch('http://127.0.0.1:8000/api/check-authentication')
-            .then(async networkResponse => {
-                if(networkResponse.status === 200) {
-                    connected = true;
-                    if (!dataLoaded) {
-                        await getOfflineData();
-                        dataLoaded = true;
-                    }
+        await fetch('http://127.0.0.1:8000/api/check-authentication').then(async networkResponse => {
+            if(networkResponse.status === 200) {
+                connected = true;
+                if (!dataLoaded) {
+                    await event.waitUntil(getOfflineData());
+                    dataLoaded = true;
                 }
-            })
-            .catch(error => {
-                console.error(error);
-            })
+            }
+        }).catch(error => {
+            console.error(error);
+        })
     }
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
@@ -356,7 +383,7 @@ self.addEventListener('fetch', async event => {
     else if (url.includes('/logout')) {
         await Promise.all([
             cacheCleanedPromise(),
-            emptyDB(),
+            emptyDB,
         ]);
         connected = false;
         dataLoaded = false;

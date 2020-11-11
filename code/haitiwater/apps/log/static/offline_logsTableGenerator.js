@@ -10,11 +10,20 @@ function format ( d ) {
     return d.details;
 }
 
-function drawLogTable(){
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=logs";
-    console.log("Request data from: " + dataURL);
-    let table = $('#datatable-logs').DataTable(getLogsTableConfiguration(dataURL));
+async function getLogsData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('logs');
+    let result = [];
+    await table.each(log => {
+        result.push(log);
+    });
+
+    return result;
+}
+
+async function drawLogTable(){
+    let table = $('#datatable-logs').DataTable(await getLogsTableConfiguration());
 
     $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {
         var tr = $(this).closest('tr');
@@ -59,8 +68,7 @@ function requestHandler(url){
         headers: {
             "Content-type": "application/x-www-form-urlencoded",
             'X-CSRFToken':getCookie('csrftoken')
-        },
-        body:'',
+        }
     };
 
     navigator.serviceWorker.ready.then(async swRegistration => {
@@ -74,11 +82,8 @@ function requestHandler(url){
             init:myInit,
             unsync:true
         });
-        drawDataTable('logs');
-        drawDataTable('logs-history');
         console.log('[LOGS]', 3)
-        swRegistration.sync.register('updateQueue');
-        console.log('[LOGS]', 5)
+        return swRegistration.sync.register('updateQueue');
     }).catch(() => {
         console.log('[LOGS]', 4)
         fetch(url, myInit).then(() => {
@@ -95,7 +100,7 @@ function requestHandler(url){
     })
 }
 
-function getLogsTableConfiguration(dataURL){
+async function getLogsTableConfiguration(){
     let config = {
         lengthMenu: [
             [ 10, 25, 50, -1 ],
@@ -122,7 +127,7 @@ function getLogsTableConfiguration(dataURL){
         "searching": false,
         "sortable": true,
         "processing": true,
-        "serverSide": true,
+        "serverSide": false,
         "responsive": true,
         "autoWidth": true,
         scrollX:        true,
@@ -134,9 +139,7 @@ function getLogsTableConfiguration(dataURL){
             rightColumns: 1
         },
         "language": getDataTableFrenchTranslation(),
-        "ajax": {
-            url: dataURL
-        }
+        "data": await getLogsData()
     };
     return config;
 }

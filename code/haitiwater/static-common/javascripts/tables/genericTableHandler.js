@@ -143,6 +143,7 @@ function prettifyHeader(tableName){
 }
 
 function getRequest(table){
+    console.log('[TABLE]', table);
     switch(table){
         case 'manager':
             return validateManagerForm();

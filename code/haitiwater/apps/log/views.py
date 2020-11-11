@@ -12,3 +12,12 @@ def index(request):
         'project_name': PROJECT_NAME,
     }
     return HttpResponse(template.render(context, request))
+
+@login_required(login_url='/login/')
+def offline(request):
+    template = loader.get_template('offline_logs.html')
+    context = {
+        'project_version': PROJECT_VERSION,
+        'project_name': PROJECT_NAME,
+    }
+    return HttpResponse(template.render(context, request))
