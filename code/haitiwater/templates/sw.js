@@ -27,7 +27,7 @@ const staticFiles = [
     '/static/consumerTableHandler.js',
     '/static/consumers.js',
     '/static/dashboard.js',
-    '/static/dexie.js',
+    '/static/vendor/dexie/dexie.js',
     '/static/financial.js',
     '/static/gis.js',
     '/static/gisHelper.js',
