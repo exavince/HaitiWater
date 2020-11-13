@@ -14,6 +14,12 @@ $( document ).ready(function() {
         localStorage.setItem('isMenuOpen', isMenuOpen.toString());
     });
 
+    $('#db-parent').on('click', function() {
+        channel.postMessage({
+            title:'updateIndexDB'
+        });
+    })
+
     $('[data-toggle="tooltip"]').tooltip();
 
     const channel = new BroadcastChannel('sw-messages');
@@ -22,8 +28,9 @@ $( document ).ready(function() {
     }
 
     channel.onmessage = event => {
-        if (event.data.title === 'updateIndexDB') {
-            if (event.data.date !== null) {
+        if (event.data.title === 'newDate') {
+            console.log('[THEME_DATE]', event.data.date);
+            if (event.data.date !== false) {
                 date = event.data.date;
                 $('#last-update').html(
                     date.day.toString() + "-" +
@@ -32,6 +39,9 @@ $( document ).ready(function() {
                     date.hours.toString() + ":" +
                     date.minutes.toString()
                 );
+            }
+            else {
+                $('#last-update').html('unknown');
             }
         }
         else if (event.data.title === 'notification') {
@@ -159,14 +169,16 @@ function setupOfflineMode(channel){
             offlineMode: localStorage.getItem('offlineMode'),
         });
         channel.postMessage({
-            title: 'updatedDB',
+            title: 'lastUpdate',
+            username: localStorage.getItem('username'),
         });
 
     });
 
     channel.postMessage({
-            title: 'updatedDB',
-        });
+        title: 'lastUpdate',
+        username: localStorage.getItem('username'),
+    });
 }
 
 function syncData() {

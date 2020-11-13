@@ -12,16 +12,6 @@ const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
 const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline']
 const staticExt = ['.js','.woff','/static/'];
-let offlineMode = false;
-let userIDs = [];
-let channel = new BroadcastChannel('sw-messages');
-let lastPage = null;
-let needDisconnect = false;
-let connected = false;
-let dataLoaded = false;
-let lastUpdate = null;
-let dbVersion = 1;
-let db = new Dexie("user_db");
 const staticFiles = [
     '/static/consumerFormHandler.js',
     '/static/consumerTableHandler.js',
@@ -88,6 +78,20 @@ const staticFiles = [
     '/static/CACHE/js/0a55f327dfed.js',
     '/static/CACHE/js/bf8351900f38.js',
 ];
+const channel = new BroadcastChannel('sw-messages');
+const dbVersion = 1;
+const db = new Dexie("user_db");
+
+let synced = false;
+let username = null;
+let offlineMode = false;
+let needDisconnect = false;
+let connected = false;
+let dataLoaded = false;
+let lastUpdate = false;
+let isLoading = false;
+
+
 
 /*********************************************************************************
  * IndexDB
@@ -103,188 +107,207 @@ db.version(dbVersion).stores({
     logs:'id,time,type,user,summary,details',
     logs_history:'id,time,type,user,summary,details,action',
     update_queue:'++id, url, init, unsync',
+    sessions:'id,username,connected,needDisconnect,offlineMode,lastUpdate,dataLoaded'
 });
 
-const logsHandler= fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let entry of result.data) {
-            db.logs.put({
-                id:entry.id,
-                time:entry.time,
-                type:entry.type,
-                user:entry.user,
-                summary:entry.summary,
-                details:entry.details,
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_LOGS]', err);
-})
+const logsHandler= () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.logs.put({
+                    id:entry.id,
+                    time:entry.time,
+                    type:entry.type,
+                    user:entry.user,
+                    summary:entry.summary,
+                    details:entry.details,
+                })
+            }
+        })
+    });
+}
 
-const logsHistoryHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let entry of result.data) {
-            db.logs_history.put({
-                id:entry.id,
-                time:entry.time,
-                type:entry.type,
-                user:entry.user,
-                summary:entry.summary,
-                details:entry.details,
-                action:entry.action,
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_LOGSH]', err);
-})
+const logsHistoryHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.logs_history.put({
+                    id:entry.id,
+                    time:entry.time,
+                    type:entry.type,
+                    user:entry.user,
+                    summary:entry.summary,
+                    details:entry.details,
+                    action:entry.action,
+                })
+            }
+        })
+    });
+}
 
-const consumerHandler = fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let entry of result.data) {
-            db.consumer.put({
-                id:entry.consumer[0],
-                nom:entry.consumer[1],
-                prenom:entry.consumer[2],
-                genre:entry.consumer[3],
-                adresse:entry.consumer[4],
-                telephone:entry.consumer[5],
-                membres:entry.consumer[6],
-                sortie_eau:entry.consumer[7],
-                argent_du:entry.consumer[8],
-                zone:entry.consumer[9],
-            })
+const consumerHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.consumer.put({
+                    id:entry.consumer[0],
+                    nom:entry.consumer[1],
+                    prenom:entry.consumer[2],
+                    genre:entry.consumer[3],
+                    adresse:entry.consumer[4],
+                    telephone:entry.consumer[5],
+                    membres:entry.consumer[6],
+                    sortie_eau:entry.consumer[7],
+                    argent_du:entry.consumer[8],
+                    zone:entry.consumer[9],
+                })
 
-            db.consumer_details.put({
-                consumer_id:entry.consumer[0],
-                amount_due:entry.consumer[8],
-                validity:entry.validity
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_CONSUMER]', err);
-})
+                db.consumer_details.put({
+                    consumer_id:entry.consumer[0],
+                    amount_due:entry.consumer[8],
+                    validity:entry.validity
+                })
+            }
+        })
+    });
+}
 
-const paymentHandler = fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let payment of result.data) {
-            db.payment.put({
-                id:payment.payments[0],
-                data:payment.payments[1],
-                value:payment.payments[2],
-                source:payment.payments[3],
-                user_id:payment.consumer_id,
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_PAYMENT]', err);
-})
+const paymentHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let payment of result.data) {
+                db.payment.put({
+                    id:payment.payments[0],
+                    data:payment.payments[1],
+                    value:payment.payments[2],
+                    source:payment.payments[3],
+                    user_id:payment.consumer_id,
+                })
+            }
+        })
+    });
+}
 
-const zoneHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for (let entry of result.data) {
-            db.zone.put({
-                id: entry[0],
-                name: entry[1],
-                cout_fontaine: entry[2],
-                mois_fontaine: entry[3],
-                cout_kiosque: entry[4],
-                mois_kiosque: entry[5],
-                cout_mensuel: entry[6],
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_ZONE]', err);
-})
+const zoneHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for (let entry of result.data) {
+                db.zone.put({
+                    id: entry[0],
+                    name: entry[1],
+                    cout_fontaine: entry[2],
+                    mois_fontaine: entry[3],
+                    cout_kiosque: entry[4],
+                    mois_kiosque: entry[5],
+                    cout_mensuel: entry[6],
+                })
+            }
+        })
+    });
+}
 
-const managerHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let entry of result.data) {
-            db.manager.put({
-                id:entry[0],
-                nom:entry[1],
-                prenom:entry[2],
-                telephone:entry[3],
-                mail:entry[4],
-                role:entry[5],
-                zone:entry[6],
-                unknown:entry[7],
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_MANAGER]', err);
-})
+const managerHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.manager.put({
+                    id:entry[0],
+                    nom:entry[1],
+                    prenom:entry[2],
+                    telephone:entry[3],
+                    mail:entry[4],
+                    role:entry[5],
+                    zone:entry[6],
+                    unknown:entry[7],
+                })
+            }
+        })
+    });
+}
 
-const ticketHandler = fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let entry of result.data) {
-            db.ticket.put({
-                id:entry[0],
-                urgence:entry[1],
-                emplacement:entry[2],
-                type:entry[3],
-                commentaire:entry[4],
-                statut:entry[5],
-                photo:entry[6],
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_TICKET]', err);
-})
+const ticketHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.ticket.put({
+                    id:entry[0],
+                    urgence:entry[1],
+                    emplacement:entry[2],
+                    type:entry[3],
+                    commentaire:entry[4],
+                    statut:entry[5],
+                    photo:entry[6],
+                })
+            }
+        })
+    });
+}
 
+const waterElement_handler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
+        networkResponse.json().then(result => {
+            for(let entry of result.data) {
+                db.water_element.put({
+                    id:entry[0],
+                    type:entry[1],
+                    place:entry[2],
+                    users:entry[3],
+                    state:entry[4],
+                    m3:entry[5],
+                    gallons:entry[6],
+                    gestionnaire:entry[7],
+                    zone_up:entry[8],
+                })
+            }
+        })
+    });
+}
 
-const waterElement_handler = fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
-    networkResponse.json().then(result => {
-        for(let entry of result.data) {
-            db.water_element.put({
-                id:entry[0],
-                type:entry[1],
-                place:entry[2],
-                users:entry[3],
-                state:entry[4],
-                m3:entry[5],
-                gallons:entry[6],
-                gestionnaire:entry[7],
-                zone_up:entry[8],
-            })
-        }
-    })
-}).catch(err => {
-    console.log('[SW_WATER]', err);
-})
+const populateDB = () => {
+    isLoading = true;
+    Promise.all([
+        consumerHandler(),
+        zoneHandler(),
+        managerHandler(),
+        ticketHandler(),
+        waterElement_handler(),
+        paymentHandler(),
+        logsHandler(),
+        logsHistoryHandler()
+    ]).then(() => {
+        isLoading = false;
+        setInfos( 'lastUpdate', {
+            year: new Date().getFullYear(),
+            month: new Date().getMonth()+1,
+            day: new Date().getDate(),
+            hours: new Date().getHours(),
+            minutes: new Date().getMinutes(),
+        });
+        channel.postMessage({
+            title:'newDate',
+            date:lastUpdate
+        });
+    }).catch(err => {
+        isLoading = false;
+        console.log('[SW_POPULATEDB]', err);
+    });
+}
 
-const populateDB = Promise.all([
-    consumerHandler,
-    zoneHandler,
-    managerHandler,
-    ticketHandler,
-    waterElement_handler,
-    paymentHandler,
-    logsHandler,
-    logsHistoryHandler
-]).catch(err => {
-    console.log('[SW_POPULATEDB]', err);
-});
-
-const emptyDB = Promise.all([
-    db.zone.clear(),
-    db.consumer.clear(),
-    db.ticket.clear(),
-    db.water_element.clear(),
-    db.manager.clear(),
-    db.consumer_details.clear(),
-    db.payment.clear(),
-    db.logs.clear(),
-    db.logs_history.clear()
-]).catch(err => {
-    console.log('[SW_EMPTYDB]', err);
-});
+const emptyDB = () => {
+    return Promise.all([
+        db.zone.clear(),
+        db.consumer.clear(),
+        db.ticket.clear(),
+        db.water_element.clear(),
+        db.manager.clear(),
+        db.consumer_details.clear(),
+        db.payment.clear(),
+        db.logs.clear(),
+        db.logs_history.clear()
+    ]).catch(err => {
+        console.log('[SW_EMPTYDB]', err);
+    });
+}
 
 
 
@@ -292,19 +315,17 @@ const emptyDB = Promise.all([
  * Utils
  *********************************************************************************/
 const addCache = (cache, tab) => {
-    caches.open(cache).then(cache => {
+    return caches.open(cache).then(cache => {
         cache.addAll(
             tab
-        ).catch(error => {
-            console.error(error)
-        });
+        );
     }).catch(err => {
         console.error('[SW_CACHEADD]', err);
     });
 }
 
-let cacheCleanedPromise = () => {
-    caches.keys().then(keys => {
+const cacheCleanedPromise = () => {
+    return caches.keys().then(keys => {
         keys.forEach(key => {
             if (key !== cacheVersion) {
                 return caches.delete(key);
@@ -332,50 +353,144 @@ const isOnlinePages = (url) => {
 };
 
 const getOfflineData = () => {
-    dataLoaded = true;
-    Promise.all([
+    setInfos('dataLoaded', true);
+    return Promise.all([
         addCache(cacheVersion, ['/offline/']),
         addCache(userCache, onlinePages),
         addCache(userCache, offlinePages),
         addCache(cacheVersion, staticFiles),
-        populateDB,
-    ]).then(async () => {
-        lastUpdate = {
-            year: await new Date().getFullYear(),
-            month: await new Date().getMonth()+1,
-            day: await new Date().getDate(),
-            hours: await new Date().getHours(),
-            minutes: await new Date().getMinutes(),
-        }
-    }).catch(err => {
-        dataLoaded = false;
+        populateDB(),
+    ]).catch(err => {
+        setInfos('dataLoaded', false);
         console.error('[SW_GETDATA]', err);
     });
 }
+
+const getInfos = () => {
+    return db.sessions.where('id').equals(1).first(data => {
+        username = data.username;
+        connected = data.connected;
+        needDisconnect = data.needDisconnect;
+        offlineMode = data.offlineMode;
+        lastUpdate = data.lastUpdate;
+        dataLoaded = data.dataLoaded;
+        synced = true;
+        console.log('[TEST]', lastUpdate);
+        channel.postMessage({
+            title:'newDate',
+            data:lastUpdate
+        });
+        return data;
+    });
+}
+
+const setInfos = (info, value) => {
+    switch (info){
+        case 'username':
+            username = value;
+            break
+        case 'connected':
+            connected = value;
+            break
+        case 'needDisconnect':
+            needDisconnect = value;
+            break
+        case 'offlineMode':
+            offlineMode = value;
+            break
+        case 'lastUpdate':
+            lastUpdate = value;
+            break
+        case 'dataLoaded':
+            dataLoaded = value;
+            break
+    }
+    db.sessions.put({
+        id:1,
+        username:username,
+        connected:connected,
+        needDisconnect:needDisconnect,
+        offlineMode:offlineMode,
+        lastUpdate:lastUpdate,
+        dataLoaded:dataLoaded
+    });
+}
+
+const isConnected = () => {
+    return fetch('http://127.0.0.1:8000/api/check-authentication').then(async networkResponse => {
+        if(networkResponse.status === 200) {
+            setInfos('connected' ,true);
+            if (!dataLoaded) {
+                getOfflineData();
+            }
+        }
+    }).catch(err => {
+        console.error('[SW_CONNECTED]',err);
+    })
+}
+
+const pushData = async () => {
+    let tab = await db.update_queue.toArray();
+    tab.forEach(element => {
+        fetch(element.url, element.init).then(async () => {
+            console.log('[SW_SYNC]', 'The ' + element + ' is synced');
+            db.update_queue.delete(element.id);
+            channel.postMessage({
+                title:'notification',
+                unsync: await db.update_queue.count()
+            });
+        }).catch(async () => {
+            console.log('[SW_SYNC]','Cannot reach the network, data still need to be pushed');
+            channel.postMessage({
+                title:'notification',
+                unsync: await db.update_queue.count()
+            });
+        })
+    });
+}
+
+const cleanSession = () => {
+    return db.sessions.put({
+        id:1,
+        username:null,
+        connected:false,
+        needDisconnect:false,
+        offlineMode:false,
+        lastUpdate:false,
+        dataLoaded:false
+    });
+}
+
 
 
 /*********************************************************************************
  * Event listener
  *********************************************************************************/
-
 self.addEventListener('install', event => {
     event.waitUntil(cacheCleanedPromise());
 });
 
 
-self.addEventListener('activate', event => {
-    if (!connected) {
-        fetch('http://127.0.0.1:8000/api/check-authentication').then(networkResponse => {
-            if(networkResponse.status === 200) {
-                connected = true;
-                if (!dataLoaded) {
-                    getOfflineData();
-                }
-            }
-        }).catch(err => {
-            console.error('[SW_CONNECTED]',err);
+self.addEventListener('activate', async () => {
+    await db.sessions.add({
+        id:1,
+        username:null,
+        connected:false,
+        needDisconnect:false,
+        offlineMode:false,
+        lastUpdate:false,
+        dataLoaded:false
+    }).then(() => {
+        console.log('[ACTIVATE]', lastUpdate);
+        channel.postMessage({
+            title:'newDate',
+            data:lastUpdate
         });
-    }
+    }).catch(err => {
+        getInfos();
+        console.error('[SW_SESSIONS]', err);
+    });
+    if (!connected) isConnected();
 });
 
 
@@ -383,18 +498,8 @@ self.addEventListener('fetch', async event => {
     const {request} = event;
     const url = event.request.url;
 
-    if (!connected) {
-        await fetch('http://127.0.0.1:8000/api/check-authentication').then(async networkResponse => {
-            if(networkResponse.status === 200) {
-                connected = true;
-                if (!dataLoaded) {
-                    event.waitUntil(getOfflineData());
-                }
-            }
-        }).catch(err => {
-            console.error('[SW_CONNECTED]',err);
-        })
-    }
+    if(!synced) await getInfos();
+    if (!connected) event.waitUntil(isConnected());
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
@@ -402,17 +507,18 @@ self.addEventListener('fetch', async event => {
     else if (url.includes('/logout')) {
         await Promise.all([
             cacheCleanedPromise(),
-            emptyDB,
+            emptyDB(),
         ]);
-        connected = false;
-        dataLoaded = false;
+        setInfos('connected', false);
+        setInfos('dataLoaded', false);
         event.respondWith(
-            fetch(event.request).then(networkResponse => {
-                offlineMode = false;
-                needDisconnect = false;
+            fetch(event.request).then(async networkResponse => {
+                setInfos('offlineMode', false);
+                setInfos('needDisconnect', false);
+                await cleanSession();
                 return networkResponse;
             }).catch(() => {
-                needDisconnect = true;
+                setInfos('needDisconnect', true);
                 return caches.match('/offline/');
             })
         );
@@ -420,7 +526,7 @@ self.addEventListener('fetch', async event => {
     else if (needDisconnect) {
         event.respondWith(
             fetch(event.request).then(() => {
-                needDisconnect = false;
+                setInfos('needDisconnect', false);
                 return Response.redirect('/logout/');
             }).catch(() => {
                 return caches.match('/offline/');
@@ -594,37 +700,39 @@ self.addEventListener('fetch', async event => {
     }
 });
 
-channel.addEventListener('message', event => {
+
+channel.addEventListener('message', async event => {
     if (event.data.title === 'navigationMode') {
-	    offlineMode = event.data.offlineMode === 'true';
+        setInfos('offlineMode', event.data.offlineMode)
     }
-    else if(event.data.title === 'updatedDB') {
+    else if(event.data.title === 'lastUpdate') {
+        if (username !== null && username !== event.data.username) {
+            Promise.all([cleanSession(), emptyDB(), cacheCleanedPromise()]).then(() => {
+                setInfos('needDisconnect', true);
+            });
+        }
         channel.postMessage({
-            title: 'updateIndexDB',
+            title: 'newDate',
             date: lastUpdate
+        });
+        setInfos('username', event.data.username);
+    }
+    else if(event.data.title === 'updateIndexDB'){
+        pushData().then(() => {
+            if(!isLoading) {
+                console.log('[SW_UPDATE]', 'DB is loading');
+                populateDB();
+            }
+            else {
+                console.log('[SW_UPDATE]', 'DB is already loading');
+            }
         });
     }
 });
 
+
 self.addEventListener('sync', async event => {
     if (event.tag === 'updateQueue') {
-        let tab = await db.update_queue.toArray();
-
-        tab.forEach(element => {
-            fetch(element.url, element.init).then(async () => {
-                console.log('[SYNC]', tab);
-                db.update_queue.delete(element.id);
-                channel.postMessage({
-                    title:'notification',
-                    unsync: await db.update_queue.count()
-                });
-            }).catch(async () => {
-                console.log('[SYNC]','Cannot reach the network, data still need to be pushed');
-                channel.postMessage({
-                    title:'notification',
-                    unsync: await db.update_queue.count()
-                });
-            })
-        });
+        await pushData();
     }
 });
