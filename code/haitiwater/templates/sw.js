@@ -86,7 +86,6 @@ let synced = false;
 let username = null;
 let offlineMode = false;
 let needDisconnect = false;
-let connected = false;
 let dataLoaded = false;
 let lastUpdate = false;
 let isLoading = false;
@@ -107,12 +106,13 @@ db.version(dbVersion).stores({
     logs:'id,time,type,user,summary,details',
     logs_history:'id,time,type,user,summary,details,action',
     update_queue:'++id, url, init, unsync',
-    sessions:'id,username,connected,needDisconnect,offlineMode,lastUpdate,dataLoaded'
+    sessions:'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
 });
 
 const logsHandler= () => {
     return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.logs.clear();
             for(let entry of result.data) {
                 db.logs.put({
                     id:entry.id,
@@ -130,6 +130,7 @@ const logsHandler= () => {
 const logsHistoryHandler = () => {
     return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.logs_history.clear();
             for(let entry of result.data) {
                 db.logs_history.put({
                     id:entry.id,
@@ -148,6 +149,8 @@ const logsHistoryHandler = () => {
 const consumerHandler = () => {
     return fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.consumer.clear();
+            db.consumer_details.clear();
             for(let entry of result.data) {
                 db.consumer.put({
                     id:entry.consumer[0],
@@ -175,6 +178,7 @@ const consumerHandler = () => {
 const paymentHandler = () => {
     return fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.payment.clear();
             for(let payment of result.data) {
                 db.payment.put({
                     id:payment.payments[0],
@@ -191,6 +195,7 @@ const paymentHandler = () => {
 const zoneHandler = () => {
     return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.zone.clear();
             for (let entry of result.data) {
                 db.zone.put({
                     id: entry[0],
@@ -209,6 +214,7 @@ const zoneHandler = () => {
 const managerHandler = () => {
     return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.manager.clear();
             for(let entry of result.data) {
                 db.manager.put({
                     id:entry[0],
@@ -228,6 +234,7 @@ const managerHandler = () => {
 const ticketHandler = () => {
     return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.ticket.clear();
             for(let entry of result.data) {
                 db.ticket.put({
                     id:entry[0],
@@ -246,6 +253,7 @@ const ticketHandler = () => {
 const waterElement_handler = () => {
     return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
         networkResponse.json().then(result => {
+            db.water_element.clear();
             for(let entry of result.data) {
                 db.water_element.put({
                     id:entry[0],
@@ -285,10 +293,18 @@ const populateDB = () => {
         });
         channel.postMessage({
             title:'newDate',
+            isModify:true,
+            isDone:true,
             date:lastUpdate
         });
     }).catch(err => {
         isLoading = false;
+        channel.postMessage({
+            title:'newDate',
+            isModify:true,
+            isDone:false,
+            date:lastUpdate
+        });
         console.log('[SW_POPULATEDB]', err);
     });
 }
@@ -369,7 +385,6 @@ const getOfflineData = () => {
 const getInfos = () => {
     return db.sessions.where('id').equals(1).first(data => {
         username = data.username;
-        connected = data.connected;
         needDisconnect = data.needDisconnect;
         offlineMode = data.offlineMode;
         lastUpdate = data.lastUpdate;
@@ -378,6 +393,8 @@ const getInfos = () => {
         console.log('[TEST]', lastUpdate);
         channel.postMessage({
             title:'newDate',
+            isModify:false,
+            isDone:false,
             data:lastUpdate
         });
         return data;
@@ -388,9 +405,6 @@ const setInfos = (info, value) => {
     switch (info){
         case 'username':
             username = value;
-            break
-        case 'connected':
-            connected = value;
             break
         case 'needDisconnect':
             needDisconnect = value;
@@ -408,25 +422,11 @@ const setInfos = (info, value) => {
     db.sessions.put({
         id:1,
         username:username,
-        connected:connected,
         needDisconnect:needDisconnect,
         offlineMode:offlineMode,
         lastUpdate:lastUpdate,
         dataLoaded:dataLoaded
     });
-}
-
-const isConnected = () => {
-    return fetch('http://127.0.0.1:8000/api/check-authentication').then(async networkResponse => {
-        if(networkResponse.status === 200) {
-            setInfos('connected' ,true);
-            if (!dataLoaded) {
-                getOfflineData();
-            }
-        }
-    }).catch(err => {
-        console.error('[SW_CONNECTED]',err);
-    })
 }
 
 const pushData = async () => {
@@ -453,7 +453,6 @@ const cleanSession = () => {
     return db.sessions.put({
         id:1,
         username:null,
-        connected:false,
         needDisconnect:false,
         offlineMode:false,
         lastUpdate:false,
@@ -475,7 +474,6 @@ self.addEventListener('activate', async () => {
     await db.sessions.add({
         id:1,
         username:null,
-        connected:false,
         needDisconnect:false,
         offlineMode:false,
         lastUpdate:false,
@@ -484,13 +482,15 @@ self.addEventListener('activate', async () => {
         console.log('[ACTIVATE]', lastUpdate);
         channel.postMessage({
             title:'newDate',
+            isModify:false,
+            isDone:false,
             data:lastUpdate
         });
     }).catch(err => {
         getInfos();
         console.error('[SW_SESSIONS]', err);
     });
-    if (!connected) isConnected();
+    if (!dataLoaded) getOfflineData();
 });
 
 
@@ -499,7 +499,7 @@ self.addEventListener('fetch', async event => {
     const url = event.request.url;
 
     if(!synced) await getInfos();
-    if (!connected) event.waitUntil(isConnected());
+    if (!dataLoaded) event.waitUntil(getOfflineData());
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
@@ -509,7 +509,6 @@ self.addEventListener('fetch', async event => {
             cacheCleanedPromise(),
             emptyDB(),
         ]);
-        setInfos('connected', false);
         setInfos('dataLoaded', false);
         event.respondWith(
             fetch(event.request).then(async networkResponse => {
@@ -536,51 +535,51 @@ self.addEventListener('fetch', async event => {
     else if (offlineMode) {
         if(url.includes('/reseau')) {
             event.respondWith(
-                caches.open('user_1').then(async cache => {
-                    return await cache.match('/reseau/offline');
+                caches.open('user_1').then(cache => {
+                    return cache.match('/reseau/offline');
                 })
             )
         }
         else if (url.includes('/gestion')) {
             event.respondWith(
-                caches.open('user_1').then(async cache => {
-                    return await cache.match('/gestion/offline');
+                caches.open('user_1').then(cache => {
+                    return cache.match('/gestion/offline');
                 })
             )
         }
         else if (url.includes('/rapport')) {
             event.respondWith(
-                caches.open('user_1').then(async cache => {
-                    return await cache.match('/rapport/offline');
+                caches.open('user_1').then(cache => {
+                    return cache.match('/rapport/offline');
                 })
             )
         }
         else if (url.includes('/consommateurs')) {
             event.respondWith(
-                caches.open('user_1').then(async cache => {
-                    return await cache.match('/consommateurs/offline');
+                caches.open('user_1').then(cache => {
+                    return cache.match('/consommateurs/offline');
                 })
             )
         }
         else if (url.includes('/finances')) {
             event.respondWith(
-                caches.open('user_1').then(async cache => {
-                    return await cache.match('/finances/offline');
+                caches.open('user_1').then(cache => {
+                    return cache.match('/finances/offline');
                 })
             )
         }
         else if (url.includes('/historique')) {
             event.respondWith(
-                caches.open('user_1').then(async cache => {
-                    return await cache.match('/historique/offline');
+                caches.open('user_1').then(cache => {
+                    return cache.match('/historique/offline');
                 })
             )
         }
         else if (url.includes('/login')) {
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
                             return cache.match('/offline/');
                         })
                     })
@@ -600,66 +599,60 @@ self.addEventListener('fetch', async event => {
     }
     else {
         if(url.includes('/reseau')) {
-            lastPage = '/reseau/offline';
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
                             return cache.match('/reseau/offline');
                         })
                     })
             );
         }
         else if (url.includes('/gestion')) {
-            lastPage = '/gestion/offline';
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
                             return cache.match('/gestion/offline');
                         })
                     })
             )
         }
         else if (url.includes('/rapport')) {
-            lastPage = '/rapport/offline';
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
                             return cache.match('/rapport/offline');
                         })
                     })
             )
         }
         else if (url.includes('/historique')) {
-            lastPage = '/historique/offline';
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
-                            return cache.match('historique/offline/');
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
+                            return cache.match('historique/offline');
                         });
                     })
             )
         }
         else if (url.includes('/consommateurs')) {
-            lastPage = '/consommateurs/offline';
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
                             return cache.match('/consommateurs/offline');
                         })
                     })
             )
         }
         else if (url.includes('/finances')) {
-            lastPage = '/finances/offline';
             event.respondWith(
                 new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(async () => {
-                        return await caches.open('user_1').then(cache => {
+                    .catch(() => {
+                        return caches.open('user_1').then(cache => {
                             return cache.match('/finances/offline');
                         })
                     })
@@ -668,8 +661,8 @@ self.addEventListener('fetch', async event => {
         else if (url.includes('/login')) {
             event.respondWith(
               new workbox.strategies.NetworkOnly().handle({event, request})
-                  .catch(async () => {
-                        return await caches.open(cacheVersion).then(cache => {
+                  .catch(() => {
+                        return caches.open(cacheVersion).then(cache => {
                             return cache.match('/offline/');
                         })
                     })
@@ -713,6 +706,8 @@ channel.addEventListener('message', async event => {
         }
         channel.postMessage({
             title: 'newDate',
+            isModify:false,
+            isDone:false,
             date: lastUpdate
         });
         setInfos('username', event.data.username);
@@ -722,8 +717,20 @@ channel.addEventListener('message', async event => {
             if(!isLoading) {
                 console.log('[SW_UPDATE]', 'DB is loading');
                 populateDB();
+                channel.postMessage({
+                    title:'pNotify',
+                    status:'Chargement en cours !',
+                    text:'Vos données chargent en arrère plan !',
+                    type:'success'
+                });
             }
             else {
+                channel.postMessage({
+                    title:'pNotify',
+                    status:'Déjà en cours !',
+                    text:'Vos données sont déjà entrain de charger en arrière plan',
+                    type:'success'
+                });
                 console.log('[SW_UPDATE]', 'DB is already loading');
             }
         });

@@ -29,7 +29,19 @@ $( document ).ready(function() {
 
     channel.onmessage = event => {
         if (event.data.title === 'newDate') {
-            console.log('[THEME_DATE]', event.data.date);
+            if (event.data.isDone && event.data.isModify) {
+                new PNotify({
+                    title: 'Réussite!',
+                    text: "Les données ont bien été synchronisées",
+                    type: 'success'
+                });
+            } else if (!event.data.isDone && event.data.isModify) {
+                new PNotify({
+                    title: 'Échec!',
+                    text: "Les données n'ont pas été synchronisées, vous n'avez peut-être pas de connexion...",
+                    type: 'error'
+                });
+            }
             if (event.data.date !== false) {
                 date = event.data.date;
                 $('#last-update').html(
@@ -48,6 +60,26 @@ $( document ).ready(function() {
             localStorage.setItem('toUpdate', event.data.unsync);
             $('#notification-content').html('');
             setupNotifications();
+            if(event.data.unsync > 0){
+                new PNotify({
+                    title: 'Échec!',
+                    text: "Certaines modifications n'ont pas été synchronizées",
+                    type: 'error'
+                });
+            } else {
+                new PNotify({
+                    title: 'Réussite!',
+                    text: "Toutes vos modifications ont été synchronizées",
+                    type: 'success'
+                });
+            }
+        }
+        else if (event.data.title === 'pNotify') {
+            new PNotify({
+                title: event.data.status,
+                text: event.data.text,
+                type: event.data.type
+            });
         }
     }
 
