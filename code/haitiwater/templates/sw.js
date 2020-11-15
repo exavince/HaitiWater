@@ -79,6 +79,7 @@ const channel = new BroadcastChannel('sw-messages');
 const dbVersion = 1;
 const db = new Dexie("user_db");
 
+let isConnecting = false;
 let synced = false;
 let username = null;
 let offlineMode = false;
@@ -362,11 +363,16 @@ const isOnlinePages = (url) => {
 };
 
 const isConnected = () => {
+    isConnecting = true;
     return fetch('/api/check-authentication').then(response => {
         if(response.ok) {
             connected = true;
+            isConnecting = false;
+            return true;
         }
+        isConnecting = false;
     }).catch(()=> {
+        isConnecting = false;
         return false;
     })
 }
@@ -386,13 +392,13 @@ const getOfflineData = () => {
 }
 
 const getInfos = () => {
+    synced = true;
     return db.sessions.where('id').equals(1).first(data => {
         username = data.username;
         needDisconnect = data.needDisconnect;
         offlineMode = data.offlineMode;
         lastUpdate = data.lastUpdate;
         dataLoaded = data.dataLoaded;
-        synced = true;
         console.log('[TEST]', lastUpdate);
         channel.postMessage({
             title:'newDate',
@@ -452,8 +458,10 @@ const pushData = async () => {
     });
 }
 
-
 const resetState = () => {
+    channel.postMessage({
+        title:'resetNavigationMode'
+    });
     synced = false;
     setInfos('username', null);
     setInfos('offlineMode', false);
@@ -487,7 +495,7 @@ self.addEventListener('activate', async () => {
             title:'newDate',
             isModify:false,
             isDone:false,
-            data:lastUpdate
+            date:lastUpdate
         });
     }).catch(err => {
         getInfos();
@@ -502,7 +510,7 @@ self.addEventListener('fetch', async event => {
     const url = event.request.url;
 
     if(!synced) await getInfos();
-    if(!connected && !needDisconnect) await isConnected();
+    if(!connected && !needDisconnect && !isConnecting) await isConnected();
     if (!dataLoaded && connected) event.waitUntil(getOfflineData());
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
@@ -698,11 +706,15 @@ self.addEventListener('fetch', async event => {
 
 channel.addEventListener('message', async event => {
     if (event.data.title === 'navigationMode') {
-        setInfos('offlineMode', event.data.offlineMode)
+        if (event.data.offlineMode === 'true') {
+            setInfos('offlineMode', true);
+        } else {
+            setInfos('offlineMode', false);
+        }
     }
     else if(event.data.title === 'lastUpdate') {
         if (username !== null && username !== event.data.username && event.data.username !== undefined) {
-            Promise.all([cleanSession(), emptyDB(), cacheCleanedPromise()]).then(() => {
+            Promise.all([resetState(), emptyDB(), cacheCleanedPromise()]).then(() => {
                 setInfos('needDisconnect', true);
             });
         }

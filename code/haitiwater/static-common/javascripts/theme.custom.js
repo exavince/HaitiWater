@@ -77,6 +77,9 @@ $( document ).ready(function() {
                 });
             }
         }
+        else if (event.data.title === 'resetNavigationMode'){
+            localStorage.setItem('offlineMode', false);
+        }
         else if (event.data.title === 'pNotify') {
             new PNotify({
                 title: event.data.status,
