@@ -70,12 +70,20 @@ function removeElement(table, id, otherParameters) {
 
         db_table.put({
             url:postURL,
-            date: new Date().getDay(),
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
             table: table,
             init:myInit,
-            type:'edit',
-            elemId: 2,
+            type:'Supprimer',
+            elemId: id,
             unsync:true,
+            details:init
         });
 
         new PNotify({
@@ -199,12 +207,20 @@ function postNewRow(table, callback){
 
         db_table.put({
             url:postURL,
-            date: new Date().getDay(),
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
             table: table,
             init:myInit,
-            type:'edit',
+            type:'Ajouter',
             elemId: 2,
             unsync:true,
+            details:init
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
@@ -281,12 +297,20 @@ function postEditRow(table, callback){
         let db_table = db.table('update_queue');
         db_table.put({
             url:postURL,
-            date: new Date().getDay(),
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
             table: table,
             init:myInit,
-            type:'edit',
+            type:'Editer',
             elemId: 2,
-            unsync:true,
+            unsync:'En attente',
+            details:init
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg

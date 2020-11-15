@@ -7,7 +7,7 @@ $(document).ready(function() {
 //Formatting function for row details
 function format ( d ) {
     // d is the original data object for the row
-    return d.init;
+    return d.details;
 }
 
 async function getLogsData() {
@@ -84,7 +84,6 @@ function requestHandler(url){
     }).catch(() => {
         fetch(url, myInit).then(() => {
             drawDataTable('logs');
-            drawDataTable('logs-history');
         }).catch(err => {
             console.error(this);
             new PNotify({

@@ -10,7 +10,7 @@ const cacheVersion = 'static';
 const userCache = 'user_1';
 const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
 const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
-const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline']
+const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline', /modifications/]
 const staticExt = ['.js','.woff','/static/'];
 const staticFiles = [
     '/static/consumerFormHandler.js',
@@ -74,10 +74,6 @@ const staticFiles = [
     '/static/zoneManagement.js',
     '/static/zoneModalHandler.js',
     '/static/zoneTableGenerator.js',
-    '/static/CACHE/css/29de54cb81d2.css',
-    '/static/CACHE/js/0a55f327dfed.js',
-    '/static/CACHE/js/bf8351900f38.js',
-    '/static/CACHE/js/46526488ea84.js',
 ];
 const channel = new BroadcastChannel('sw-messages');
 const dbVersion = 1;
@@ -87,9 +83,10 @@ let synced = false;
 let username = null;
 let offlineMode = false;
 let needDisconnect = false;
-let dataLoaded = null;
-let lastUpdate = false;
+let dataLoaded = false;
+let lastUpdate = undefined;
 let isLoading = false;
+let connected = false;
 
 
 
@@ -106,7 +103,7 @@ db.version(dbVersion).stores({
     payment:'id,data,value,source,user_id',
     logs:'id,time,type,user,summary,details',
     logs_history:'id,time,type,user,summary,details,action',
-    update_queue:'++id, url, init, date, type, table, elemId, unsync',
+    update_queue:'++id, url, init, date, type, table, elemId, unsync, details',
     sessions:'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
 });
 
@@ -364,6 +361,16 @@ const isOnlinePages = (url) => {
     return false;
 };
 
+const isConnected = () => {
+    return fetch('/api/check-authentication').then(response => {
+        if(response.ok) {
+            connected = true;
+        }
+    }).catch(()=> {
+        return false;
+    })
+}
+
 const getOfflineData = () => {
     setInfos('dataLoaded', true);
     return Promise.all([
@@ -429,7 +436,7 @@ const pushData = async () => {
     let tab = await db.update_queue.toArray();
     tab.forEach(element => {
         fetch(element.url, element.init).then(async () => {
-            console.log('[SW_SYNC]', 'The ' + element + ' is synced');
+            console.log('[SW_SYNC]', 'The ' + element.init + ' is synced');
             db.update_queue.delete(element.id);
             channel.postMessage({
                 title:'notification',
@@ -445,15 +452,16 @@ const pushData = async () => {
     });
 }
 
-const cleanSession = () => {
-    return db.sessions.put({
-        id:1,
-        username:null,
-        needDisconnect:false,
-        offlineMode:false,
-        lastUpdate:false,
-        dataLoaded:false
-    });
+
+const resetState = () => {
+    synced = false;
+    setInfos('username', null);
+    setInfos('offlineMode', false);
+    setInfos('needDisconnect', false);
+    setInfos('dataLoaded', false);
+    setInfos('lastUpdate', undefined);
+    setInfos('isLoading', false);
+    connected = false;
 }
 
 
@@ -472,10 +480,9 @@ self.addEventListener('activate', async () => {
         username:null,
         needDisconnect:false,
         offlineMode:false,
-        lastUpdate:false,
+        lastUpdate:undefined,
         dataLoaded:false
     }).then(() => {
-        console.log('[ACTIVATE]', lastUpdate);
         channel.postMessage({
             title:'newDate',
             isModify:false,
@@ -495,7 +502,8 @@ self.addEventListener('fetch', async event => {
     const url = event.request.url;
 
     if(!synced) await getInfos();
-    if (!dataLoaded) event.waitUntil(getOfflineData());
+    if(!connected && !needDisconnect) await isConnected();
+    if (!dataLoaded && connected) event.waitUntil(getOfflineData());
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
@@ -504,13 +512,11 @@ self.addEventListener('fetch', async event => {
         await Promise.all([
             cacheCleanedPromise(),
             emptyDB(),
+            resetState()
         ]);
-        setInfos('dataLoaded', false);
         event.respondWith(
             fetch(event.request).then(async networkResponse => {
-                setInfos('offlineMode', false);
                 setInfos('needDisconnect', false);
-                await cleanSession();
                 return networkResponse;
             }).catch(() => {
                 setInfos('needDisconnect', true);
