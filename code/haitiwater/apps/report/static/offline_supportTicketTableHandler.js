@@ -20,9 +20,7 @@ async function getData() {
 }
 
 async function drawTicketTable(){
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=ticket";
-    console.log("[REQUEST DATA]" ,dataURL);
+    $('#flavoured-part').css('background-color', 'red');
     let configuration;
     configuration = await getTicketDatatableConfiguration();
     $('#datatable-ticket').DataTable(configuration);

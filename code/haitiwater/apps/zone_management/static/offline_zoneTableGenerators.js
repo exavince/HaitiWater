@@ -20,6 +20,7 @@ async function getZoneData() {
 }
 
 async function drawZoneTable(){
+    $('#flavoured-part').css('background-color', 'red');
     let config = await getZoneTableConfiguration();
     let table = $('#datatable-zone').DataTable(config);
 

@@ -22,12 +22,14 @@ async function getConsumerData() {
     return result;
 }
 
+
 /**
  * Custom Table Handler
  * Used to prettify the table and make it respond to custom input and commands
  *
  */
 async function drawConsumerTable(fullView = true) {
+    $('#flavoured-part').css('background-color', 'red');
     let datatable = $('#datatable-consumer');
     let configuration = await getConsumerDatatableConfiguration(fullView);
     datatable.DataTable(configuration);

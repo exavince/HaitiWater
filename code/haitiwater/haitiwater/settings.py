@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'apps.offline',
     'apps.help',
     'apps.financial',
+    'apps.unsynchronized',
     'compressor',
     'django_tables2',  # not used anymore
     'bootstrap3',

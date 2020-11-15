@@ -70,8 +70,12 @@ function removeElement(table, id, otherParameters) {
 
         db_table.put({
             url:postURL,
+            date: new Date().getDay(),
+            table: table,
             init:myInit,
-            unsync:true
+            type:'edit',
+            elemId: 2,
+            unsync:true,
         });
 
         new PNotify({
@@ -83,12 +87,22 @@ function removeElement(table, id, otherParameters) {
         drawDataTable(table);
         return swRegistration.sync.register('updateQueue');
     }).catch(() => {
-        fetch(postURL, myInit).then(() => {
-            new PNotify({
-                title: 'Succès!',
-                text: 'Élément supprimé avec succès',
-                type: 'success'
-            });
+        fetch(postURL, myInit).then(response => {
+            if(response.ok) {
+                new PNotify({
+                    title: 'Succès!',
+                    text: 'Élément supprimé avec succès',
+                    type: 'success'
+                });
+            }
+            else {
+                console.log('[DELETE]', "POST error on remove element");
+                new PNotify({
+                    title: 'Échec!',
+                    text: err,
+                    type: 'error'
+                });
+            }
             drawDataTable(table);
         }).catch(err => {
             console.log('[DELETE]', "POST error on remove element");
@@ -185,8 +199,12 @@ function postNewRow(table, callback){
 
         db_table.put({
             url:postURL,
+            date: new Date().getDay(),
+            table: table,
             init:myInit,
-            unsync:true
+            type:'edit',
+            elemId: 2,
+            unsync:true,
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
@@ -201,23 +219,29 @@ function postNewRow(table, callback){
         return swRegistration.sync.register('updateQueue');
     }).catch(() => {
         fetch(postURL, myInit)
-            .then(() => {
-                document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                dismissModal();
-                new PNotify({
-                    title: 'Succès!',
-                    text: 'Élément ajouté avec succès',
-                    type: 'success'
-                });
+            .then(response => {
+                if(response.ok) {
+                    document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+                    dismissModal();
+                    new PNotify({
+                        title: 'Succès!',
+                        text: 'Élément ajouté avec succès',
+                        type: 'success'
+                    });
+                } else {
+                    document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+                    document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+                    new PNotify({
+                        title: 'Échec!',
+                        text: err,
+                        type: 'error'
+                    });
+                }
                 drawDataTable(table);
             })
             .catch(err => {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                if(xhttp.responseText !== ''){
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = err;
-                } else {
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = err;
-                }
+                document.getElementById("form-" + table + "-error-msg").innerHTML = err;
                 new PNotify({
                     title: 'Échec!',
                     text: err,
@@ -257,7 +281,11 @@ function postEditRow(table, callback){
         let db_table = db.table('update_queue');
         db_table.put({
             url:postURL,
+            date: new Date().getDay(),
+            table: table,
             init:myInit,
+            type:'edit',
+            elemId: 2,
             unsync:true,
         });
 
@@ -272,34 +300,32 @@ function postEditRow(table, callback){
         drawDataTable(table);
         return swRegistration.sync.register('updateQueue');
     }).catch(() => {
-        fetch(postURL,myInit)
-            .then(response => {
-                if (response.status !== 200) {
-                    console.log("POST error on new element");
-                    document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = error;
-                }
-                else {
-                    document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                    dismissModal();
-                    new PNotify({
-                        title: 'Succès!',
-                        text: 'Élément édité avec succès',
-                        type: 'success'
-                    });
-                }
-                drawDataTable(table);
-            })
-            .catch(error => {
-                console.log('[EDIT]',"POST error on new element");
+        fetch(postURL,myInit).then(response => {
+            if (!response.ok) {
+                console.log("POST error on new element");
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
                 document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+            }
+            else {
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+                dismissModal();
                 new PNotify({
-                    title: 'Échec!',
-                    text: err,
-                    type: 'error'
+                    title: 'Succès!',
+                    text: 'Élément édité avec succès',
+                    type: 'success'
                 });
-            })
+            }
+            drawDataTable(table);
+        }).catch(error => {
+            console.log('[EDIT]',"POST error on new element");
+            document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+            document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+            new PNotify({
+                title: 'Échec!',
+                text: err,
+                type: 'error'
+            });
+        })
     })
     afterModalRequest();
     typeof callback === 'function' && callback();

@@ -7,13 +7,13 @@ $(document).ready(function() {
 //Formatting function for row details
 function format ( d ) {
     // d is the original data object for the row
-    return d.details;
+    return d.init;
 }
 
 async function getLogsData() {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
-    let table = db.table('logs');
+    let table = db.table('update_queue');
     let result = [];
     await table.each(log => {
         result.push(log);
@@ -107,11 +107,11 @@ async function getLogsTableConfiguration(){
             'pageLength'
         ],
         "columns": [
-            { "data": "id" },
-            { "data": "time" },
+            { "data": "date" },
+            { "data": "table" },
             { "data": "type" },
-            { "data": "user" },
-            { "data": "summary" },
+            { "data": "elemId" },
+            { "data": "unsync" },
             {
                 "className":      'actions',
                 "orderable":      false,

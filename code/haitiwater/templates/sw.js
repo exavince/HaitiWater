@@ -77,6 +77,7 @@ const staticFiles = [
     '/static/CACHE/css/29de54cb81d2.css',
     '/static/CACHE/js/0a55f327dfed.js',
     '/static/CACHE/js/bf8351900f38.js',
+    '/static/CACHE/js/46526488ea84.js',
 ];
 const channel = new BroadcastChannel('sw-messages');
 const dbVersion = 1;
@@ -86,7 +87,7 @@ let synced = false;
 let username = null;
 let offlineMode = false;
 let needDisconnect = false;
-let dataLoaded = false;
+let dataLoaded = null;
 let lastUpdate = false;
 let isLoading = false;
 
@@ -105,7 +106,7 @@ db.version(dbVersion).stores({
     payment:'id,data,value,source,user_id',
     logs:'id,time,type,user,summary,details',
     logs_history:'id,time,type,user,summary,details,action',
-    update_queue:'++id, url, init, unsync',
+    update_queue:'++id, url, init, date, type, table, elemId, unsync',
     sessions:'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
 });
 
@@ -273,6 +274,7 @@ const waterElement_handler = () => {
 
 const populateDB = () => {
     isLoading = true;
+    //TODO Push data before checking for change
     Promise.all([
         consumerHandler(),
         zoneHandler(),
@@ -284,13 +286,7 @@ const populateDB = () => {
         logsHistoryHandler()
     ]).then(() => {
         isLoading = false;
-        setInfos( 'lastUpdate', {
-            year: new Date().getFullYear(),
-            month: new Date().getMonth()+1,
-            day: new Date().getDate(),
-            hours: new Date().getHours(),
-            minutes: new Date().getMinutes(),
-        });
+        setInfos( 'lastUpdate', new Date());
         channel.postMessage({
             title:'newDate',
             isModify:true,
@@ -699,7 +695,7 @@ channel.addEventListener('message', async event => {
         setInfos('offlineMode', event.data.offlineMode)
     }
     else if(event.data.title === 'lastUpdate') {
-        if (username !== null && username !== event.data.username) {
+        if (username !== null && username !== event.data.username && event.data.username !== undefined) {
             Promise.all([cleanSession(), emptyDB(), cacheCleanedPromise()]).then(() => {
                 setInfos('needDisconnect', true);
             });
@@ -738,8 +734,8 @@ channel.addEventListener('message', async event => {
 });
 
 
-self.addEventListener('sync', async event => {
+self.addEventListener('sync', event => {
     if (event.tag === 'updateQueue') {
-        await pushData();
+        pushData();
     }
 });

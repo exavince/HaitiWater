@@ -23,6 +23,7 @@ async function getLogsData() {
 }
 
 async function drawLogTable(){
+    $('#flavoured-part').css('background-color', 'red');
     let table = $('#datatable-logs').DataTable(await getLogsTableConfiguration());
 
     $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {

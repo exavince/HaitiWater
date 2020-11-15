@@ -28,6 +28,7 @@ function setWaterDataTableURL(month){
 }
 
 async function drawWaterElementTable(withManagers, withActions, gis){
+    $('#flavoured-part').css('background-color', 'red');
     let configuration;
 
     if(gis){

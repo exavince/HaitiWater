@@ -42,14 +42,17 @@ $( document ).ready(function() {
                     type: 'error'
                 });
             }
-            if (event.data.date !== false) {
+            if (event.data.date !== undefined) {
                 date = event.data.date;
                 $('#last-update').html(
-                    date.day.toString() + "-" +
-                    date.month.toString() + "-" +
-                    date.year.toString() + "  " +
-                    date.hours.toString() + ":" +
-                    date.minutes.toString()
+                    date.toLocaleString('en-GB', {
+                        day: 'numeric',
+                        month: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hourCycle: 'h23'
+                    })
                 );
             }
             else {
