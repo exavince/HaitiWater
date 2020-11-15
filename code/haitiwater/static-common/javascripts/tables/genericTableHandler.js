@@ -67,7 +67,7 @@ function removeElement(table, id, otherParameters) {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
-
+        console.log('[DELETE]', 'essai1');
         db_table.put({
             url:postURL,
             date: new Date().toLocaleString('en-GB', {
@@ -83,8 +83,10 @@ function removeElement(table, id, otherParameters) {
             type:'Supprimer',
             elemId: id,
             unsync:true,
-            details:init
+            details:myInit
         });
+
+        console.log('[DELETE]', 'essai2');
 
         new PNotify({
             title: 'Succès!',
@@ -220,7 +222,7 @@ function postNewRow(table, callback){
             type:'Ajouter',
             elemId: 2,
             unsync:true,
-            details:init
+            details:myInit
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
@@ -310,7 +312,7 @@ function postEditRow(table, callback){
             type:'Editer',
             elemId: 2,
             unsync:'En attente',
-            details:init
+            details:myInit
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg

@@ -45,6 +45,7 @@ const staticFiles = [
     '/static/offline_zoneTableGenerators.js',
     '/static/paymentModalHandler.js',
     '/static/paymentTableHandler.js',
+    '/static/unsynchronizedTableGenerator.js',
     '/static/problemReportFormHandler.js',
     '/static/profileHandler.js',
     '/static/report.js',
@@ -440,8 +441,8 @@ const setInfos = (info, value) => {
 
 const pushData = async () => {
     let tab = await db.update_queue.toArray();
-    tab.forEach(element => {
-        fetch(element.url, element.init).then(async () => {
+    Promise.all(tab.map(element => {
+        return fetch(element.url, element.init).then(async () => {
             console.log('[SW_SYNC]', 'The ' + element.init + ' is synced');
             db.update_queue.delete(element.id);
             channel.postMessage({
@@ -455,7 +456,39 @@ const pushData = async () => {
                 unsync: await db.update_queue.count()
             });
         })
-    });
+    })).then(async () => {
+        if (await db.update_queue.count() > 0) {
+            channel.postMessage({
+                title:'pNotify',
+                status:'Echec!',
+                text: "Certaines modifications n'ont pas été synchronizées",
+                type:'error'
+            })
+        } else {
+            channel.postMessage({
+                title:'pNotify',
+                status:'Réussite!',
+                text: 'Toutes vos modifications ont été synchronizées',
+                type:'success'
+            })
+        }
+    }).catch(async () => {
+        if (await db.update_queue.count() > 0) {
+            channel.postMessage({
+                title:'pNotify',
+                status:'Echec!',
+                text: "Certaines modifications n'ont pas été synchronizées",
+                type:'error'
+            })
+        } else {
+            channel.postMessage({
+                title:'pNotify',
+                status:'Réussite!',
+                text: 'Toutes vos modifications ont été synchronizées',
+                type:'success'
+            })
+        }
+    })
 }
 
 const resetState = () => {
@@ -497,11 +530,14 @@ self.addEventListener('activate', async () => {
             isDone:false,
             date:lastUpdate
         });
+        getOfflineData()
     }).catch(err => {
-        getInfos();
+        getInfos().then(() => {
+            if (!dataLoaded) getOfflineData();
+            else channel.postMessage({title: 'newDate', isModify:false, isDone:false, date: lastUpdate});
+        })
         console.error('[SW_SESSIONS]', err);
     });
-    if (!dataLoaded) getOfflineData();
 });
 
 

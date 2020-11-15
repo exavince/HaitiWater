@@ -63,19 +63,6 @@ $( document ).ready(function() {
             localStorage.setItem('toUpdate', event.data.unsync);
             $('#notification-content').html('');
             setupNotifications();
-            if(event.data.unsync > 0){
-                new PNotify({
-                    title: 'Échec!',
-                    text: "Certaines modifications n'ont pas été synchronizées",
-                    type: 'error'
-                });
-            } else {
-                new PNotify({
-                    title: 'Réussite!',
-                    text: "Toutes vos modifications ont été synchronizées",
-                    type: 'success'
-                });
-            }
         }
         else if (event.data.title === 'resetNavigationMode'){
             localStorage.setItem('offlineMode', false);
