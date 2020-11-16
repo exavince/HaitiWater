@@ -82,7 +82,7 @@ const db = new Dexie("user_db");
 
 let isConnecting = false;
 let synced = false;
-let username = null;
+let username = undefined;
 let offlineMode = false;
 let needDisconnect = false;
 let dataLoaded = false;
@@ -392,6 +392,15 @@ const getOfflineData = () => {
     });
 }
 
+const getCache = () => {
+    return Promise.all([
+        addCache(cacheVersion, ['/offline/']),
+        addCache(userCache, onlinePages),
+        addCache(userCache, offlinePages),
+        addCache(cacheVersion, staticFiles),
+    ])
+}
+
 const getInfos = () => {
     synced = true;
     return db.sessions.where('id').equals(1).first(data => {
@@ -443,7 +452,7 @@ const pushData = async () => {
     let tab = await db.update_queue.toArray();
     Promise.all(tab.map(element => {
         return fetch(element.url, element.init).then(async () => {
-            console.log('[SW_SYNC]', 'The ' + element.init + ' is synced');
+            console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
             db.update_queue.delete(element.id);
             channel.postMessage({
                 title:'notification',
@@ -518,7 +527,7 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', async () => {
     await db.sessions.add({
         id:1,
-        username:null,
+        username:undefined,
         needDisconnect:false,
         offlineMode:false,
         lastUpdate:undefined,
@@ -531,12 +540,13 @@ self.addEventListener('activate', async () => {
             date:lastUpdate
         });
         getOfflineData()
-    }).catch(err => {
+    }).catch(() => {
         getInfos().then(() => {
             if (!dataLoaded) getOfflineData();
             else channel.postMessage({title: 'newDate', isModify:false, isDone:false, date: lastUpdate});
-        })
-        console.error('[SW_SESSIONS]', err);
+            getCache();
+        });
+        console.log('[SW_SESSIONS]', 'Old configuration has been charged');
     });
 });
 
@@ -579,7 +589,14 @@ self.addEventListener('fetch', async event => {
         )
     }
     else if (offlineMode) {
-        if(url.includes('/reseau')) {
+        if(url.includes('/reseau/gis')) {
+            event.respondWith(
+                caches.open(cacheVersion).then(cache => {
+                    return cache.match('/offline/');
+                })
+            )
+        }
+        else if(url.includes('/reseau')) {
             event.respondWith(
                 caches.open('user_1').then(cache => {
                     return cache.match('/reseau/offline');
@@ -749,11 +766,6 @@ channel.addEventListener('message', async event => {
         }
     }
     else if(event.data.title === 'lastUpdate') {
-        if (username !== null && username !== event.data.username && event.data.username !== undefined) {
-            Promise.all([resetState(), emptyDB(), cacheCleanedPromise()]).then(() => {
-                setInfos('needDisconnect', true);
-            });
-        }
         channel.postMessage({
             title: 'newDate',
             isModify:false,
