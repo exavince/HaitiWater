@@ -761,6 +761,7 @@ channel.addEventListener('message', async event => {
             });
             break
         case 'pushData':
+            pushData();
             break
     }
 });

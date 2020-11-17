@@ -33,10 +33,9 @@ $( document ).ready(function() {
         switch (event.data.title) {
             case 'updateInfos':
                 setupOfflineMode(event.data.offlineMode);
-                localStorage.setItem('toUpdate', event.data.toPush);
+                setupNotifications(event.data.toPush);
                 if (event.data.date !== null && event.data.date !== undefined) {
-                    date = event.data.date;
-                    $('#last-update').html(date.toLocaleString('en-GB', {
+                    $('#last-update').html(event.data.date.toLocaleString('en-GB', {
                         day: 'numeric',
                         month: 'numeric',
                         year: 'numeric',
@@ -44,8 +43,6 @@ $( document ).ready(function() {
                         minute: '2-digit',
                         hourCycle: 'h23'
                     }));
-                } else {
-                    $('#last-update').html('unknown');
                 }
                 break
 
@@ -89,8 +86,7 @@ $( document ).ready(function() {
                 }
                 break
             case 'toPush':
-                localStorage.setItem('toUpdate', event.data.toPush);
-                setupNotifications();
+                setupNotifications(event.data.toPush);
                 if (event.data.toPush > 0) {
                     new PNotify({
                         title: 'Attention !',
@@ -110,27 +106,24 @@ $( document ).ready(function() {
         }
     }
     channel.postMessage({title:'getInfos', username:localStorage.getItem('username')})
-    setupNotifications();
 });
 
 /**
  * Requests notification computings and modifies the counters to alert the user
  */
-async function setupNotifications(){
+async function setupNotifications(toPush){
     let notificationList = $('#notification-content');
     let alertBadge = $('#alert-badge');
     let classicBadge = $('#classic-badge');
+    notificationList.html('');
 
-    let notificationCounter = 0;
-    if (notificationMonthlyReport(notificationList)) notificationCounter += 1;
+    notificationMonthlyReport(notificationList, toPush);
 
-    classicBadge.html(notificationCounter);
-    if (localStorage.getItem('toUpdate') !== null) {
-        classicBadge.html(localStorage.getItem('toUpdate'));
-    }
-    alertBadge.html(notificationCounter);
+    classicBadge.html(toPush);
+    classicBadge.html(toPush);
+    alertBadge.html(toPush);
 
-    if (notificationCounter > 0){
+    if (toPush > 0){
         alertBadge.removeClass('hidden');
     }
     else {
@@ -142,9 +135,8 @@ async function setupNotifications(){
  * Adds a monthly report notification if one is waiting
  * @return {boolean} true if a notification has been set, false otherwise
  */
-function notificationMonthlyReport(notificationList){
-    let hasMonthlyReport = (localStorage.getItem('toUpdate') !== null && localStorage.getItem('toUpdate') !== '0');
-    if (hasMonthlyReport){
+function notificationMonthlyReport(notificationList, toPush){
+    if (toPush > 0){
         let title = 'Données non-synchronisées';
         let msg = 'Cliquez pour essayer de synchroniser les données'
         let monthlyReportNotification = formatNotification(title, msg)
@@ -208,7 +200,5 @@ function setupOfflineMode(offlineMode){
 }
 
 function syncData() {
-    navigator.serviceWorker.ready.then(async swRegistration => {
-        return swRegistration.sync.register('updateQueue');
-    })
+    new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
 }

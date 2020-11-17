@@ -95,7 +95,7 @@ function removeElement(table, id, otherParameters) {
         });
 
         drawDataTable(table);
-        return swRegistration.sync.register('updateQueue');
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit).then(response => {
             if(response.ok) {
@@ -122,7 +122,7 @@ function removeElement(table, id, otherParameters) {
                 type: 'error'
             });
         });
-    })
+    });
 }
 
 /**
@@ -234,7 +234,7 @@ function postNewRow(table, callback){
         });
 
         drawDataTable(table);
-        return swRegistration.sync.register('updateQueue');
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit)
             .then(response => {
@@ -324,7 +324,7 @@ function postEditRow(table, callback){
         });
 
         drawDataTable(table);
-        return swRegistration.sync.register('updateQueue');
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL,myInit).then(response => {
             if (!response.ok) {
