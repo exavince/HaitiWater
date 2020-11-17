@@ -274,7 +274,7 @@ const waterElement_handler = () => {
 const populateDB = () => {
     isLoading = true;
     //TODO Push data before checking for change
-    Promise.all([
+    return Promise.all([
         consumerHandler(),
         zoneHandler(),
         managerHandler(),
@@ -287,17 +287,15 @@ const populateDB = () => {
         isLoading = false;
         setInfos( 'lastUpdate', new Date());
         channel.postMessage({
-            title:'newDate',
-            isModify:true,
-            isDone:true,
+            title:'updateStatus',
+            status:'loaded',
             date:lastUpdate
         });
     }).catch(err => {
         isLoading = false;
         channel.postMessage({
-            title:'newDate',
-            isModify:true,
-            isDone:false,
+            title:'updateStatus',
+            status:'failed',
             date:lastUpdate
         });
         console.log('[SW_POPULATEDB]', err);
@@ -379,15 +377,18 @@ const isConnected = () => {
 }
 
 const getOfflineData = () => {
-    setInfos('dataLoaded', true);
+    isLoading = true;
     return Promise.all([
         addCache(cacheVersion, ['/offline/']),
         addCache(userCache, onlinePages),
         addCache(userCache, offlinePages),
         addCache(cacheVersion, staticFiles),
         populateDB(),
-    ]).catch(err => {
-        setInfos('dataLoaded', false);
+    ]).then(() => {
+        setInfos('dataLoaded', true);
+        isLoading = false;
+    }).catch(err => {
+        isLoading = false;
         console.error('[SW_GETDATA]', err);
     });
 }
@@ -403,18 +404,17 @@ const getCache = () => {
 
 const getInfos = () => {
     synced = true;
-    return db.sessions.where('id').equals(1).first(data => {
+    return db.sessions.where('id').equals(1).first(async data => {
         username = data.username;
         needDisconnect = data.needDisconnect;
         offlineMode = data.offlineMode;
         lastUpdate = data.lastUpdate;
         dataLoaded = data.dataLoaded;
-        console.log('[TEST]', lastUpdate);
         channel.postMessage({
-            title:'newDate',
-            isModify:false,
-            isDone:false,
-            data:lastUpdate
+            title:'getInfos',
+            toPush: await db.update_queue.count(),
+            offlineMode:offlineMode,
+            date:lastUpdate
         });
         return data;
     });
@@ -454,55 +454,25 @@ const pushData = async () => {
         return fetch(element.url, element.init).then(async () => {
             console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
             db.update_queue.delete(element.id);
-            channel.postMessage({
-                title:'notification',
-                unsync: await db.update_queue.count()
-            });
-        }).catch(async () => {
+        }).catch(() => {
             console.log('[SW_SYNC]','Cannot reach the network, data still need to be pushed');
-            channel.postMessage({
-                title:'notification',
-                unsync: await db.update_queue.count()
-            });
         })
     })).then(async () => {
-        if (await db.update_queue.count() > 0) {
-            channel.postMessage({
-                title:'pNotify',
-                status:'Echec!',
-                text: "Certaines modifications n'ont pas été synchronizées",
-                type:'error'
-            })
-        } else {
-            channel.postMessage({
-                title:'pNotify',
-                status:'Réussite!',
-                text: 'Toutes vos modifications ont été synchronizées',
-                type:'success'
-            })
-        }
+        channel.postMessage({
+            title:'toPush',
+            toPush: await db.update_queue.count()
+        });
     }).catch(async () => {
-        if (await db.update_queue.count() > 0) {
-            channel.postMessage({
-                title:'pNotify',
-                status:'Echec!',
-                text: "Certaines modifications n'ont pas été synchronizées",
-                type:'error'
-            })
-        } else {
-            channel.postMessage({
-                title:'pNotify',
-                status:'Réussite!',
-                text: 'Toutes vos modifications ont été synchronizées',
-                type:'success'
-            })
-        }
+        channel.postMessage({
+            title:'toPush',
+            toPush: await db.update_queue.count()
+        });
     })
 }
 
 const resetState = () => {
     channel.postMessage({
-        title:'resetNavigationMode'
+        title:'resetNavigation'
     });
     synced = false;
     setInfos('username', null);
@@ -532,18 +502,23 @@ self.addEventListener('activate', async () => {
         offlineMode:false,
         lastUpdate:undefined,
         dataLoaded:false
-    }).then(() => {
+    }).then(async () => {
         channel.postMessage({
-            title:'newDate',
-            isModify:false,
-            isDone:false,
+            title:'updateInfos',
+            offlineMode:offlineMode,
+            toPush: await db.update_queue.count(),
             date:lastUpdate
         });
-        getOfflineData()
+        getOfflineData();
     }).catch(() => {
-        getInfos().then(() => {
+        getInfos().then(async () => {
             if (!dataLoaded) getOfflineData();
-            else channel.postMessage({title: 'newDate', isModify:false, isDone:false, date: lastUpdate});
+            else channel.postMessage({
+                title:'updateInfos',
+                offlineMode:offlineMode,
+                toPush: await db.update_queue.count(),
+                date:lastUpdate
+            });
             getCache();
         });
         console.log('[SW_SESSIONS]', 'Old configuration has been charged');
@@ -557,7 +532,7 @@ self.addEventListener('fetch', async event => {
 
     if(!synced) await getInfos();
     if(!connected && !needDisconnect && !isConnecting) await isConnected();
-    if (!dataLoaded && connected) event.waitUntil(getOfflineData());
+    if (!dataLoaded && connected && !isLoading) event.waitUntil(getOfflineData());
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
@@ -758,44 +733,35 @@ self.addEventListener('fetch', async event => {
 
 
 channel.addEventListener('message', async event => {
-    if (event.data.title === 'navigationMode') {
-        if (event.data.offlineMode === 'true') {
-            setInfos('offlineMode', true);
-        } else {
-            setInfos('offlineMode', false);
-        }
-    }
-    else if(event.data.title === 'lastUpdate') {
-        channel.postMessage({
-            title: 'newDate',
-            isModify:false,
-            isDone:false,
-            date: lastUpdate
-        });
-        setInfos('username', event.data.username);
-    }
-    else if(event.data.title === 'updateIndexDB'){
-        pushData().then(() => {
-            if(!isLoading) {
-                console.log('[SW_UPDATE]', 'DB is loading');
-                populateDB();
-                channel.postMessage({
-                    title:'pNotify',
-                    status:'Chargement en cours !',
-                    text:'Vos données chargent en arrère plan !',
-                    type:'success'
-                });
+    switch (event.data.title) {
+        case 'getInfos':
+            if(username === null || username === undefined) {
+                username = event.data.username;
             }
-            else {
-                channel.postMessage({
-                    title:'pNotify',
-                    status:'Déjà en cours !',
-                    text:'Vos données sont déjà entrain de charger en arrière plan',
-                    type:'success'
-                });
-                console.log('[SW_UPDATE]', 'DB is already loading');
-            }
-        });
+            channel.postMessage({
+                title:'updateInfos',
+                date:lastUpdate,
+                offlineMode:offlineMode,
+                toPush: await db.update_queue.count()
+            });
+            break
+        case 'setOfflineMode':
+            setInfos('offlineMode', !offlineMode);
+            channel.postMessage({
+                title:'getOfflineMode',
+                offlineMode:offlineMode
+            });
+            break
+        case 'updateDB':
+            if(!isLoading) populateDB();
+            channel.postMessage({
+                title:'updateStatus',
+                date:lastUpdate,
+                status:'loading'
+            });
+            break
+        case 'pushData':
+            break
     }
 });
 

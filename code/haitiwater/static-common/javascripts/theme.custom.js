@@ -2,6 +2,7 @@
 $( document ).ready(function() {
 
     //Get local storage value or true (as it is default to be open)
+    const channel = new BroadcastChannel('sw-messages');
     let localMenu = localStorage.getItem('isMenuOpen');
     let isMenuOpen = (localMenu === 'true' || localMenu === null);
     if(!isMenuOpen){
@@ -14,70 +15,102 @@ $( document ).ready(function() {
         localStorage.setItem('isMenuOpen', isMenuOpen.toString());
     });
 
-    $('#db-parent').on('click', function() {
+    $('#db-parent').on('click', () => {
         channel.postMessage({
-            title:'updateIndexDB'
+            title:'updateDB'
         });
     })
 
+    $('#offline-parent').on('click', () => {
+        channel.postMessage({
+            title: 'setOfflineMode',
+        });
+    });
+
     $('[data-toggle="tooltip"]').tooltip();
 
-    const channel = new BroadcastChannel('sw-messages');
-    if(localStorage.getItem('offlineMode') === null) {
-        localStorage.setItem('offlineMode', 'false');
-    }
-
     channel.onmessage = event => {
-        if (event.data.title === 'newDate') {
-            if (event.data.isDone && event.data.isModify) {
-                new PNotify({
-                    title: 'Réussite!',
-                    text: "Les données ont bien été synchronisées",
-                    type: 'success'
-                });
-            } else if (!event.data.isDone && event.data.isModify) {
-                new PNotify({
-                    title: 'Échec!',
-                    text: "Les données n'ont pas été synchronisées, vous n'avez peut-être pas de connexion...",
-                    type: 'error'
-                });
-            }
-            if (event.data.date !== undefined) {
-                date = event.data.date;
-                $('#last-update').html(
-                    date.toLocaleString('en-GB', {
+        switch (event.data.title) {
+            case 'updateInfos':
+                setupOfflineMode(event.data.offlineMode);
+                localStorage.setItem('toUpdate', event.data.toPush);
+                if (event.data.date !== null && event.data.date !== undefined) {
+                    date = event.data.date;
+                    $('#last-update').html(date.toLocaleString('en-GB', {
                         day: 'numeric',
                         month: 'numeric',
                         year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit',
                         hourCycle: 'h23'
-                    })
-                );
-            }
-            else {
-                $('#last-update').html('unknown');
-            }
-        }
-        else if (event.data.title === 'notification') {
-            localStorage.setItem('toUpdate', event.data.unsync);
-            $('#notification-content').html('');
-            setupNotifications();
-        }
-        else if (event.data.title === 'resetNavigationMode'){
-            localStorage.setItem('offlineMode', false);
-        }
-        else if (event.data.title === 'pNotify') {
-            new PNotify({
-                title: event.data.status,
-                text: event.data.text,
-                type: event.data.type
-            });
+                    }));
+                } else {
+                    $('#last-update').html('unknown');
+                }
+                break
+
+            case 'getOfflineMode':
+                setupOfflineMode(event.data.offlineMode);
+                break
+            case 'updateStatus':
+                switch (event.data.status) {
+                    case 'loaded':
+                        if (event.data.date !== null && event.data.date !== undefined) {
+                            date = event.data.date;
+                            $('#last-update').html(date.toLocaleString('en-GB', {
+                                day: 'numeric',
+                                month: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hourCycle: 'h23'
+                            }));
+                        }
+                        new PNotify({
+                            title: 'Félicitations !',
+                            text: 'Vos données ont bien été chargées localement',
+                            type: 'success'
+                        });
+                        break
+                    case 'failed':
+                        new PNotify({
+                            title: 'Echec !',
+                            text: "Vos données n'ont pas pu être chargée, vérifier votre connexion !",
+                            type: 'error'
+                        });
+                        break
+                    case 'loading':
+                        new PNotify({
+                            title: 'Veuillez patienter',
+                            text: 'Vos données sont en cours de chargement',
+                            type: 'info'
+                        });
+                        break
+                }
+                break
+            case 'toPush':
+                localStorage.setItem('toUpdate', event.data.toPush);
+                setupNotifications();
+                if (event.data.toPush > 0) {
+                    new PNotify({
+                        title: 'Attention !',
+                        text: "Certaines de vos modifications n'ont pas été envoyées.",
+                        type: 'error'
+                    });
+                } else {
+                    new PNotify({
+                        title: 'Félicitations !',
+                        text: 'Toutes vos modifications ont été envoyées.',
+                        type: 'success'
+                    });
+                }
+                break
+            case 'resetNavigation':
+                break
         }
     }
-
+    channel.postMessage({title:'getInfos', username:localStorage.getItem('username')})
     setupNotifications();
-    setupOfflineMode(channel);
 });
 
 /**
@@ -158,52 +191,20 @@ function startPageTour(){
     }).start();
 }
 
-function setupOfflineMode(channel){
-    let offlineParent = $('#offline-parent');
+function setupOfflineMode(offlineMode){
     let alertOffline = $('#alert-offline');
     let offlineBadge = $('#offline-badge');
 
-    if (localStorage.getItem('offlineMode') === 'true'){
+    if (offlineMode){
         alertOffline.css('background-color', "red");
         offlineBadge.html("Offline");
         alertOffline.html("X");
-        $('#flavoured-part').css('background-color', 'red');
     }
     else {
         offlineBadge.html("Online");
         alertOffline.html("V");
         alertOffline.css('background-color', "green");
-        $('flavoured-part').css('background-color', '#293241');
     }
-
-    offlineParent.on('click', () => {
-        if (localStorage.getItem('offlineMode') === 'false'){
-            localStorage.setItem('offlineMode', 'true');
-            alertOffline.css('background-color', "red");
-            offlineBadge.html("Offline");
-            alertOffline.html("X");
-        }
-        else {
-            localStorage.setItem('offlineMode', 'false');
-            offlineBadge.html("Online");
-            alertOffline.html("V");
-            alertOffline.css('background-color', "green");
-        }
-        channel.postMessage({
-            title: 'navigationMode',
-            offlineMode: localStorage.getItem('offlineMode'),
-        });
-        channel.postMessage({
-            title: 'lastUpdate',
-            username: localStorage.getItem('username'),
-        });
-
-    });
-
-    channel.postMessage({
-        title: 'lastUpdate',
-        username: localStorage.getItem('username'),
-    });
 }
 
 function syncData() {
