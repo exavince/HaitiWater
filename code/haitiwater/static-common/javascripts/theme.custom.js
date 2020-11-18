@@ -17,7 +17,8 @@ $( document ).ready(function() {
 
     $('#db-parent').on('click', () => {
         channel.postMessage({
-            title:'updateDB'
+            title:'updateDB',
+            db:'all'
         });
     })
 

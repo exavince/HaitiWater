@@ -22,6 +22,12 @@ async function getConsumerData() {
     return result;
 }
 
+function refreshConsumerData() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'consumer'
+    });
+}
 
 /**
  * Custom Table Handler

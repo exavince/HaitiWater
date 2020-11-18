@@ -1,6 +1,4 @@
 importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js');
-workbox.loadModule('workbox-strategies');
 
 
 /*********************************************************************************
@@ -271,9 +269,9 @@ const waterElement_handler = () => {
     });
 }
 
-const populateDB = () => {
+const populateDB = async () => {
     isLoading = true;
-    //TODO Push data before checking for change
+    await pushData();
     return Promise.all([
         consumerHandler(),
         zoneHandler(),
@@ -484,6 +482,30 @@ const resetState = () => {
     connected = false;
 }
 
+const CacheFirst = event => {
+    return caches.match(event.request).then(response => {
+        return response || fetch(event.request);
+    })
+}
+
+const NetworkFirst = (event,page) => {
+    return fetch(event.request).catch(function () {
+        return caches.match(page);
+    })
+}
+
+const StaleWhileRevalidate = event => {
+    return caches.open(userCache).then(cache => {
+        return cache.match(event.request).then(response => {
+            let fetchPromise = fetch(event.request).then(networkResponse => {
+                cache.put(event.request, networkResponse.clone());
+                return networkResponse;
+            });
+            return response || fetchPromise;
+        });
+    })
+}
+
 
 
 /*********************************************************************************
@@ -535,7 +557,7 @@ self.addEventListener('fetch', async event => {
     if (!dataLoaded && connected && !isLoading) event.waitUntil(getOfflineData());
 
     if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
-        event.respondWith(new workbox.strategies.CacheFirst({cacheName:'static'}).handle({event, request}));
+        event.respondWith(CacheFirst(event));
     }
     else if (url.includes('/logout')) {
         await Promise.all([
@@ -565,168 +587,79 @@ self.addEventListener('fetch', async event => {
     }
     else if (offlineMode) {
         if(url.includes('/reseau/gis')) {
-            event.respondWith(
-                caches.open(cacheVersion).then(cache => {
-                    return cache.match('/offline/');
-                })
-            )
+            event.respondWith(caches.match('/offline/'));
         }
         else if(url.includes('/reseau')) {
-            event.respondWith(
-                caches.open('user_1').then(cache => {
-                    return cache.match('/reseau/offline');
-                })
-            )
+            event.respondWith(caches.match('/reseau/offline'));
         }
         else if (url.includes('/gestion')) {
-            event.respondWith(
-                caches.open('user_1').then(cache => {
-                    return cache.match('/gestion/offline');
-                })
-            )
+            event.respondWith(caches.match('/gestion/offline'));
         }
         else if (url.includes('/rapport')) {
-            event.respondWith(
-                caches.open('user_1').then(cache => {
-                    return cache.match('/rapport/offline');
-                })
-            )
+            event.respondWith(caches.match('/reseau/offline'));
         }
         else if (url.includes('/consommateurs')) {
-            event.respondWith(
-                caches.open('user_1').then(cache => {
-                    return cache.match('/consommateurs/offline');
-                })
-            )
+            event.respondWith(caches.match('/consommateurs/offline'));
         }
         else if (url.includes('/finances')) {
-            event.respondWith(
-                caches.open('user_1').then(cache => {
-                    return cache.match('/finances/offline');
-                })
-            )
+            event.respondWith(caches.match('/finances/offline'));
         }
         else if (url.includes('/historique')) {
-            event.respondWith(
-                caches.open('user_1').then(cache => {
-                    return cache.match('/historique/offline');
-                })
-            )
+            event.respondWith(caches.match('/historique/offline'));
         }
         else if (url.includes('/login')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('/offline/');
-                        })
-                    })
-            );
+            event.respondWith(NetworkFirst(event, '/offline/'));
         }
         else if (url.includes('/api/graph')) {
-            event.respondWith(new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request}));
+            event.respondWith(StaleWhileRevalidate(event));
         }
         else {
             event.respondWith(
-                new workbox.strategies.StaleWhileRevalidate({cacheName:'user_1'}).handle({event, request})
-                    .catch(() => {
-                        return caches.match('/offline/');
-                    })
-            );
-        }
+                StaleWhileRevalidate(event).catch(() => {
+                    return caches.match('/offline/');
+                })
+            )}
     }
     else {
-        if(url.includes('/reseau')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('/reseau/offline');
-                        })
-                    })
-            );
+        if(url.includes('/reseau/gis')) {
+            event.respondWith(NetworkFirst(event,'/offline/'));
+        }
+        else if(url.includes('/reseau')) {
+            event.respondWith(NetworkFirst(event, '/reseau/offline'));
         }
         else if (url.includes('/gestion')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('/gestion/offline');
-                        })
-                    })
-            )
+            event.respondWith(NetworkFirst(event,'/gestion/offline'))
         }
         else if (url.includes('/rapport')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('/rapport/offline');
-                        })
-                    })
-            )
+            event.respondWith(NetworkFirst(event,'/rapport/offline'))
         }
         else if (url.includes('/historique')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('historique/offline');
-                        });
-                    })
-            )
+            event.respondWith(NetworkFirst(event,'/historique/offline'))
         }
         else if (url.includes('/consommateurs')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('/consommateurs/offline');
-                        })
-                    })
-            )
+            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
         }
         else if (url.includes('/finances')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        return caches.open('user_1').then(cache => {
-                            return cache.match('/finances/offline');
-                        })
-                    })
-            )
+            event.respondWith(NetworkFirst(event,'/finances/offline'))
         }
         else if (url.includes('/login')) {
-            event.respondWith(
-              new workbox.strategies.NetworkOnly().handle({event, request})
-                  .catch(() => {
-                        return caches.open(cacheVersion).then(cache => {
-                            return cache.match('/offline/');
-                        })
-                    })
-            );
+            event.respondWith(NetworkFirst(event,'/offline/'))
         }
         else if (url.includes('/api/graph')) {
-            event.respondWith(new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request}));
+            event.respondWith(NetworkFirst(event,event.request.url));
         }
         else if (url.includes('/api/table') || url.includes('.png')) {
-            event.respondWith(
-                new workbox.strategies.NetworkOnly().handle({event, request})
-                    .catch(() => {
-                        /*caches.open('user_1').then(async cache => {
-                            return await cache.match(lastPage);
-                        })*/
-                        console.error('cannot reach the dataTable online');
-                    })
+            event.respondWith(fetch(event.request)
+                .catch(() => {
+                    /*caches.open('user_1').then(async cache => {
+                        return await cache.match(lastPage);
+                    })*/
+                    console.error('cannot reach the dataTable online');
+                })
             );
         }
         else {
-            event.respondWith(
-                new workbox.strategies.NetworkFirst({cacheName:'user_1'}).handle({event, request})
-                    .catch(() => {
-                        return caches.match('/offline/');
-                    })
-            );
+            event.respondWith(NetworkFirst(event, '/offline/'));
         }
     }
 });
@@ -753,7 +686,29 @@ channel.addEventListener('message', async event => {
             });
             break
         case 'updateDB':
-            if(!isLoading) populateDB();
+            if(!isLoading) {
+                switch (event.data.db) {
+                    case 'all':
+                        populateDB();
+                        break
+                    case 'payment':
+                        break
+                    case 'consumer':
+                        break
+                    case 'logs':
+                        break
+                    case 'logs_history':
+                        break
+                    case 'manager':
+                        break
+                    case 'ticket':
+                        break
+                    case 'water_element':
+                        break
+                    case 'zone':
+                        break
+                }
+            }
             channel.postMessage({
                 title:'updateStatus',
                 date:lastUpdate,
@@ -763,12 +718,5 @@ channel.addEventListener('message', async event => {
         case 'pushData':
             pushData();
             break
-    }
-});
-
-
-self.addEventListener('sync', event => {
-    if (event.tag === 'updateQueue') {
-        pushData();
     }
 });

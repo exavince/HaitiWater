@@ -1,4 +1,5 @@
 let paymentTable = 'undefined';
+let user = 'undefined';
 
 $(document).ready(function() {
     // Draw DataTables
@@ -7,6 +8,14 @@ $(document).ready(function() {
 
     attachHandlers(zoneTable, consumerTable);
 });
+
+function refreshPaymentData() {
+    channel.postMessage({
+        title:'updateDB',
+        db:'payment',
+        userID:user
+    });
+}
 
 /**
  * Attach the handlers for onclick navigation
@@ -48,6 +57,7 @@ function filterConsumersFromZone(zoneTable){
  * @param data the datatable row
  */
 function consumerDetails(data){
+    user = data[0];
     let userID = data[0];
     if (paymentTable === 'undefined') {
         paymentTable = drawPaymentTable();
