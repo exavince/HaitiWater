@@ -67,7 +67,6 @@ function removeElement(table, id, otherParameters) {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
-        console.log('[DELETE]', 'essai1');
         db_table.put({
             url:postURL,
             date: new Date().toLocaleString('en-GB', {
@@ -85,8 +84,6 @@ function removeElement(table, id, otherParameters) {
             unsync:true,
             details:myInit
         });
-
-        console.log('[DELETE]', 'essai2');
 
         new PNotify({
             title: 'Succès!',
@@ -109,7 +106,7 @@ function removeElement(table, id, otherParameters) {
                 console.log('[DELETE]', "POST error on remove element");
                 new PNotify({
                     title: 'Échec!',
-                    text: err,
+                    text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
             }
@@ -118,7 +115,7 @@ function removeElement(table, id, otherParameters) {
             console.log('[DELETE]', "POST error on remove element");
             new PNotify({
                 title: 'Échec!',
-                text: err,
+                text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
         });
@@ -251,7 +248,7 @@ function postNewRow(table, callback){
                     document.getElementById("form-" + table + "-error-msg").innerHTML = err;
                     new PNotify({
                         title: 'Échec!',
-                        text: err,
+                        text: 'Veuillez vérifier votre connexion.',
                         type: 'error'
                     });
                 }
@@ -262,7 +259,7 @@ function postNewRow(table, callback){
                 document.getElementById("form-" + table + "-error-msg").innerHTML = err;
                 new PNotify({
                     title: 'Échec!',
-                    text: err,
+                    text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
             })
@@ -331,6 +328,11 @@ function postEditRow(table, callback){
                 console.log("POST error on new element");
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
                 document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+                new PNotify({
+                    title: 'Échec!',
+                    text: 'Veuillez vérifier votre connexion.',
+                    type: 'error'
+                });
             }
             else {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
@@ -348,7 +350,7 @@ function postEditRow(table, callback){
             document.getElementById("form-" + table + "-error-msg").innerHTML = error;
             new PNotify({
                 title: 'Échec!',
-                text: err,
+                text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
         })

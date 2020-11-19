@@ -14,9 +14,5 @@
         "src": "/static/icons/aurss.96x96.png",
         "type": "image/png",
         "sizes": "96x96"
-    }, {
-        "src": "/static/icons/aurss.512x512.png",
-        "type": "image/png",
-        "sizes": "512x512"
     }]
 }

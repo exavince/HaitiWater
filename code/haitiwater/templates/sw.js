@@ -316,7 +316,34 @@ const emptyDB = () => {
     });
 }
 
-
+const pushData = async () => {
+    let tab = await db.update_queue.toArray();
+    Promise.all(tab.map(element => {
+        return fetch(element.url, element.init).then(response => {
+            if (response.ok) {
+                console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
+                db.update_queue.delete(element.id);
+            }
+            else {
+                db.update_queue.update(element.id, {unsync:response.status}).then(update => {
+                    console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
+                });
+            }
+        }).catch(() => {
+            console.log('[SW_PUSH]','Cannot reach the network, data still need to be pushed');
+        })
+    })).then(async () => {
+        channel.postMessage({
+            title:'toPush',
+            toPush: await db.update_queue.count()
+        });
+    }).catch(async () => {
+        channel.postMessage({
+            title:'toPush',
+            toPush: await db.update_queue.count()
+        });
+    })
+}
 
 /*********************************************************************************
  * Utils
@@ -446,28 +473,6 @@ const setInfos = (info, value) => {
     });
 }
 
-const pushData = async () => {
-    let tab = await db.update_queue.toArray();
-    Promise.all(tab.map(element => {
-        return fetch(element.url, element.init).then(async () => {
-            console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
-            db.update_queue.delete(element.id);
-        }).catch(() => {
-            console.log('[SW_SYNC]','Cannot reach the network, data still need to be pushed');
-        })
-    })).then(async () => {
-        channel.postMessage({
-            title:'toPush',
-            toPush: await db.update_queue.count()
-        });
-    }).catch(async () => {
-        channel.postMessage({
-            title:'toPush',
-            toPush: await db.update_queue.count()
-        });
-    })
-}
-
 const resetState = () => {
     channel.postMessage({
         title:'resetNavigation'
@@ -549,14 +554,16 @@ self.addEventListener('activate', async () => {
 
 
 self.addEventListener('fetch', async event => {
-    const {request} = event;
     const url = event.request.url;
 
     if(!synced) await getInfos();
     if(!connected && !needDisconnect && !isConnecting) await isConnected();
     if (!dataLoaded && connected && !isLoading) event.waitUntil(getOfflineData());
 
-    if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
+    if (event.request.method === 'POST' || event.request.method === 'post') {
+        event.respondWith(fetch(event.request));
+    }
+    else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(CacheFirst(event));
     }
     else if (url.includes('/logout')) {
