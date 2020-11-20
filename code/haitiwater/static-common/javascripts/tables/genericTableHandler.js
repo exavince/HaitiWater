@@ -198,6 +198,7 @@ function postNewRow(table, callback){
     };
 
     beforeModalRequest();
+    console.log('[WHICH_TABLE]',table)
     console.log('[ADD]', myInit);
     navigator.serviceWorker.ready.then(async swRegistration => {
         let dexie = await new Dexie('user_db');

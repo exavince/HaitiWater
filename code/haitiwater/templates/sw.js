@@ -603,7 +603,7 @@ self.addEventListener('fetch', async event => {
             event.respondWith(caches.match('/gestion/offline'));
         }
         else if (url.includes('/rapport')) {
-            event.respondWith(caches.match('/reseau/offline'));
+            event.respondWith(caches.match('/rapport/offline'));
         }
         else if (url.includes('/consommateurs')) {
             event.respondWith(caches.match('/consommateurs/offline'));

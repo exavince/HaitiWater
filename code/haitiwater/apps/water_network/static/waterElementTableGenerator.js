@@ -7,7 +7,7 @@ function setWaterDataTableURL(month){
 function drawWaterElementTable(withManagers, withActions, gis){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
-    console.log('[REQUEST DATA]', dataURL);
+    console.log("Request data from: " + dataURL);
     let configuration;
     if(gis){
         configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
@@ -15,10 +15,9 @@ function drawWaterElementTable(withManagers, withActions, gis){
     else {
         configuration = getWaterDatatableConfiguration(dataURL, withManagers, withActions);
     }
-
     $('#datatable-water_element').DataTable(configuration);
 
-    let table = $('#datatable-water_element');
+    let table = $('#datatable-water_element').DataTable();
     $('#datatable-water_element tbody').on( 'click', 'tr', function () {
         if ( $(this).hasClass('selected') ) {
             $(this).removeClass('selected');
@@ -39,8 +38,6 @@ function drawWaterElementTable(withManagers, withActions, gis){
         let data = table.row($(this).closest('tr')).data();
         editElement(data);
     } );
-
-    attachMonthSelectorHandler();
     prettifyHeader('water_element');
 }
 
@@ -118,6 +115,7 @@ function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
+            console.log(json['editable']);
             if(!withActions || !(json.hasOwnProperty('editable') && json['editable'])){
                 $('#datatable-water_element').DataTable().column(-1).visible(false);
 
@@ -205,6 +203,7 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
+            console.log(json['editable']);
             if(!withActions || !(json.hasOwnProperty('editable') && json['editable'])){
                 $('#datatable-water_element').DataTable().column(-1).visible(false);
 
@@ -214,6 +213,10 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
     return config;
 }
 
+$(document).ready(function() {
+    attachMonthSelectorHandler();
+});
+
 function attachMonthSelectorHandler(){
     let button = $('#water-element-month-selector');
     button.datepicker({
@@ -222,10 +225,12 @@ function attachMonthSelectorHandler(){
         minViewMode: "months",
     });
     button.on('changeDate', function (e) {
+        console.log("click");
         let month = e.format();
         if (month.length < 1) {
             // Month de-selected
             month = 'none';
+            console.log(button);
             button[0].innerText = 'Volume total';
         }
         else {
