@@ -51,22 +51,52 @@ $(document).ready(function() {
 			beforeModalRequest();
 			let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 			let postURL = baseURL + "/api/report/";
-			let xhttp = new XMLHttpRequest();
-			xhttp.open("POST", postURL, true);
-			xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-			xhttp.setRequestHeader('Content-type', 'application/json');
-			xhttp.onreadystatechange = function() {
-				if(xhttp.readyState === 4) {
-					if (xhttp.status !== 200) {
-						new PNotify({
-							title: 'Échec!',
-							text: "Le rapport mensuel n'a pas pu être envoyé",
-							type: 'error'
-						});
-						$('#form-monthly-report-error-msg').html(xhttp.responseText);
-						$('#form-monthly-report-error').removeClass('hidden');
-						afterModalRequest();
-					} else {
+			var myInit = {
+				method: 'post',
+				headers: {
+					"Content-type": "application/json",
+					'X-CSRFToken':getCookie('csrftoken')
+				},
+				body: JSON.stringify(monthlyReport)
+			};
+
+			console.log('[ADD]', myInit);
+			navigator.serviceWorker.ready.then(async swRegistration => {
+				let dexie = await new Dexie('user_db');
+				let db = await dexie.open();
+				let db_table = db.table('update_queue');
+
+				db_table.put({
+					url:postURL,
+					date: new Date().toLocaleString('en-GB', {
+						day: 'numeric',
+						month: 'numeric',
+						year: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit',
+						hourCycle: 'h23'
+					}),
+					table: 'MonthlyReport',
+					init:myInit,
+					type:'Ajouter',
+					elemId: 2,
+					unsync:true,
+					details:myInit
+				});
+
+				new PNotify({
+					title: 'Succès!',
+					text: 'Le rapport mensuel a bien été enregistré!',
+					type: 'success'
+				});
+				localStorage.removeItem("monthlyReport");
+				drawDataTable('report');
+				dismissModal();
+				afterModalRequest();
+				new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+			}).catch(() => {
+				fetch(postURL, myInit).then(response => {
+					if(response.ok) {
 						new PNotify({
 							title: 'Succès!',
 							text: 'Le rapport mensuel a été envoyé !',
@@ -76,10 +106,27 @@ $(document).ready(function() {
 						drawDataTable('report');
 						dismissModal();
 						afterModalRequest();
+					} else {
+						new PNotify({
+							title: 'Échec!',
+							text: "Le rapport mensuel n'a pas pu être envoyé",
+							type: 'error'
+						});
+						$('#form-monthly-report-error-msg').html(response.statusText);
+						$('#form-monthly-report-error').removeClass('hidden');
+						afterModalRequest();
 					}
-				}
-			};
-			xhttp.send(JSON.stringify(monthlyReport));
+				}).catch(err => {
+					new PNotify({
+						title: 'Échec!',
+						text: "Le rapport mensuel n'a pas pu être envoyé",
+						type: 'error'
+					});
+					$('#form-monthly-report-error-msg').html(err);
+					$('#form-monthly-report-error').removeClass('hidden');
+					afterModalRequest();
+				})
+			});
 		}
 		else {
 			return false;

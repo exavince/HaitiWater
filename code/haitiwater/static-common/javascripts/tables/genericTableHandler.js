@@ -66,8 +66,8 @@ function removeElement(table, id, otherParameters) {
     navigator.serviceWorker.ready.then(async swRegistration => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
-        let db_table = db.table('update_queue');
-        db_table.put({
+        let db_queue = db.table('update_queue');
+        db_queue.put({
             url:postURL,
             date: new Date().toLocaleString('en-GB', {
                 day: 'numeric',
@@ -84,6 +84,9 @@ function removeElement(table, id, otherParameters) {
             unsync:true,
             details:myInit
         });
+
+        let db_table = db.table(table);
+        db_table.delete(id);
 
         new PNotify({
             title: 'Succès!',
@@ -112,7 +115,7 @@ function removeElement(table, id, otherParameters) {
             }
             drawDataTable(table);
         }).catch(err => {
-            console.log('[DELETE]', "POST error on remove element");
+            console.log('[DELETE]', err);
             new PNotify({
                 title: 'Échec!',
                 text: 'Veuillez vérifier votre connexion.',
@@ -198,7 +201,6 @@ function postNewRow(table, callback){
     };
 
     beforeModalRequest();
-    console.log('[WHICH_TABLE]',table)
     console.log('[ADD]', myInit);
     navigator.serviceWorker.ready.then(async swRegistration => {
         let dexie = await new Dexie('user_db');
