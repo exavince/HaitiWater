@@ -17,17 +17,17 @@ function postReportEdit(){
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?table=report";
-    let myInit = {
+    var myInit = {
         method: 'post',
         headers: {
             "Content-type": "application/json",
             'X-CSRFToken':getCookie('csrftoken')
         },
-        body: JSON.stringify(report)
+        body: JSON.stringify(monthlyReport)
     };
 
-    console.log('[ADD]', myInit);
-    navigator.serviceWorker.ready.then(async () => {
+    console.log('[EDIT]', myInit);
+    navigator.serviceWorker.ready.then(async swRegistration => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -42,9 +42,9 @@ function postReportEdit(){
                 minute: '2-digit',
                 hourCycle: 'h23'
             }),
-            table: 'ReportTable',
+            table: 'MonthlyReport',
             init:myInit,
-            type:'Editer',
+            type:'EDIT',
             elemId: 2,
             unsync:true,
             details:myInit
@@ -52,44 +52,38 @@ function postReportEdit(){
 
         new PNotify({
             title: 'Succès!',
-            text: 'Le rapport mensuel a été enregistré !',
+            text: 'Le rapport mensuel a été édité !',
             type: 'success'
         });
         dismissModal();
-        afterModalRequest()
-
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
-        fetch(postURL, myInit)
-            .then(response => {
-                if(response.ok) {
-                    new PNotify({
+        fetch(postURL, myInit).then(response => {
+            if(response.ok) {
+                new PNotify({
                     title: 'Succès!',
                     text: 'Le rapport mensuel a été édité !',
                     type: 'success'
                 });
                 dismissModal();
-                } else {
-                    new PNotify({
-                        title: 'Échec!',
-                        text: "Le rapport mensuel n'a pas pu être édité",
-                        type: 'error'
-                    });
-                    formErrorMsg.html(response.statusText);
-                    formError.removeClass('hidden');
-                }
-                afterModalRequest()
-            })
-            .catch(err => {
+            } else {
                 new PNotify({
                     title: 'Échec!',
-                    text: "Le rapport mensuel n'a pas pu être envoyé",
+                    text: "Le rapport mensuel n'a pas pu être édité",
                     type: 'error'
                 });
-                formErrorMsg.html(err);
+                formErrorMsg.html(response.statusText);
                 formError.removeClass('hidden');
-                afterModalRequest()
-            })
+            }
+        }).catch(err => {
+            new PNotify({
+                title: 'Échec!',
+                text: "Le rapport mensuel n'a pas pu être édité",
+                type: 'error'
+            });
+            formErrorMsg.html(err);
+            formError.removeClass('hidden');
+        })
     });
 }
 

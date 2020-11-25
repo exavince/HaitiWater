@@ -206,9 +206,39 @@ function sendTicket(addOrEdit) {
             });
             drawDataTable("ticket");
         },
-        error: function (jqXHR, textStatus, errorMessage) {
+        error: async function (jqXHR, textStatus, errorMessage) {
             document.getElementById("form-ticket-error").className = "alert alert-danger";
             document.getElementById("form-ticket-error-msg").innerHTML = textStatus + ': ' + errorMessage;
+            let dexie = await new Dexie('user_db');
+            let db = await dexie.open();
+            let db_table = db.table('update_queue');
+
+            var myInit = {
+                method: 'post',
+                headers: {
+                    'X-CSRFToken':getCookie('csrftoken')
+                },
+                body: formData
+            };
+
+            db_table.put({
+                url:postURL,
+                date: new Date().toLocaleString('en-GB', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hourCycle: 'h23'
+                }),
+                table: 'Ticket',
+                init:myInit,
+                type:addOrEdit,
+                elemId: 2,
+                unsync:true,
+                details:myInit
+            });
+            afterModalRequest();
         },
         complete: function () {
             afterModalRequest();

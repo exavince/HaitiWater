@@ -57,7 +57,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',  # is it used now ? not sure
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'clearcache',
     'rest_framework',
     'rest_framework.authtoken',
     'apps.authentication',
