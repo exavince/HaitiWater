@@ -17,32 +17,80 @@ function postReportEdit(){
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?table=report";
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.setRequestHeader('Content-type', 'application/json');
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                new PNotify({
-                    title: 'Échec!',
-                    text: "Le rapport mensuel n'a pas pu être édité",
-                    type: 'error'
-                });
-                formErrorMsg.html(xhttp.responseText);
-                formError.removeClass('hidden');
-            } else {
-                new PNotify({
+    let myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/json",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: JSON.stringify(report)
+    };
+
+    console.log('[ADD]', myInit);
+    navigator.serviceWorker.ready.then(async () => {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('update_queue');
+
+        db_table.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'ReportTable',
+            init:myInit,
+            type:'Editer',
+            elemId: 2,
+            unsync:true,
+            details:myInit
+        });
+
+        new PNotify({
+            title: 'Succès!',
+            text: 'Le rapport mensuel a été enregistré !',
+            type: 'success'
+        });
+        dismissModal();
+        afterModalRequest()
+
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+    }).catch(() => {
+        fetch(postURL, myInit)
+            .then(response => {
+                if(response.ok) {
+                    new PNotify({
                     title: 'Succès!',
                     text: 'Le rapport mensuel a été édité !',
                     type: 'success'
                 });
                 dismissModal();
-            }
-            afterModalRequest()
-        }
-    };
-    xhttp.send(JSON.stringify(report));
+                } else {
+                    new PNotify({
+                        title: 'Échec!',
+                        text: "Le rapport mensuel n'a pas pu être édité",
+                        type: 'error'
+                    });
+                    formErrorMsg.html(response.statusText);
+                    formError.removeClass('hidden');
+                }
+                afterModalRequest()
+            })
+            .catch(err => {
+                new PNotify({
+                    title: 'Échec!',
+                    text: "Le rapport mensuel n'a pas pu être envoyé",
+                    type: 'error'
+                });
+                formErrorMsg.html(err);
+                formError.removeClass('hidden');
+                afterModalRequest()
+            })
+    });
 }
 
 /**
