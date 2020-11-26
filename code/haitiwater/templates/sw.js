@@ -6,7 +6,7 @@ importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
-const onlinePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer'];
+const onlinePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
 const doublePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline', /modifications/]
 const staticExt = ['.js', '.woff', '/static/'];
@@ -107,165 +107,173 @@ db.version(dbVersion).stores({
 });
 
 const logsHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.logs.clear();
-            for (let entry of result.data) {
-                db.logs.put({
-                    id: entry.id,
-                    time: entry.time,
-                    type: entry.type,
-                    user: entry.user,
-                    summary: entry.summary,
-                    details: entry.details,
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.logs.clear();
+                for (let entry of result.data) {
+                    db.logs.put({
+                        id: entry.id,
+                        time: entry.time,
+                        type: entry.type,
+                        user: entry.user,
+                        summary: entry.summary,
+                        details: entry.details,
+                    });
+                }
+            })
+        );
 }
 
 const logsHistoryHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.logs_history.clear();
-            for (let entry of result.data) {
-                db.logs_history.put({
-                    id: entry.id,
-                    time: entry.time,
-                    type: entry.type,
-                    user: entry.user,
-                    summary: entry.summary,
-                    details: entry.details,
-                    action: entry.action,
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.logs_history.clear();
+                for (let entry of result.data) {
+                    db.logs_history.put({
+                        id: entry.id,
+                        time: entry.time,
+                        type: entry.type,
+                        user: entry.user,
+                        summary: entry.summary,
+                        details: entry.details,
+                        action: entry.action,
+                    });
+                }
+            })
+        );
 }
 
 const consumerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.consumer.clear();
-            db.consumer_details.clear();
-            for (let entry of result.data) {
-                db.consumer.put({
-                    id: entry.consumer[0],
-                    nom: entry.consumer[1],
-                    prenom: entry.consumer[2],
-                    genre: entry.consumer[3],
-                    adresse: entry.consumer[4],
-                    telephone: entry.consumer[5],
-                    membres: entry.consumer[6],
-                    sortie_eau: entry.consumer[7],
-                    argent_du: entry.consumer[8],
-                    zone: entry.consumer[9],
-                })
+    return fetch('http://127.0.0.1:8000/api/get-consumers')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.consumer.clear();
+                db.consumer_details.clear();
+                for (let entry of result.data) {
+                    db.consumer.put({
+                        id: entry.consumer[0],
+                        nom: entry.consumer[1],
+                        prenom: entry.consumer[2],
+                        genre: entry.consumer[3],
+                        adresse: entry.consumer[4],
+                        telephone: entry.consumer[5],
+                        membres: entry.consumer[6],
+                        sortie_eau: entry.consumer[7],
+                        argent_du: entry.consumer[8],
+                        zone: entry.consumer[9],
+                    });
 
-                db.consumer_details.put({
-                    consumer_id: entry.consumer[0],
-                    amount_due: entry.consumer[8],
-                    validity: entry.validity
-                })
-            }
-        })
-    });
+                    db.consumer_details.put({
+                        consumer_id: entry.consumer[0],
+                        amount_due: entry.consumer[8],
+                        validity: entry.validity
+                    });
+                }
+            })
+        );
 }
 
 const paymentHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.payment.clear();
-            for (let payment of result.data) {
-                db.payment.put({
-                    id: payment.payments[0],
-                    data: payment.payments[1],
-                    value: payment.payments[2],
-                    source: payment.payments[3],
-                    user_id: payment.consumer_id,
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-payments')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.payment.clear();
+                for (let payment of result.data) {
+                    db.payment.put({
+                        id: payment.payments[0],
+                        data: payment.payments[1],
+                        value: payment.payments[2],
+                        source: payment.payments[3],
+                        user_id: payment.consumer_id,
+                    });
+                }
+            })
+        );
 }
 
 const zoneHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.zone.clear();
-            for (let entry of result.data) {
-                db.zone.put({
-                    id: entry[0],
-                    name: entry[1],
-                    cout_fontaine: entry[2],
-                    mois_fontaine: entry[3],
-                    cout_kiosque: entry[4],
-                    mois_kiosque: entry[5],
-                    cout_mensuel: entry[6],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.zone.clear();
+                for (let entry of result.data) {
+                    db.zone.put({
+                        id: entry[0],
+                        name: entry[1],
+                        cout_fontaine: entry[2],
+                        mois_fontaine: entry[3],
+                        cout_kiosque: entry[4],
+                        mois_kiosque: entry[5],
+                        cout_mensuel: entry[6],
+                    })
+                }
+            })
+        );
 }
 
 const managerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.manager.clear();
-            for (let entry of result.data) {
-                db.manager.put({
-                    id: entry[0],
-                    nom: entry[1],
-                    prenom: entry[2],
-                    telephone: entry[3],
-                    mail: entry[4],
-                    role: entry[5],
-                    zone: entry[6],
-                    unknown: entry[7],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.manager.clear();
+                for (let entry of result.data) {
+                    db.manager.put({
+                        id: entry[0],
+                        nom: entry[1],
+                        prenom: entry[2],
+                        telephone: entry[3],
+                        mail: entry[4],
+                        role: entry[5],
+                        zone: entry[6],
+                        unknown: entry[7],
+                    });
+                }
+            })
+        );
 }
 
 const ticketHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.ticket.clear();
-            for (let entry of result.data) {
-                db.ticket.put({
-                    id: entry[0],
-                    urgence: entry[1],
-                    emplacement: entry[2],
-                    type: entry[3],
-                    commentaire: entry[4],
-                    statut: entry[5],
-                    photo: entry[6],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.ticket.clear();
+                for (let entry of result.data) {
+                    db.ticket.put({
+                        id: entry[0],
+                        urgence: entry[1],
+                        emplacement: entry[2],
+                        type: entry[3],
+                        commentaire: entry[4],
+                        statut: entry[5],
+                        photo: entry[6],
+                    });
+                }
+            })
+        );
 }
 
 const waterElement_handler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.water_element.clear();
-            for (let entry of result.data) {
-                db.water_element.put({
-                    id: entry[0],
-                    type: entry[1],
-                    place: entry[2],
-                    users: entry[3],
-                    state: entry[4],
-                    m3: entry[5],
-                    gallons: entry[6],
-                    gestionnaire: entry[7],
-                    zone_up: entry[8],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.water_element.clear();
+                for (let entry of result.data) {
+                    db.water_element.put({
+                        id: entry[0],
+                        type: entry[1],
+                        place: entry[2],
+                        users: entry[3],
+                        state: entry[4],
+                        m3: entry[5],
+                        gallons: entry[6],
+                        gestionnaire: entry[7],
+                        zone_up: entry[8],
+                    })
+                }
+            })
+        );
 }
 
 const populateDB = async () => {
@@ -317,7 +325,7 @@ const emptyDB = () => {
 
 const pushData = async () => {
     let tab = await db.update_queue.toArray();
-    Promise.all(tab.map(element => {
+    return Promise.all(tab.map(element => {
         return fetch(element.url, element.init).then(response => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
@@ -347,56 +355,48 @@ const pushData = async () => {
  * Utils
  *********************************************************************************/
 const addCache = (cache, tab) => {
-    return caches.open(cache).then(cache => {
-        cache.addAll(
-            tab
-        );
-    }).catch(err => {
-        console.error('[SW_CACHEADD]', err);
-    });
+    return caches.open(cache)
+        .then(cache => cache.addAll(tab))
+        .catch(err => {console.error('[SW_CACHEADD]', err);});
 }
 
 const cacheCleanedPromise = () => {
     return caches.keys().then(keys => {
         keys.forEach(key => {
-            if (key !== cacheVersion) {
-                return caches.delete(key);
-            }
+            if (key !== cacheVersion) return caches.delete(key);
         });
     });
 }
 
 const isDoublePages = (url) => {
     for (const ext of doublePages) {
-        if (url.includes(ext)) {
-            return true;
-        }
+        if (url.includes(ext)) return true;
     }
     return false;
 }
 
 const isOnlinePages = (url) => {
     for (const ext of onlinePages) {
-        if (url.includes(ext)) {
-            return true;
-        }
+        if (url.includes(ext)) return true;
     }
     return false;
 };
 
 const isConnected = () => {
     isConnecting = true;
-    return fetch('/api/check-authentication').then(response => {
-        if (response.ok) {
-            connected = true;
+    return fetch('/api/check-authentication')
+        .then(response => {
+            if (response.ok) {
+                connected = true;
+                isConnecting = false;
+                return true;
+            }
             isConnecting = false;
-            return true;
-        }
-        isConnecting = false;
-    }).catch(() => {
-        isConnecting = false;
-        return false;
-    })
+        })
+        .catch(() => {
+            isConnecting = false;
+            return false;
+        });
 }
 
 const getOfflineData = () => {
@@ -422,7 +422,7 @@ const getCache = () => {
         addCache(userCache, onlinePages),
         addCache(userCache, offlinePages),
         addCache(cacheVersion, staticFiles),
-    ])
+    ]);
 }
 
 const getInfos = () => {
@@ -486,27 +486,25 @@ const resetState = () => {
 }
 
 const CacheFirst = event => {
-    return caches.match(event.request).then(response => {
-        return response || fetch(event.request);
-    })
+    return caches.match(event.request)
+        .then(response => response || fetch(event.request));
 }
 
 const NetworkFirst = (event, page) => {
-    return fetch(event.request).catch(function () {
-        return caches.match(page);
-    })
+    return fetch(event.request)
+        .catch(() => caches.match(page));
 }
 
 const StaleWhileRevalidate = event => {
-    return caches.open(userCache).then(cache => {
-        return cache.match(event.request).then(response => {
-            let fetchPromise = fetch(event.request).then(networkResponse => {
-                cache.put(event.request, networkResponse.clone());
-                return networkResponse;
-            });
-            return response || fetchPromise;
-        });
-    })
+    return caches.open(userCache)
+        .then(cache => cache.match(event.request)
+            .then(response => response || fetch(event.request)
+                .then(networkResponse => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                })
+            )
+        );
 }
 
 
@@ -518,8 +516,8 @@ self.addEventListener('install', event => {
 });
 
 
-self.addEventListener('activate', async () => {
-    await db.sessions.add({
+self.addEventListener('activate', () => {
+    db.sessions.add({
         id: 1,
         username: undefined,
         needDisconnect: false,
@@ -562,29 +560,27 @@ self.addEventListener('fetch', async event => {
     } else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(CacheFirst(event));
     } else if (url.includes('/logout')) {
-        await Promise.all([
-            cacheCleanedPromise(),
-            emptyDB(),
-            resetState()
-        ]);
-        event.respondWith(
-            fetch(event.request).then(async networkResponse => {
+        await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
+        event.respondWith(fetch(event.request)
+            .then(networkResponse => {
                 setInfos('needDisconnect', false);
                 return networkResponse;
-            }).catch(() => {
+            })
+            .catch(() => {
                 setInfos('needDisconnect', true);
                 return caches.match('/offline/');
             })
         );
     } else if (needDisconnect) {
-        event.respondWith(
-            fetch(event.request).then(() => {
+        event.respondWith(fetch(event.request)
+            .then(() => {
                 setInfos('needDisconnect', false);
                 return Response.redirect('/logout/');
-            }).catch(() => {
+            })
+            .catch(() => {
                 return caches.match('/offline/');
             })
-        )
+        );
     } else if (offlineMode) {
         if (url.includes('/reseau/gis')) {
             event.respondWith(caches.match('/offline/'));
@@ -605,11 +601,9 @@ self.addEventListener('fetch', async event => {
         } else if (url.includes('/api/graph')) {
             event.respondWith(StaleWhileRevalidate(event));
         } else {
-            event.respondWith(
-                StaleWhileRevalidate(event).catch(() => {
-                    return caches.match('/offline/');
-                })
-            )
+            event.respondWith(StaleWhileRevalidate(event)
+                .catch(() => caches.match('/offline/'))
+            );
         }
     } else {
         if (url.includes('/reseau/gis')) {
@@ -632,12 +626,7 @@ self.addEventListener('fetch', async event => {
             event.respondWith(NetworkFirst(event, event.request.url));
         } else if (url.includes('/api/table') || url.includes('.png')) {
             event.respondWith(fetch(event.request)
-                .catch(() => {
-                    /*caches.open('user_1').then(async cache => {
-                        return await cache.match(lastPage);
-                    })*/
-                    console.error('cannot reach the dataTable online');
-                })
+                .catch(() => {console.error('cannot reach the dataTable online')})
             );
         } else {
             event.respondWith(NetworkFirst(event, '/offline/'));
