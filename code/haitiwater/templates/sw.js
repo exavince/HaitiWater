@@ -6,10 +6,10 @@ importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
-const onlinePages = ['/accueil/','/offline/','/aide/','/profil/editer'];
-const doublePages= ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
+const onlinePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
+const doublePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
 const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline', /modifications/]
-const staticExt = ['.js','.woff','/static/'];
+const staticExt = ['.js', '.woff', '/static/'];
 const staticFiles = [
     '/static/consumerFormHandler.js',
     '/static/consumerTableHandler.js',
@@ -89,7 +89,6 @@ let isLoading = false;
 let connected = false;
 
 
-
 /*********************************************************************************
  * IndexDB
  *********************************************************************************/
@@ -98,175 +97,183 @@ db.version(dbVersion).stores({
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo',
     water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up',
-    manager:'id,nom,prenom,telephone,mail,role,zone,unknown',
-    consumer_details:'consumer_id,amount_due,validity',
-    payment:'id,data,value,source,user_id',
-    logs:'id,time,type,user,summary,details',
-    logs_history:'id,time,type,user,summary,details,action',
-    update_queue:'++id, url, init, date, type, table, elemId, unsync, details',
-    sessions:'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
+    manager: 'id,nom,prenom,telephone,mail,role,zone,unknown',
+    consumer_details: 'consumer_id,amount_due,validity',
+    payment: 'id,data,value,source,user_id',
+    logs: 'id,time,type,user,summary,details',
+    logs_history: 'id,time,type,user,summary,details,action',
+    update_queue: '++id, url, init, date, type, table, elemId, unsync, details',
+    sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
 });
 
-const logsHandler= () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.logs.clear();
-            for(let entry of result.data) {
-                db.logs.put({
-                    id:entry.id,
-                    time:entry.time,
-                    type:entry.type,
-                    user:entry.user,
-                    summary:entry.summary,
-                    details:entry.details,
-                })
-            }
-        })
-    });
+const logsHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.logs.clear();
+                for (let entry of result.data) {
+                    db.logs.put({
+                        id: entry.id,
+                        time: entry.time,
+                        type: entry.type,
+                        user: entry.user,
+                        summary: entry.summary,
+                        details: entry.details,
+                    });
+                }
+            })
+        );
 }
 
 const logsHistoryHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.logs_history.clear();
-            for(let entry of result.data) {
-                db.logs_history.put({
-                    id:entry.id,
-                    time:entry.time,
-                    type:entry.type,
-                    user:entry.user,
-                    summary:entry.summary,
-                    details:entry.details,
-                    action:entry.action,
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.logs_history.clear();
+                for (let entry of result.data) {
+                    db.logs_history.put({
+                        id: entry.id,
+                        time: entry.time,
+                        type: entry.type,
+                        user: entry.user,
+                        summary: entry.summary,
+                        details: entry.details,
+                        action: entry.action,
+                    });
+                }
+            })
+        );
 }
 
 const consumerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-consumers').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.consumer.clear();
-            db.consumer_details.clear();
-            for(let entry of result.data) {
-                db.consumer.put({
-                    id:entry.consumer[0],
-                    nom:entry.consumer[1],
-                    prenom:entry.consumer[2],
-                    genre:entry.consumer[3],
-                    adresse:entry.consumer[4],
-                    telephone:entry.consumer[5],
-                    membres:entry.consumer[6],
-                    sortie_eau:entry.consumer[7],
-                    argent_du:entry.consumer[8],
-                    zone:entry.consumer[9],
-                })
+    return fetch('http://127.0.0.1:8000/api/get-consumers')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.consumer.clear();
+                db.consumer_details.clear();
+                for (let entry of result.data) {
+                    db.consumer.put({
+                        id: entry.consumer[0],
+                        nom: entry.consumer[1],
+                        prenom: entry.consumer[2],
+                        genre: entry.consumer[3],
+                        adresse: entry.consumer[4],
+                        telephone: entry.consumer[5],
+                        membres: entry.consumer[6],
+                        sortie_eau: entry.consumer[7],
+                        argent_du: entry.consumer[8],
+                        zone: entry.consumer[9],
+                    });
 
-                db.consumer_details.put({
-                    consumer_id:entry.consumer[0],
-                    amount_due:entry.consumer[8],
-                    validity:entry.validity
-                })
-            }
-        })
-    });
+                    db.consumer_details.put({
+                        consumer_id: entry.consumer[0],
+                        amount_due: entry.consumer[8],
+                        validity: entry.validity
+                    });
+                }
+            })
+        );
 }
 
 const paymentHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-payments').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.payment.clear();
-            for(let payment of result.data) {
-                db.payment.put({
-                    id:payment.payments[0],
-                    data:payment.payments[1],
-                    value:payment.payments[2],
-                    source:payment.payments[3],
-                    user_id:payment.consumer_id,
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-payments')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.payment.clear();
+                for (let payment of result.data) {
+                    db.payment.put({
+                        id: payment.payments[0],
+                        data: payment.payments[1],
+                        value: payment.payments[2],
+                        source: payment.payments[3],
+                        user_id: payment.consumer_id,
+                    });
+                }
+            })
+        );
 }
 
 const zoneHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.zone.clear();
-            for (let entry of result.data) {
-                db.zone.put({
-                    id: entry[0],
-                    name: entry[1],
-                    cout_fontaine: entry[2],
-                    mois_fontaine: entry[3],
-                    cout_kiosque: entry[4],
-                    mois_kiosque: entry[5],
-                    cout_mensuel: entry[6],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.zone.clear();
+                for (let entry of result.data) {
+                    db.zone.put({
+                        id: entry[0],
+                        name: entry[1],
+                        cout_fontaine: entry[2],
+                        mois_fontaine: entry[3],
+                        cout_kiosque: entry[4],
+                        mois_kiosque: entry[5],
+                        cout_mensuel: entry[6],
+                    })
+                }
+            })
+        );
 }
 
 const managerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.manager.clear();
-            for(let entry of result.data) {
-                db.manager.put({
-                    id:entry[0],
-                    nom:entry[1],
-                    prenom:entry[2],
-                    telephone:entry[3],
-                    mail:entry[4],
-                    role:entry[5],
-                    zone:entry[6],
-                    unknown:entry[7],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.manager.clear();
+                for (let entry of result.data) {
+                    db.manager.put({
+                        id: entry[0],
+                        nom: entry[1],
+                        prenom: entry[2],
+                        telephone: entry[3],
+                        mail: entry[4],
+                        role: entry[5],
+                        zone: entry[6],
+                        unknown: entry[7],
+                    });
+                }
+            })
+        );
 }
 
 const ticketHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.ticket.clear();
-            for(let entry of result.data) {
-                db.ticket.put({
-                    id:entry[0],
-                    urgence:entry[1],
-                    emplacement:entry[2],
-                    type:entry[3],
-                    commentaire:entry[4],
-                    statut:entry[5],
-                    photo:entry[6],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.ticket.clear();
+                for (let entry of result.data) {
+                    db.ticket.put({
+                        id: entry[0],
+                        urgence: entry[1],
+                        emplacement: entry[2],
+                        type: entry[3],
+                        commentaire: entry[4],
+                        statut: entry[5],
+                        photo: entry[6],
+                    });
+                }
+            })
+        );
 }
 
 const waterElement_handler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element').then(networkResponse => {
-        networkResponse.json().then(result => {
-            db.water_element.clear();
-            for(let entry of result.data) {
-                db.water_element.put({
-                    id:entry[0],
-                    type:entry[1],
-                    place:entry[2],
-                    users:entry[3],
-                    state:entry[4],
-                    m3:entry[5],
-                    gallons:entry[6],
-                    gestionnaire:entry[7],
-                    zone_up:entry[8],
-                })
-            }
-        })
-    });
+    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.water_element.clear();
+                for (let entry of result.data) {
+                    db.water_element.put({
+                        id: entry[0],
+                        type: entry[1],
+                        place: entry[2],
+                        users: entry[3],
+                        state: entry[4],
+                        m3: entry[5],
+                        gallons: entry[6],
+                        gestionnaire: entry[7],
+                        zone_up: entry[8],
+                    })
+                }
+            })
+        );
 }
 
 const populateDB = async () => {
@@ -283,18 +290,18 @@ const populateDB = async () => {
         logsHistoryHandler()
     ]).then(() => {
         isLoading = false;
-        setInfos( 'lastUpdate', new Date());
+        setInfos('lastUpdate', new Date());
         channel.postMessage({
-            title:'updateStatus',
-            status:'loaded',
-            date:lastUpdate
+            title: 'updateStatus',
+            status: 'loaded',
+            date: lastUpdate
         });
     }).catch(err => {
         isLoading = false;
         channel.postMessage({
-            title:'updateStatus',
-            status:'failed',
-            date:lastUpdate
+            title: 'updateStatus',
+            status: 'failed',
+            date: lastUpdate
         });
         console.log('[SW_POPULATEDB]', err);
     });
@@ -318,28 +325,27 @@ const emptyDB = () => {
 
 const pushData = async () => {
     let tab = await db.update_queue.toArray();
-    Promise.all(tab.map(element => {
+    return Promise.all(tab.map(element => {
         return fetch(element.url, element.init).then(response => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
                 db.update_queue.delete(element.id);
-            }
-            else {
-                db.update_queue.update(element.id, {unsync:response.status}).then(update => {
+            } else {
+                db.update_queue.update(element.id, {unsync: response.status}).then(update => {
                     console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
                 });
             }
         }).catch(() => {
-            console.log('[SW_PUSH]','Cannot reach the network, data still need to be pushed');
+            console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         })
     })).then(async () => {
         channel.postMessage({
-            title:'toPush',
+            title: 'toPush',
             toPush: await db.update_queue.count()
         });
     }).catch(async () => {
         channel.postMessage({
-            title:'toPush',
+            title: 'toPush',
             toPush: await db.update_queue.count()
         });
     })
@@ -349,56 +355,48 @@ const pushData = async () => {
  * Utils
  *********************************************************************************/
 const addCache = (cache, tab) => {
-    return caches.open(cache).then(cache => {
-        cache.addAll(
-            tab
-        );
-    }).catch(err => {
-        console.error('[SW_CACHEADD]', err);
-    });
+    return caches.open(cache)
+        .then(cache => cache.addAll(tab))
+        .catch(err => {console.error('[SW_CACHEADD]', err);});
 }
 
 const cacheCleanedPromise = () => {
     return caches.keys().then(keys => {
         keys.forEach(key => {
-            if (key !== cacheVersion) {
-                return caches.delete(key);
-            }
+            if (key !== cacheVersion) return caches.delete(key);
         });
     });
 }
 
 const isDoublePages = (url) => {
-    for(const ext of doublePages) {
-        if(url.includes(ext)) {
-            return true;
-        }
+    for (const ext of doublePages) {
+        if (url.includes(ext)) return true;
     }
     return false;
 }
 
 const isOnlinePages = (url) => {
-    for(const ext of onlinePages) {
-        if(url.includes(ext)) {
-            return true;
-        }
+    for (const ext of onlinePages) {
+        if (url.includes(ext)) return true;
     }
     return false;
 };
 
 const isConnected = () => {
     isConnecting = true;
-    return fetch('/api/check-authentication').then(response => {
-        if(response.ok) {
-            connected = true;
+    return fetch('/api/check-authentication')
+        .then(response => {
+            if (response.ok) {
+                connected = true;
+                isConnecting = false;
+                return true;
+            }
             isConnecting = false;
-            return true;
-        }
-        isConnecting = false;
-    }).catch(()=> {
-        isConnecting = false;
-        return false;
-    })
+        })
+        .catch(() => {
+            isConnecting = false;
+            return false;
+        });
 }
 
 const getOfflineData = () => {
@@ -424,7 +422,7 @@ const getCache = () => {
         addCache(userCache, onlinePages),
         addCache(userCache, offlinePages),
         addCache(cacheVersion, staticFiles),
-    ])
+    ]);
 }
 
 const getInfos = () => {
@@ -436,17 +434,17 @@ const getInfos = () => {
         lastUpdate = data.lastUpdate;
         dataLoaded = data.dataLoaded;
         channel.postMessage({
-            title:'getInfos',
+            title: 'getInfos',
             toPush: await db.update_queue.count(),
-            offlineMode:offlineMode,
-            date:lastUpdate
+            offlineMode: offlineMode,
+            date: lastUpdate
         });
         return data;
     });
 }
 
 const setInfos = (info, value) => {
-    switch (info){
+    switch (info) {
         case 'username':
             username = value;
             break
@@ -464,18 +462,18 @@ const setInfos = (info, value) => {
             break
     }
     db.sessions.put({
-        id:1,
-        username:username,
-        needDisconnect:needDisconnect,
-        offlineMode:offlineMode,
-        lastUpdate:lastUpdate,
-        dataLoaded:dataLoaded
+        id: 1,
+        username: username,
+        needDisconnect: needDisconnect,
+        offlineMode: offlineMode,
+        lastUpdate: lastUpdate,
+        dataLoaded: dataLoaded
     });
 }
 
 const resetState = () => {
     channel.postMessage({
-        title:'resetNavigation'
+        title: 'resetNavigation'
     });
     synced = false;
     setInfos('username', null);
@@ -488,29 +486,26 @@ const resetState = () => {
 }
 
 const CacheFirst = event => {
-    return caches.match(event.request).then(response => {
-        return response || fetch(event.request);
-    })
+    return caches.match(event.request)
+        .then(response => response || fetch(event.request));
 }
 
-const NetworkFirst = (event,page) => {
-    return fetch(event.request).catch(function () {
-        return caches.match(page);
-    })
+const NetworkFirst = (event, page) => {
+    return fetch(event.request)
+        .catch(() => caches.match(page));
 }
 
 const StaleWhileRevalidate = event => {
-    return caches.open(userCache).then(cache => {
-        return cache.match(event.request).then(response => {
-            let fetchPromise = fetch(event.request).then(networkResponse => {
-                cache.put(event.request, networkResponse.clone());
-                return networkResponse;
-            });
-            return response || fetchPromise;
-        });
-    })
+    return caches.open(userCache)
+        .then(cache => cache.match(event.request)
+            .then(response => response || fetch(event.request)
+                .then(networkResponse => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                })
+            )
+        );
 }
-
 
 
 /*********************************************************************************
@@ -521,30 +516,30 @@ self.addEventListener('install', event => {
 });
 
 
-self.addEventListener('activate', async () => {
-    await db.sessions.add({
-        id:1,
-        username:undefined,
-        needDisconnect:false,
-        offlineMode:false,
-        lastUpdate:undefined,
-        dataLoaded:false
+self.addEventListener('activate', () => {
+    db.sessions.add({
+        id: 1,
+        username: undefined,
+        needDisconnect: false,
+        offlineMode: false,
+        lastUpdate: undefined,
+        dataLoaded: false
     }).then(async () => {
         channel.postMessage({
-            title:'updateInfos',
-            offlineMode:offlineMode,
+            title: 'updateInfos',
+            offlineMode: offlineMode,
             toPush: await db.update_queue.count(),
-            date:lastUpdate
+            date: lastUpdate
         });
         getOfflineData();
     }).catch(() => {
         getInfos().then(async () => {
             if (!dataLoaded) getOfflineData();
             else channel.postMessage({
-                title:'updateInfos',
-                offlineMode:offlineMode,
+                title: 'updateInfos',
+                offlineMode: offlineMode,
                 toPush: await db.update_queue.count(),
-                date:lastUpdate
+                date: lastUpdate
             });
             getCache();
         });
@@ -556,116 +551,84 @@ self.addEventListener('activate', async () => {
 self.addEventListener('fetch', async event => {
     const url = event.request.url;
 
-    if(!synced) await getInfos();
-    if(!connected && !needDisconnect && !isConnecting) await isConnected();
+    if (!synced) await getInfos();
+    if (!connected && !needDisconnect && !isConnecting) await isConnected();
     if (!dataLoaded && connected && !isLoading) event.waitUntil(getOfflineData());
 
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request));
-    }
-    else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
+    } else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(CacheFirst(event));
-    }
-    else if (url.includes('/logout')) {
-        await Promise.all([
-            cacheCleanedPromise(),
-            emptyDB(),
-            resetState()
-        ]);
-        event.respondWith(
-            fetch(event.request).then(async networkResponse => {
+    } else if (url.includes('/logout')) {
+        await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
+        event.respondWith(fetch(event.request)
+            .then(networkResponse => {
                 setInfos('needDisconnect', false);
                 return networkResponse;
-            }).catch(() => {
+            })
+            .catch(() => {
                 setInfos('needDisconnect', true);
                 return caches.match('/offline/');
             })
         );
-    }
-    else if (needDisconnect) {
-        event.respondWith(
-            fetch(event.request).then(() => {
+    } else if (needDisconnect) {
+        event.respondWith(fetch(event.request)
+            .then(() => {
                 setInfos('needDisconnect', false);
                 return Response.redirect('/logout/');
-            }).catch(() => {
+            })
+            .catch(() => {
                 return caches.match('/offline/');
             })
-        )
-    }
-    else if (offlineMode) {
-        if(url.includes('/reseau/gis')) {
+        );
+    } else if (offlineMode) {
+        if (url.includes('/reseau/gis')) {
             event.respondWith(caches.match('/offline/'));
-        }
-        else if(url.includes('/reseau')) {
+        } else if (url.includes('/reseau')) {
             event.respondWith(caches.match('/reseau/offline'));
-        }
-        else if (url.includes('/gestion')) {
+        } else if (url.includes('/gestion')) {
             event.respondWith(caches.match('/gestion/offline'));
-        }
-        else if (url.includes('/rapport')) {
+        } else if (url.includes('/rapport')) {
             event.respondWith(caches.match('/rapport/offline'));
-        }
-        else if (url.includes('/consommateurs')) {
+        } else if (url.includes('/consommateurs')) {
             event.respondWith(caches.match('/consommateurs/offline'));
-        }
-        else if (url.includes('/finances')) {
+        } else if (url.includes('/finances')) {
             event.respondWith(caches.match('/finances/offline'));
-        }
-        else if (url.includes('/historique')) {
+        } else if (url.includes('/historique')) {
             event.respondWith(caches.match('/historique/offline'));
-        }
-        else if (url.includes('/login')) {
+        } else if (url.includes('/login')) {
             event.respondWith(NetworkFirst(event, '/offline/'));
-        }
-        else if (url.includes('/api/graph')) {
+        } else if (url.includes('/api/graph')) {
             event.respondWith(StaleWhileRevalidate(event));
-        }
-        else {
-            event.respondWith(
-                StaleWhileRevalidate(event).catch(() => {
-                    return caches.match('/offline/');
-                })
-            )}
-    }
-    else {
-        if(url.includes('/reseau/gis')) {
-            event.respondWith(NetworkFirst(event,'/offline/'));
-        }
-        else if(url.includes('/reseau')) {
-            event.respondWith(NetworkFirst(event, '/reseau/offline'));
-        }
-        else if (url.includes('/gestion')) {
-            event.respondWith(NetworkFirst(event,'/gestion/offline'))
-        }
-        else if (url.includes('/rapport')) {
-            event.respondWith(NetworkFirst(event,'/rapport/offline'))
-        }
-        else if (url.includes('/historique')) {
-            event.respondWith(NetworkFirst(event,'/historique/offline'))
-        }
-        else if (url.includes('/consommateurs')) {
-            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
-        }
-        else if (url.includes('/finances')) {
-            event.respondWith(NetworkFirst(event,'/finances/offline'))
-        }
-        else if (url.includes('/login')) {
-            event.respondWith(NetworkFirst(event,'/offline/'))
-        }
-        else if (url.includes('/api/graph')) {
-            event.respondWith(NetworkFirst(event,event.request.url));
-        }
-        else if (url.includes('/api/table') || url.includes('.png')) {
-            event.respondWith(fetch(event.request)
-                .catch(() => {
-                    /*caches.open('user_1').then(async cache => {
-                        return await cache.match(lastPage);
-                    })*/
-                    console.error('cannot reach the dataTable online');
-                })
+        } else {
+            event.respondWith(StaleWhileRevalidate(event)
+                .catch(() => caches.match('/offline/'))
             );
         }
-        else {
+    } else {
+        if (url.includes('/reseau/gis')) {
+            event.respondWith(NetworkFirst(event, '/offline/'));
+        } else if (url.includes('/reseau')) {
+            event.respondWith(NetworkFirst(event, '/reseau/offline'));
+        } else if (url.includes('/gestion')) {
+            event.respondWith(NetworkFirst(event, '/gestion/offline'))
+        } else if (url.includes('/rapport')) {
+            event.respondWith(NetworkFirst(event, '/rapport/offline'))
+        } else if (url.includes('/historique')) {
+            event.respondWith(NetworkFirst(event, '/historique/offline'))
+        } else if (url.includes('/consommateurs')) {
+            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
+        } else if (url.includes('/finances')) {
+            event.respondWith(NetworkFirst(event, '/finances/offline'))
+        } else if (url.includes('/login')) {
+            event.respondWith(NetworkFirst(event, '/offline/'))
+        } else if (url.includes('/api/graph')) {
+            event.respondWith(NetworkFirst(event, event.request.url));
+        } else if (url.includes('/api/table') || url.includes('.png')) {
+            event.respondWith(fetch(event.request)
+                .catch(() => {console.error('cannot reach the dataTable online')})
+            );
+        } else {
             event.respondWith(NetworkFirst(event, '/offline/'));
         }
     }
@@ -675,25 +638,25 @@ self.addEventListener('fetch', async event => {
 channel.addEventListener('message', async event => {
     switch (event.data.title) {
         case 'getInfos':
-            if(username === null || username === undefined) {
+            if (username === null || username === undefined) {
                 username = event.data.username;
             }
             channel.postMessage({
-                title:'updateInfos',
-                date:lastUpdate,
-                offlineMode:offlineMode,
+                title: 'updateInfos',
+                date: lastUpdate,
+                offlineMode: offlineMode,
                 toPush: await db.update_queue.count()
             });
             break
         case 'setOfflineMode':
             setInfos('offlineMode', !offlineMode);
             channel.postMessage({
-                title:'getOfflineMode',
-                offlineMode:offlineMode
+                title: 'getOfflineMode',
+                offlineMode: offlineMode
             });
             break
         case 'updateDB':
-            if(!isLoading) {
+            if (!isLoading) {
                 switch (event.data.db) {
                     case 'all':
                         populateDB();
@@ -717,9 +680,9 @@ channel.addEventListener('message', async event => {
                 }
             }
             channel.postMessage({
-                title:'updateStatus',
-                date:lastUpdate,
-                status:'loading'
+                title: 'updateStatus',
+                date: lastUpdate,
+                status: 'loading'
             });
             break
         case 'pushData':

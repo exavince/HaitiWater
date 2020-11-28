@@ -171,77 +171,97 @@ function sendTicket(addOrEdit) {
         return;
     let form = document.forms["form-add-ticket"];
 
-    var formData = new FormData();
-    formData.append("table", "ticket");
-    formData.append("id", form["input-id"].value);
-    formData.append("type", form["select-type"].value);
-    formData.append("urgency", form["select-urgency"].value);
-    formData.append("id_outlet", form["select-outlet"].value);
-    formData.append("comment", form["input-comment"].value);
-    formData.append("state", form["select-state"].value);
-    formData.append("picture", form["input-picture"].files[0]);
+    let body = "table" + "=" + "ticket" + "&" +
+    "id" + "=" + form["input-id"].value + "&"+
+    "type" + "=" + form["select-type"].value + "&"+
+    "urgency" + "=" + form["select-urgency"].value + "&"+
+    "id_outlet" + "=" + form["select-outlet"].value + "&"+
+    "comment" + "=" + form["input-comment"].value + "&"+
+    "state" + "=" + form["select-state"].value + "&"+
+    "picture" + "=" + form["input-picture"].files[0];
 
     let baseURL = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
     let postURL = baseURL + "/api/" + addOrEdit + "/";
-    $.ajaxSetup({
-        headers:
-            {'X-CSRFToken': getCookie('csrftoken')}
-    });
-    $.ajax({
-        url: postURL,
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
-        beforeSend(xhr, settings){
-            beforeModalRequest();
-        },
-        success: function (response) {
-            document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
-            dismissModal();
-            new PNotify({
-                title: 'Succès!',
-                text: "Opération effectuée",
-                type: 'success'
-            });
-            drawDataTable("ticket");
-        },
-        error: async function (jqXHR, textStatus, errorMessage) {
-            document.getElementById("form-ticket-error").className = "alert alert-danger";
-            document.getElementById("form-ticket-error-msg").innerHTML = textStatus + ': ' + errorMessage;
-            let dexie = await new Dexie('user_db');
-            let db = await dexie.open();
-            let db_table = db.table('update_queue');
 
-            var myInit = {
-                method: 'post',
-                headers: {
-                    'X-CSRFToken':getCookie('csrftoken')
-                },
-                body: formData
-            };
-
-            db_table.put({
-                url:postURL,
-                date: new Date().toLocaleString('en-GB', {
-                    day: 'numeric',
-                    month: 'numeric',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hourCycle: 'h23'
-                }),
-                table: 'Ticket',
-                init:myInit,
-                type:addOrEdit,
-                elemId: 2,
-                unsync:true,
-                details:myInit
-            });
-            afterModalRequest();
+    var myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
         },
-        complete: function () {
-            afterModalRequest();
-        }
+        body: body
+    };
+
+    console.log('['+ addOrEdit +']', myInit);
+    navigator.serviceWorker.ready.then(async swRegistration => {
+        beforeModalRequest();
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('update_queue');
+
+        db_table.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'IssueTable',
+            init:myInit,
+            type:addOrEdit,
+            elemId: 2,
+            unsync:true,
+            details:myInit
+        });
+
+        document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
+        dismissModal();
+        new PNotify({
+            title: 'Succès!',
+            text: "Opération bien enregistrée",
+            type: 'success'
+        });
+        drawDataTable("ticket");
+
+        afterModalRequest();
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+    }).catch(() => {
+        beforeModalRequest();
+        fetch(postURL, myInit)
+            .then(response => {
+                if(response.ok) {
+                    document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
+                    dismissModal();
+                    new PNotify({
+                        title: 'Succès!',
+                        text: "Opération effectuée",
+                        type: 'success'
+                    });
+                    drawDataTable("ticket");
+                } else {
+                    document.getElementById("form-ticket-error").className = "alert alert-danger";
+                    document.getElementById("form-ticket-error-msg").innerHTML = err;
+                    afterModalRequest();
+                    new PNotify({
+                        title: 'Echec!',
+                        text: "Le serveur a refusé !",
+                        type: 'error'
+                    });
+                }
+                afterModalRequest();
+            })
+            .catch(err => {
+                document.getElementById("form-ticket-error").className = "alert alert-danger";
+                document.getElementById("form-ticket-error-msg").innerHTML = err;
+                afterModalRequest();
+                new PNotify({
+                    title: 'Echec!',
+                    text: "Vous n'avez pas de réseau",
+                    type: 'error'
+                });
+            })
     });
 }
