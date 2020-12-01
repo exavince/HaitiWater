@@ -16,6 +16,7 @@ async function getConsumerData() {
             row.sortie_eau,
             row.argent_du,
             row.zone,
+            row.sync
         ]);
     });
 
@@ -116,13 +117,13 @@ async function getConsumerDatatableConfiguration(fullView){
         "createdRow": function (row, data, index) {
             if ($("#datatable-consumer th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
                 $('td', row).eq(10).addClass('hidden');
+                    if ( data[10] === false ) {
+                    console.log('The data: ',data[4]);
+                    $(row).css('background-color', '#4B0082');
+                    $(row).css('color', 'white');
+                }
             }
         },
-
-        "initComplete": function(settings, json){
-            // Removes the last column (both header and body) if we cannot edit
-
-        }
     };
     return config;
 }

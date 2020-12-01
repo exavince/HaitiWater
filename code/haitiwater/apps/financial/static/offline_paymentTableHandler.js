@@ -13,6 +13,7 @@ async function getPaymentData(userID) {
             user.data,
             user.value,
             user.source,
+            user.sync,
         ]);
     });
 
@@ -78,9 +79,12 @@ async function getPaymentDatatableConfiguration(userID){
         pagingType: 'full_numbers',
         "language": getDataTableFrenchTranslation(),
         "data": getPaymentData(userID),
-        "initComplete": function(settings, json){
-            // Removes the last column (both header and body) if we cannot edit
-
+        "createdRow": (row, data) => {
+            if ( data[4] === false ) {
+                console.log('The data: ',data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
         },
     };
     return config;

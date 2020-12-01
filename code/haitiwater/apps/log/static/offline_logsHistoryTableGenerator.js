@@ -78,6 +78,12 @@ async function getLogsHistoryTableConfiguration(){
         },
         "language": getDataTableFrenchTranslation(),
         "data": await getLogsHistoryData(),
+        "createdRow": (row, data) => {
+            if ( data.sync === false ) {
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
+        },
     };
     return config;
 }

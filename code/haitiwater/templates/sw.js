@@ -93,17 +93,17 @@ let connected = false;
  * IndexDB
  *********************************************************************************/
 db.version(dbVersion).stores({
-    zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel',
-    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone',
-    ticket: 'id,urgence,emplacement,type,commentaire,statut,photo',
-    water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up',
-    manager: 'id,nom,prenom,telephone,mail,role,zone,unknown',
-    consumer_details: 'consumer_id,amount_due,validity',
-    payment: 'id,data,value,source,user_id',
-    logs: 'id,time,type,user,summary,details',
-    logs_history: 'id,time,type,user,summary,details,action',
-    update_queue: '++id, url, init, date, type, table, elemId, unsync, details',
-    sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
+    zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel, sync',
+    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
+    ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
+    water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up, sync',
+    manager: 'id,nom,prenom,telephone,mail,role,zone,unknown, sync',
+    consumer_details: 'consumer_id,amount_due,validity, sync',
+    payment: 'id,data,value,source,user_id, sync',
+    logs: 'id,time,type,user,summary,details, sync',
+    logs_history: 'id,time,type,user,summary,details,action, sync',
+    update_queue: '++id, url, init, date, type, table, elemId, sync, details',
+    sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded, sync'
 });
 
 const logsHandler = () => {
@@ -119,6 +119,7 @@ const logsHandler = () => {
                         user: entry.user,
                         summary: entry.summary,
                         details: entry.details,
+                        sync: true
                     });
                 }
             })
@@ -139,6 +140,7 @@ const logsHistoryHandler = () => {
                         summary: entry.summary,
                         details: entry.details,
                         action: entry.action,
+                        sync: true
                     });
                 }
             })
@@ -163,12 +165,14 @@ const consumerHandler = () => {
                         sortie_eau: entry.consumer[7],
                         argent_du: entry.consumer[8],
                         zone: entry.consumer[9],
+                        sync: true
                     });
 
                     db.consumer_details.put({
                         consumer_id: entry.consumer[0],
                         amount_due: entry.consumer[8],
-                        validity: entry.validity
+                        validity: entry.validity,
+                        sync: true
                     });
                 }
             })
@@ -187,6 +191,7 @@ const paymentHandler = () => {
                         value: payment.payments[2],
                         source: payment.payments[3],
                         user_id: payment.consumer_id,
+                        sync: true
                     });
                 }
             })
@@ -207,6 +212,7 @@ const zoneHandler = () => {
                         cout_kiosque: entry[4],
                         mois_kiosque: entry[5],
                         cout_mensuel: entry[6],
+                        sync: true
                     })
                 }
             })
@@ -228,6 +234,7 @@ const managerHandler = () => {
                         role: entry[5],
                         zone: entry[6],
                         unknown: entry[7],
+                        sync: true
                     });
                 }
             })
@@ -248,6 +255,7 @@ const ticketHandler = () => {
                         commentaire: entry[4],
                         statut: entry[5],
                         photo: entry[6],
+                        sync: true
                     });
                 }
             })
@@ -270,6 +278,7 @@ const waterElement_handler = () => {
                         gallons: entry[6],
                         gestionnaire: entry[7],
                         zone_up: entry[8],
+                        sync: true
                     })
                 }
             })

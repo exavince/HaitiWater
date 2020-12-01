@@ -13,6 +13,7 @@ async function getManagerData() {
             row.mail,
             row.zone,
             row.unknown,
+            row.sync
         ]);
     });
 
@@ -109,7 +110,7 @@ async function getManagerDatatableConfiguration(dataURL){
                 "orderable": false,
                 "defaultContent": getActionButtonsHTML("modalManager"),
             },
-            ],
+        ],
         "language": getDataTableFrenchTranslation(),
         "data": await getManagerData(),
 
@@ -117,10 +118,14 @@ async function getManagerDatatableConfiguration(dataURL){
         "createdRow": function (row, data, index) {
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
+            if ( data[7] === false ) {
+                console.log('The data: ',data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit the table
-
         }
     };
     return config;

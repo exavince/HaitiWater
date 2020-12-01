@@ -13,6 +13,7 @@ async function getZoneData() {
             row.cout_kiosque,
             row.mois_kiosque,
             row.cout_mensuel,
+            row.sync
         ]);
     });
 
@@ -145,6 +146,10 @@ async function getZoneTableConfiguration(){
         "createdRow": function (row, data, index) {
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
+            if ( data[7] === false ) {
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit the table

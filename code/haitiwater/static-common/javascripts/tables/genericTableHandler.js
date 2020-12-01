@@ -63,7 +63,7 @@ function removeElement(table, id, otherParameters) {
     };
 
     console.log('[DELETE]', myInit);
-    navigator.serviceWorker.ready.then(async swRegistration => {
+    navigator.serviceWorker.ready.then(async () => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');
@@ -81,7 +81,7 @@ function removeElement(table, id, otherParameters) {
             init:myInit,
             type:'Supprimer',
             elemId: id,
-            unsync:true,
+            sync:true,
             details:myInit
         });
 
@@ -280,6 +280,7 @@ function postEditRow(table, callback){
         // Form is not valid (missing/wrong fields)
         return false;
     }
+    let rowId = request.split("&")[1].replace("id=", "");
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
@@ -313,6 +314,11 @@ function postEditRow(table, callback){
             elemId: 2,
             unsync:'En attente',
             details:myInit
+        });
+
+        db_row = db.table(table);
+        db_row.where('id').equals(parseInt(rowId)).modify(data => {
+            data.sync = false;
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg

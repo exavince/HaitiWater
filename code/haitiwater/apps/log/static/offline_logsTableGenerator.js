@@ -136,7 +136,14 @@ async function getLogsTableConfiguration(){
             rightColumns: 1
         },
         "language": getDataTableFrenchTranslation(),
-        "data": await getLogsData()
+        "data": await getLogsData(),
+        "createdRow": (row, data) => {
+            if ( data.sync === false ) {
+                console.log('The data: ',data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
+        },
     };
     return config;
 }
