@@ -138,7 +138,7 @@ async function getLogsTableConfiguration(){
         "language": getDataTableFrenchTranslation(),
         "data": await getLogsData(),
         "createdRow": (row, data) => {
-            if ( data.sync === false ) {
+            if ( data.sync > 0 ) {
                 console.log('The data: ',data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');

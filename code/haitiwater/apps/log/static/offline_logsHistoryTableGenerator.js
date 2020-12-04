@@ -79,7 +79,7 @@ async function getLogsHistoryTableConfiguration(){
         "language": getDataTableFrenchTranslation(),
         "data": await getLogsHistoryData(),
         "createdRow": (row, data) => {
-            if ( data.sync === false ) {
+            if ( data.sync > 0 ) {
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }

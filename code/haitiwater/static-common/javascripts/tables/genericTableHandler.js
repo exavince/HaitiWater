@@ -85,15 +85,13 @@ function removeElement(table, id, otherParameters) {
             details:myInit
         });
 
-        let db_table = db.table(table);
-        db_table.delete(id);
-
         new PNotify({
             title: 'Succès!',
             text: 'Votre demande de suppression est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
             type: 'success'
         });
 
+        await indexDBModify({table, rowID: id});
         drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -280,7 +278,7 @@ function postEditRow(table, callback){
         // Form is not valid (missing/wrong fields)
         return false;
     }
-    let rowId = request.split("&")[1].replace("id=", "");
+    let rowID = request.split("&")[1].replace("id=", "");
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
@@ -316,11 +314,6 @@ function postEditRow(table, callback){
             details:myInit
         });
 
-        db_row = db.table(table);
-        db_row.where('id').equals(parseInt(rowId)).modify(data => {
-            data.sync = false;
-        });
-
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         dismissModal();
         new PNotify({
@@ -329,6 +322,7 @@ function postEditRow(table, callback){
             type: 'success'
         });
 
+        indexDBModify({table, rowID})
         drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -461,4 +455,26 @@ function setTableURL(table, optional){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=" + table + optional;
     $('#datatable-'+table).DataTable().ajax.url(dataURL).load();
+}
+
+async function indexDBModify(data) {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    switch (data.table){
+        case "payment":
+            let consumerID = undefined;
+            await db.table('payment').where('id').equals(parseInt(data.rowID)).modify(data => {
+                consumerID = data.user_id;
+                data.sync += 1;
+            });
+            db.table('consumer').where('id').equals(parseInt(consumerID)).modify(data => {
+                data.sync += 1;
+            });
+            break;
+        default: // consumer, water_elem, ticket
+            db.table(data.table).where('id').equals(parseInt(data.rowID)).modify(data => {
+                data.sync += 1;
+            });
+            break;
+    }
 }

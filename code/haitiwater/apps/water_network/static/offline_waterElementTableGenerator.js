@@ -15,6 +15,7 @@ async function getData() {
             row.gallons,
             row.gestionnaire,
             row.zone_up,
+            row.sync
         ]);
     });
 
@@ -134,6 +135,11 @@ async function getWaterDatatableConfiguration(withManagers, withActions){
             if (withManagers) {
                 $('td', row).eq(7).addClass('text-center');
             }
+            if ( data[9] > 0 ) {
+                console.log('The data: ',data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
         },
         "initComplete": function(settings, json){
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
@@ -217,6 +223,11 @@ async function getWaterDatatableGISConfiguration(withManagers, withActions){
             }
             if (withManagers) {
                 $('td', row).eq(7).addClass('text-center');
+            }
+            if ( data[9] > 0 ) {
+                console.log('The data: ',data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
             }
         },
         "initComplete": function(settings, json){

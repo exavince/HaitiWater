@@ -119,7 +119,7 @@ const logsHandler = () => {
                         user: entry.user,
                         summary: entry.summary,
                         details: entry.details,
-                        sync: true
+                        sync: 0
                     });
                 }
             })
@@ -140,7 +140,7 @@ const logsHistoryHandler = () => {
                         summary: entry.summary,
                         details: entry.details,
                         action: entry.action,
-                        sync: true
+                        sync: 0
                     });
                 }
             })
@@ -165,14 +165,14 @@ const consumerHandler = () => {
                         sortie_eau: entry.consumer[7],
                         argent_du: entry.consumer[8],
                         zone: entry.consumer[9],
-                        sync: true
+                        sync: 0
                     });
 
                     db.consumer_details.put({
                         consumer_id: entry.consumer[0],
                         amount_due: entry.consumer[8],
                         validity: entry.validity,
-                        sync: true
+                        sync: 0
                     });
                 }
             })
@@ -191,7 +191,7 @@ const paymentHandler = () => {
                         value: payment.payments[2],
                         source: payment.payments[3],
                         user_id: payment.consumer_id,
-                        sync: true
+                        sync: 0
                     });
                 }
             })
@@ -212,7 +212,7 @@ const zoneHandler = () => {
                         cout_kiosque: entry[4],
                         mois_kiosque: entry[5],
                         cout_mensuel: entry[6],
-                        sync: true
+                        sync: 0
                     })
                 }
             })
@@ -234,7 +234,7 @@ const managerHandler = () => {
                         role: entry[5],
                         zone: entry[6],
                         unknown: entry[7],
-                        sync: true
+                        sync: 0
                     });
                 }
             })
@@ -255,7 +255,7 @@ const ticketHandler = () => {
                         commentaire: entry[4],
                         statut: entry[5],
                         photo: entry[6],
-                        sync: true
+                        sync: 0
                     });
                 }
             })
@@ -278,7 +278,7 @@ const waterElement_handler = () => {
                         gallons: entry[6],
                         gestionnaire: entry[7],
                         zone_up: entry[8],
-                        sync: true
+                        sync: 0
                     })
                 }
             })

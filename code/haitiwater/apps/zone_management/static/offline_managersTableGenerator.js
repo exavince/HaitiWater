@@ -118,7 +118,7 @@ async function getManagerDatatableConfiguration(dataURL){
         "createdRow": function (row, data, index) {
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
-            if ( data[7] === false ) {
+            if ( data[7] > 0 ) {
                 console.log('The data: ',data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');

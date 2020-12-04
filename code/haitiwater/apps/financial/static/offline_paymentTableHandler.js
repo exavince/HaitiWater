@@ -14,6 +14,7 @@ async function getPaymentData(userID) {
             user.value,
             user.source,
             user.sync,
+            user.user_id
         ]);
     });
 
@@ -27,7 +28,7 @@ async function drawPaymentTable(userID) {
     let configuration = await getPaymentDatatableConfiguration(userID);
     let table = datatable.DataTable(configuration);
 
-    datatable.find('tbody').on( 'click', '.remove-row', function () {
+    datatable.find('tbody').on( 'click', '.remove-row', async function() {
         let data = table.row($(this).closest('tr')).data();
         if (confirm("Voulez-vous supprimer: " + data[0] + ' ?')) {
             let consumerIdParameter = '&id_consumer=' + $('#input-payment-id-consumer');
@@ -80,7 +81,7 @@ async function getPaymentDatatableConfiguration(userID){
         "language": getDataTableFrenchTranslation(),
         "data": getPaymentData(userID),
         "createdRow": (row, data) => {
-            if ( data[4] === false ) {
+            if ( data[4] > 0 ) {
                 console.log('The data: ',data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
@@ -89,3 +90,4 @@ async function getPaymentDatatableConfiguration(userID){
     };
     return config;
 }
+
