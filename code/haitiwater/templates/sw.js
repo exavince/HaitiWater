@@ -93,6 +93,7 @@ let connected = false;
  * IndexDB
  *********************************************************************************/
 db.version(dbVersion).stores({
+    editable:'table,is_editable',
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel, sync',
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
@@ -107,10 +108,11 @@ db.version(dbVersion).stores({
 });
 
 const logsHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs')
+    return fetch('http://127.0.0.1:8000/api/table/?name=logs&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs.clear();
+                db.editable.put({table:'logs', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.logs.put({
                         id: entry.id,
@@ -127,10 +129,11 @@ const logsHandler = () => {
 }
 
 const logsHistoryHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history')
+    return fetch('http://127.0.0.1:8000/api/table/?name=logs_history&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs_history.clear();
+                db.editable.put({table:'logs_history', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.logs_history.put({
                         id: entry.id,
@@ -148,10 +151,11 @@ const logsHistoryHandler = () => {
 }
 
 const consumerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-consumers')
+    return fetch('http://127.0.0.1:8000/api/table/?name=consumer_full&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.consumer.clear();
+                db.editable.put({table:'consumer', is_editable:result.editable});
                 db.consumer_details.clear();
                 for (let entry of result.data) {
                     db.consumer.put({
@@ -180,10 +184,11 @@ const consumerHandler = () => {
 }
 
 const paymentHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-payments')
+    return fetch('http://127.0.0.1:8000/api/table/?name=all_payment&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.payment.clear();
+                db.editable.put({table:'payment', is_editable:result.editable});
                 for (let payment of result.data) {
                     db.payment.put({
                         id: payment.payments[0],
@@ -199,10 +204,11 @@ const paymentHandler = () => {
 }
 
 const zoneHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone')
+    return fetch('http://127.0.0.1:8000/api/table/?name=zone&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.zone.clear();
+                db.editable.put({table:'zone', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.zone.put({
                         id: entry[0],
@@ -220,10 +226,11 @@ const zoneHandler = () => {
 }
 
 const managerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager')
+    return fetch('http://127.0.0.1:8000/api/table/?name=manager&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.manager.clear();
+                db.editable.put({table:'manager', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.manager.put({
                         id: entry[0],
@@ -242,10 +249,11 @@ const managerHandler = () => {
 }
 
 const ticketHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket')
+    return fetch('http://127.0.0.1:8000/api/table/?name=ticket&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.ticket.clear();
+                db.editable.put({table:'ticket', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.ticket.put({
                         id: entry[0],
@@ -263,10 +271,11 @@ const ticketHandler = () => {
 }
 
 const waterElement_handler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element')
+    return fetch('http://127.0.0.1:8000/api/table/?name=water_element&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element.clear();
+                db.editable.put({table:'water_element', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.water_element.put({
                         id: entry[0],

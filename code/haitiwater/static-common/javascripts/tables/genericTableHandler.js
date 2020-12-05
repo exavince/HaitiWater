@@ -91,7 +91,7 @@ function removeElement(table, id, otherParameters) {
             type: 'success'
         });
 
-        await indexDBModify({table, rowID: id});
+        await indexDBModify(table, id);
         drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -278,7 +278,8 @@ function postEditRow(table, callback){
         // Form is not valid (missing/wrong fields)
         return false;
     }
-    let rowID = request.split("&")[1].replace("id=", "");
+
+    let rowID = request.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "");
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
@@ -322,7 +323,7 @@ function postEditRow(table, callback){
             type: 'success'
         });
 
-        indexDBModify({table, rowID})
+        indexDBModify(table, rowID)
         drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -457,22 +458,23 @@ function setTableURL(table, optional){
     $('#datatable-'+table).DataTable().ajax.url(dataURL).load();
 }
 
-async function indexDBModify(data) {
+async function indexDBModify(table, rowID) {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
-    switch (data.table){
+    switch (table){
         case "payment":
             let consumerID = undefined;
-            await db.table('payment').where('id').equals(parseInt(data.rowID)).modify(data => {
-                consumerID = data.user_id;
+            await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
                 data.sync += 1;
+                consumerID = data.user_id;
             });
-            db.table('consumer').where('id').equals(parseInt(consumerID)).modify(data => {
+            console.log(consumerID);
+            await db.table('consumer').where('id').equals(consumerID).modify(data => {
                 data.sync += 1;
             });
             break;
         default: // consumer, water_elem, ticket
-            db.table(data.table).where('id').equals(parseInt(data.rowID)).modify(data => {
+            db.table(data.table).where('id').equals(parseInt(rowID)).modify(data => {
                 data.sync += 1;
             });
             break;

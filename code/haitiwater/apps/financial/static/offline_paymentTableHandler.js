@@ -82,7 +82,7 @@ async function getPaymentDatatableConfiguration(userID){
         "data": getPaymentData(userID),
         "createdRow": (row, data) => {
             if ( data[4] > 0 ) {
-                console.log('The data: ',data[4]);
+                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }

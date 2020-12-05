@@ -117,11 +117,11 @@ async function getConsumerDatatableConfiguration(fullView){
         "createdRow": function (row, data, index) {
             if ($("#datatable-consumer th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
                 $('td', row).eq(10).addClass('hidden');
-                    if ( data[10] > 0 ) {
-                    console.log('The data: ',data[4]);
-                    $(row).css('background-color', '#4B0082');
-                    $(row).css('color', 'white');
-                }
+            }
+            if (data[10] > 0) {
+                console.log('The data: ',data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
             }
         },
     };

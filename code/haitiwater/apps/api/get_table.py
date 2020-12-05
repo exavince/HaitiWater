@@ -221,7 +221,7 @@ def get_all_details_consumers(request):
         consumers = Consumer.objects.filter(water_outlet_id__in=request.user.profile.outlets)
 
     for consumer in consumers:
-            ids.append(consumer.id)
+        ids.append(consumer.id)
 
     invoices = Invoice.objects.filter(consumer_id__in=ids).order_by('expiration')
 
