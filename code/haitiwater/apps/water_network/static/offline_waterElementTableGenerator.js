@@ -68,22 +68,22 @@ async function drawWaterElementTable(withManagers, withActions, gis){
 }
 
 async function getWaterDatatableConfiguration(withManagers, withActions){
-    let config = {
+    return {
         lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
         ],
         dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'print',
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                 },
             },
             {
                 text: 'Volume total',
-                attr:{
+                attr: {
                     id: 'water-element-month-selector',
                 }
             },
@@ -94,11 +94,11 @@ async function getWaterDatatableConfiguration(withManagers, withActions){
         serverSide: false,
         responsive: true,
         autoWidth: true,
-        scrollX:        true,
+        scrollX: true,
         scrollCollapse: true,
-        paging:         true,
+        paging: true,
         pagingType: 'full_numbers',
-        fixedColumns:   {
+        fixedColumns: {
             leftColumns: 1,
             rightColumns: 1
         },
@@ -120,7 +120,7 @@ async function getWaterDatatableConfiguration(withManagers, withActions){
                 defaultContent: 'Pas de gestionnaire',
                 visible: withManagers,
             }
-            ],
+        ],
         language: getDataTableFrenchTranslation(),
         data: await getData(),
 
@@ -129,46 +129,45 @@ async function getWaterDatatableConfiguration(withManagers, withActions){
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
             //Hide actions if column hidden
-            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
+            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")) {
                 $('td', row).eq(8).addClass('hidden');
             }
             if (withManagers) {
                 $('td', row).eq(7).addClass('text-center');
             }
-            if ( data[9] > 0 ) {
-                console.log('The data: ',data[4]);
+            if (data[9] > 0) {
+                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }
         },
-        "initComplete": function(settings, json){
+        "initComplete": function (settings, json) {
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
-            if(!withActions){
+            if (!withActions) {
                 $('#datatable-water_element').DataTable().column(-1).visible(false);
 
             }
         }
     };
-    return config;
 }
 
 async function getWaterDatatableGISConfiguration(withManagers, withActions){
-    let config = {
+    return {
         lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
         ],
         dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'print',
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
                 },
             },
             {
                 text: 'Volume total',
-                attr:{
+                attr: {
                     id: 'water-element-month-selector',
                 }
             },
@@ -180,11 +179,11 @@ async function getWaterDatatableGISConfiguration(withManagers, withActions){
         serverSide: false,
         responsive: true,
         autoWidth: true,
-        scrollX:        true,
+        scrollX: true,
         scrollCollapse: true,
-        paging:         true,
+        paging: true,
         pagingType: 'full_numbers',
-        fixedColumns:   {
+        fixedColumns: {
             leftColumns: 1,
             rightColumns: 1
         },
@@ -207,10 +206,10 @@ async function getWaterDatatableGISConfiguration(withManagers, withActions){
                 visible: false,
             },
             {
-                targets: [3,4,5,6,7], // User count
+                targets: [3, 4, 5, 6, 7], // User count
                 visible: false,
             }
-            ],
+        ],
         language: getDataTableFrenchTranslation(),
         data: await getData(),
         //Callbacks on fetched data
@@ -218,27 +217,26 @@ async function getWaterDatatableGISConfiguration(withManagers, withActions){
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
             //Hide actions if column hidden
-            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
+            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")) {
                 $('td', row).eq(8).addClass('hidden');
             }
             if (withManagers) {
                 $('td', row).eq(7).addClass('text-center');
             }
-            if ( data[9] > 0 ) {
-                console.log('The data: ',data[4]);
+            if (data[9] > 0) {
+                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }
         },
-        "initComplete": function(settings, json){
+        "initComplete": function (settings, json) {
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
-            if(!withActions){
+            if (!withActions) {
                 $('#datatable-water_element').DataTable().column(-1).visible(false);
 
             }
         }
     };
-    return config;
 }
 
 function attachMonthSelectorHandler(){

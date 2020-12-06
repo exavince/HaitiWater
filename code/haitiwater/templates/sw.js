@@ -602,15 +602,15 @@ self.addEventListener('fetch', async event => {
         if (url.includes('/reseau/gis')) {
             event.respondWith(caches.match('/offline/'));
         } else if (url.includes('/reseau')) {
-            event.respondWith(caches.match('/reseau/offline'));
+            event.respondWith(NetworkFirst(event, '/reseau/offline'));
         } else if (url.includes('/gestion')) {
-            event.respondWith(caches.match('/gestion/offline'));
+            event.respondWith(NetworkFirst(event, '/gestion/offline'));
         } else if (url.includes('/rapport')) {
             event.respondWith(caches.match('/rapport/offline'));
         } else if (url.includes('/consommateurs')) {
             event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
         } else if (url.includes('/finances')) {
-            event.respondWith(caches.match('/finances/offline'));
+            event.respondWith(NetworkFirst(event, '/finances/offline'));
         } else if (url.includes('/historique')) {
             event.respondWith(caches.match('/historique/offline'));
         } else if (url.includes('/login')) {
