@@ -1,8 +1,16 @@
-function drawZoneTable(){
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=zone";
-    console.log("Request data from: " + dataURL);
-    let table = $('#datatable-zone').DataTable(getZoneTableConfiguration(dataURL));
+async function drawZoneTable() {
+    let config;
+    if (localStorage.getItem("offlineMode") === "true") {
+        config = await getZoneTableOfflineConfiguration();
+    }
+    else {
+        let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+        let dataURL = baseURL + "/api/table/?name=zone";
+        config = getZoneTableConfiguration(dataURL);
+        console.log("Request data from: " + dataURL);
+    }
+
+    let table = $('#datatable-zone').DataTable(config);
 
     $('#datatable-zone tbody').on( 'click', 'tr td:not(:last-child)', function () {
         let tr = $(this).closest('tr');
@@ -82,18 +90,40 @@ function filterWaterElementFromZone(zoneTable){
     $('#datatable-water_element').DataTable().search(zoneName).draw();
 }
 
+async function getZoneData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('zone');
+    let result = [];
+
+    await table.each(row => {
+        result.push([
+            row.id,
+            row.name,
+            row.cout_fontaine,
+            row.mois_fontaine,
+            row.cout_kiosque,
+            row.mois_kiosque,
+            row.cout_mensuel,
+            row.sync
+        ]);
+    });
+
+    return result;
+}
+
 function getZoneTableConfiguration(dataURL){
-    let config = {
+    return {
         lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
         ],
         dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'print',
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6],
+                    columns: [0, 1, 2, 3, 4, 5, 6],
                 },
             },
             'pageLength'
@@ -103,21 +133,21 @@ function getZoneTableConfiguration(dataURL){
         "serverSide": true,
         "responsive": false,
         "autoWidth": true,
-        scrollX:        true,
+        scrollX: true,
         scrollCollapse: true,
-        paging:         true,
+        paging: true,
         pagingType: 'full_numbers',
-        fixedColumns:   {
+        fixedColumns: {
             leftColumns: 1,
             rightColumns: 1
         },
         "columnDefs": [{
-                "targets": -1,
-                "data": null,
-                "orderable": false,
-                "defaultContent": getActionButtonsHTML("modalZone"),
-            },
-            ],
+            "targets": -1,
+            "data": null,
+            "orderable": false,
+            "defaultContent": getActionButtonsHTML("modalZone"),
+        },
+        ],
         "language": getDataTableFrenchTranslation(),
         "ajax": getAjaxController(dataURL),
 
@@ -126,12 +156,68 @@ function getZoneTableConfiguration(dataURL){
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
         },
-        "initComplete": function(settings, json){
+        "initComplete": function (settings, json) {
             // Removes the last column (both header and body) if we cannot edit the table
-            if(!(json.hasOwnProperty('editable') && json['editable'])){
+            if (!(json.hasOwnProperty('editable') && json['editable'])) {
                 $('#datatable-zone').find('tr:last-child th:last-child, td:last-child').remove();
             }
         }
     };
-    return config;
+}
+
+async function getZoneTableOfflineConfiguration(){
+    return {
+        lengthMenu: [
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'print',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6],
+                },
+            },
+            'pageLength'
+        ],
+        "sortable": true,
+        "processing": true,
+        "serverSide": false,
+        "responsive": false,
+        "autoWidth": true,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: true,
+        pagingType: 'full_numbers',
+        fixedColumns: {
+            leftColumns: 1,
+            rightColumns: 1
+        },
+        "columnDefs": [{
+            "targets": -1,
+            "data": null,
+            "orderable": false,
+            "defaultContent": getActionButtonsHTML("modalZone"),
+        },
+        ],
+        "language": getDataTableFrenchTranslation(),
+        "data": await getZoneData(),
+
+        //Callbacks on fetched data
+        "createdRow": function (row, data, index) {
+            $('td', row).eq(5).addClass('text-center');
+            $('td', row).eq(6).addClass('text-center');
+            if (data[7] > 0) {
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
+        },
+        "initComplete": function (settings, json) {
+            // Removes the last column (both header and body) if we cannot edit the table
+            //if(!(json.hasOwnProperty('editable') && json['editable'])){
+            //  $('#datatable-zone').find('tr:last-child th:last-child, td:last-child').remove();
+            //}
+        }
+    };
 }

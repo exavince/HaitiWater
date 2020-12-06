@@ -32,14 +32,6 @@ const staticFiles = [
     '/static/manifest.json',
     '/static/monthlyReportEditFormHandler.js',
     '/static/monthlyReportFormHandler.js',
-    '/static/offline_financial.js',
-    '/static/offline_logsTableGenerator.js',
-    '/static/offline_logsHistoryTableGenerator.js',
-    '/static/offline_managersTableGenerator.js',
-    '/static/offline_paymentTableHandler.js',
-    '/static/offline_supportTicketTableHandler.js',
-    '/static/offline_waterElementTableGenerator.js',
-    '/static/offline_zoneTableGenerators.js',
     '/static/paymentModalHandler.js',
     '/static/paymentTableHandler.js',
     '/static/unsynchronizedTableGenerator.js',
@@ -598,31 +590,8 @@ self.addEventListener('fetch', async event => {
                 return caches.match('/offline/');
             })
         );
-    } else if (offlineMode) {
-        if (url.includes('/reseau/gis')) {
-            event.respondWith(caches.match('/offline/'));
-        } else if (url.includes('/reseau')) {
-            event.respondWith(NetworkFirst(event, '/reseau/offline'));
-        } else if (url.includes('/gestion')) {
-            event.respondWith(NetworkFirst(event, '/gestion/offline'));
-        } else if (url.includes('/rapport')) {
-            event.respondWith(caches.match('/rapport/offline'));
-        } else if (url.includes('/consommateurs')) {
-            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
-        } else if (url.includes('/finances')) {
-            event.respondWith(NetworkFirst(event, '/finances/offline'));
-        } else if (url.includes('/historique')) {
-            event.respondWith(caches.match('/historique/offline'));
-        } else if (url.includes('/login')) {
-            event.respondWith(NetworkFirst(event, '/offline/'));
-        } else if (url.includes('/api/graph')) {
-            event.respondWith(StaleWhileRevalidate(event));
-        } else {
-            event.respondWith(StaleWhileRevalidate(event)
-                .catch(() => caches.match('/offline/'))
-            );
-        }
-    } else {
+    }
+    else {
         if (url.includes('/reseau/gis')) {
             event.respondWith(NetworkFirst(event, '/offline/'));
         } else if (url.includes('/reseau')) {

@@ -12,18 +12,19 @@ function setWaterDataTableURL(month){
 
 async function drawWaterElementTable(withManagers, withActions, gis){
     let configuration;
+    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 
+    let dataURL = baseURL + "/api/table/?name=water_element&month=none";
     if (localStorage.getItem("offlineMode") === "true") {
         $('#flavoured-part').css('background-color', '#8B0000');
-        configuration = await getWaterDatatableOfflineConfiguration(withManagers, withActions);
+        if(gis) configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
+        else configuration = await getWaterDatatableOfflineConfiguration(withManagers, withActions);
     }
     else {
-        let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-        let dataURL = baseURL + "/api/table/?name=water_element&month=none";
         console.log("[REQUEST_DATA]", dataURL);
 
-        if(gis) configuration = await getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
-        else configuration = await getWaterDatatableConfiguration(dataURL, withManagers, withActions);
+        if(gis) configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
+        else configuration = getWaterDatatableConfiguration(dataURL, withManagers, withActions);
     }
 
     $('#datatable-water_element').DataTable(configuration);
