@@ -8,7 +8,7 @@ const cacheVersion = 'static';
 const userCache = 'user_1';
 const onlinePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
 const doublePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
-const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline', /modifications/]
+const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/finances/offline', '/historique/offline', /modifications/]
 const staticExt = ['.js', '.woff', '/static/'];
 const staticFiles = [
     '/static/consumerFormHandler.js',
@@ -32,7 +32,6 @@ const staticFiles = [
     '/static/manifest.json',
     '/static/monthlyReportEditFormHandler.js',
     '/static/monthlyReportFormHandler.js',
-    '/static/offline_consumerTableHandler.js',
     '/static/offline_financial.js',
     '/static/offline_logsTableGenerator.js',
     '/static/offline_logsHistoryTableGenerator.js',
@@ -576,7 +575,7 @@ self.addEventListener('fetch', async event => {
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request));
     } else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
-        event.respondWith(CacheFirst(event));
+        event.respondWith(fetch(event.request));
     } else if (url.includes('/logout')) {
         await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
         event.respondWith(fetch(event.request)
@@ -609,7 +608,7 @@ self.addEventListener('fetch', async event => {
         } else if (url.includes('/rapport')) {
             event.respondWith(caches.match('/rapport/offline'));
         } else if (url.includes('/consommateurs')) {
-            event.respondWith(caches.match('/consommateurs/offline'));
+            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
         } else if (url.includes('/finances')) {
             event.respondWith(caches.match('/finances/offline'));
         } else if (url.includes('/historique')) {

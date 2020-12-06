@@ -187,6 +187,7 @@ function startPageTour(){
 function setupOfflineMode(offlineMode){
     let alertOffline = $('#alert-offline');
     let offlineBadge = $('#offline-badge');
+    localStorage.setItem("offlineMode", offlineMode.toString());
 
     if (offlineMode){
         alertOffline.css('background-color', "red");

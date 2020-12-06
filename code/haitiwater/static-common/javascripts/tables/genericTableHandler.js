@@ -474,7 +474,7 @@ async function indexDBModify(table, rowID) {
             });
             break;
         default: // consumer, water_elem, ticket
-            db.table(data.table).where('id').equals(parseInt(rowID)).modify(data => {
+            db.table(table).where('id').equals(parseInt(rowID)).modify(data => {
                 data.sync += 1;
             });
             break;
