@@ -2,7 +2,7 @@
     "name": "Django PWA",
     "short_name": "djangopwa",
     "start_url": "/",
-    "scope": ".",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#FFF",
     "theme_color": "#493174",

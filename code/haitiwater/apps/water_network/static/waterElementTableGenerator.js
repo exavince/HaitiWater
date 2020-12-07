@@ -17,7 +17,7 @@ async function drawWaterElementTable(withManagers, withActions, gis){
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
     if (localStorage.getItem("offlineMode") === "true") {
         $('#flavoured-part').css('background-color', '#8B0000');
-        if(gis) configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
+        if(gis) configuration = await getWaterDatatableGISOfflineConfiguration(withManagers, withActions);
         else configuration = await getWaterDatatableOfflineConfiguration(withManagers, withActions);
     }
     else {
@@ -330,6 +330,87 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
                 $('#datatable-water_element').DataTable().column(-1).visible(false);
 
             }
+        }
+    };
+}
+
+async function getWaterDatatableGISOfflineConfiguration(withManagers, withActions){
+    return {
+        lengthMenu: [
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'print',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7],
+                },
+            },
+            {
+                text: 'Volume total',
+                attr: {
+                    id: 'water-element-month-selector',
+                }
+            },
+            'pageLength',
+
+        ],
+        sortable: true,
+        processing: true,
+        serverSide: false,
+        responsive: true,
+        autoWidth: true,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: true,
+        pagingType: 'full_numbers',
+        fixedColumns: {
+            leftColumns: 1,
+            rightColumns: 1
+        },
+        columnDefs: [
+            {
+                targets: -1, // Actions column
+                data: null,
+                sortable: false,
+                defaultContent: getActionButtonsHTML('modalWaterElement'),
+            },
+            {
+                targets: -2, // Zone column
+                visible: true,
+                defaultContent: 'Pas de zone',
+
+            },
+            {
+                targets: -3, // Manager column
+                defaultContent: 'Pas de gestionnaire',
+                visible: false,
+            },
+            {
+                targets: [3, 4, 5, 6, 7], // User count
+                visible: false,
+            }
+        ],
+        language: getDataTableFrenchTranslation(),
+        data: await getWaterElementData(),
+
+        //Callbacks on fetched data
+        "createdRow": function (row, data, index) {
+            $('td', row).eq(5).addClass('text-center');
+            $('td', row).eq(6).addClass('text-center');
+            //Hide actions if column hidden
+            if ($("#datatable-water_element th:last-child, #datatable-ajax td:last-child").hasClass("hidden")) {
+                $('td', row).eq(8).addClass('hidden');
+            }
+            if (withManagers) {
+                $('td', row).eq(7).addClass('text-center');
+            }
+        },
+        "initComplete": function (settings, json) {
+            // Removes the last column (both header and body) if we cannot edit or if required by withAction argument
+
         }
     };
 }

@@ -6,9 +6,8 @@ importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
-const onlinePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
-const doublePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
-const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/finances/offline', '/historique/offline', /modifications/]
+const revalidatePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
+const cachePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique/', 'reseau/gis', '/modifications/'];
 const staticExt = ['.js', '.woff', '/static/'];
 const staticFiles = [
     '/static/consumerFormHandler.js',
@@ -377,15 +376,8 @@ const cacheCleanedPromise = () => {
     });
 }
 
-const isDoublePages = (url) => {
-    for (const ext of doublePages) {
-        if (url.includes(ext)) return true;
-    }
-    return false;
-}
-
-const isOnlinePages = (url) => {
-    for (const ext of onlinePages) {
+const isRevalidatePages = (url) => {
+    for (const ext of revalidatePages) {
         if (url.includes(ext)) return true;
     }
     return false;
@@ -412,8 +404,8 @@ const getOfflineData = () => {
     isLoading = true;
     return Promise.all([
         addCache(cacheVersion, ['/offline/']),
-        addCache(userCache, onlinePages),
-        addCache(userCache, offlinePages),
+        addCache(userCache, revalidatePages),
+        addCache(userCache, cachePages),
         addCache(cacheVersion, staticFiles),
         populateDB(),
     ]).then(() => {
@@ -428,8 +420,8 @@ const getOfflineData = () => {
 const getCache = () => {
     return Promise.all([
         addCache(cacheVersion, ['/offline/']),
-        addCache(userCache, onlinePages),
-        addCache(userCache, offlinePages),
+        addCache(userCache, revalidatePages),
+        addCache(userCache, cachePages),
         addCache(cacheVersion, staticFiles),
     ]);
 }
@@ -496,7 +488,7 @@ const resetState = () => {
 
 const CacheFirst = event => {
     return caches.match(event.request)
-        .then(response => response || fetch(event.request));
+        .then(response => response || fetch(event.request).catch(() => caches.match('/offline/')));
 }
 
 const NetworkFirst = (event, page) => {
@@ -590,33 +582,21 @@ self.addEventListener('fetch', async event => {
                 return caches.match('/offline/');
             })
         );
+    } else if (url.includes('/api/graph')){
+        event.respondWith(NetworkFirst(event, event.request.url));
+    } else if (url.includes('/api/table') || url.includes('.png')) {
+        event.respondWith(fetch(event.request)
+            .catch(() => {console.error('cannot reach the dataTable online')})
+        );
+    }
+    else if (url.includes('/login')) {
+        event.respondWith(NetworkFirst(event, '/offline/'));
+    }
+    else if (isRevalidatePages(url)) {
+        event.respondWith(StaleWhileRevalidate(event))
     }
     else {
-        if (url.includes('/reseau/gis')) {
-            event.respondWith(NetworkFirst(event, '/offline/'));
-        } else if (url.includes('/reseau')) {
-            event.respondWith(NetworkFirst(event, '/reseau/offline'));
-        } else if (url.includes('/gestion')) {
-            event.respondWith(NetworkFirst(event, '/gestion/offline'))
-        } else if (url.includes('/rapport')) {
-            event.respondWith(NetworkFirst(event, '/rapport/offline'))
-        } else if (url.includes('/historique')) {
-            event.respondWith(NetworkFirst(event, '/historique/offline'))
-        } else if (url.includes('/consommateurs')) {
-            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
-        } else if (url.includes('/finances')) {
-            event.respondWith(NetworkFirst(event, '/finances/offline'))
-        } else if (url.includes('/login')) {
-            event.respondWith(NetworkFirst(event, '/offline/'))
-        } else if (url.includes('/api/graph')) {
-            event.respondWith(NetworkFirst(event, event.request.url));
-        } else if (url.includes('/api/table') || url.includes('.png')) {
-            event.respondWith(fetch(event.request)
-                .catch(() => {console.error('cannot reach the dataTable online')})
-            );
-        } else {
-            event.respondWith(NetworkFirst(event, '/offline/'));
-        }
+        event.respondWith(CacheFirst(event));
     }
 });
 
