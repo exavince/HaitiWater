@@ -1,8 +1,20 @@
 'use strict';
 $( document ).ready(function() {
 
-    //Get local storage value or true (as it is default to be open)
     const channel = new BroadcastChannel('sw-messages');
+
+    if (localStorage.getItem("offlineMode") === null) {
+        localStorage.setItem("offlineMode", "false");
+        setupOfflineMode(false);
+    }
+    else if (localStorage.getItem("offlineMode") === "false") setupOfflineMode(false);
+    else setupOfflineMode(true);
+
+    if (localStorage.getItem("lastUpdate") !== null) $('#last-update').html(localStorage.getItem("lastUpdate"));
+
+    if (localStorage.getItem("dataToSend") === null) localStorage.setItem("dataToSend", "0");
+    setupNotifications(parseInt(localStorage.getItem("dataToSend")));
+
     let localMenu = localStorage.getItem('isMenuOpen');
     let isMenuOpen = (localMenu === 'true' || localMenu === null);
     if(!isMenuOpen){
@@ -23,9 +35,15 @@ $( document ).ready(function() {
     })
 
     $('#offline-parent').on('click', () => {
-        channel.postMessage({
-            title: 'setOfflineMode',
-        });
+        if (localStorage.getItem("offlineMode") === "false") {
+            localStorage.setItem("offlineMode", "true");
+            setupOfflineMode(true);
+        }
+        else {
+            localStorage.setItem("offlineMode", "false");
+            setupOfflineMode(false);
+        }
+
     });
 
     $('[data-toggle="tooltip"]').tooltip();
@@ -33,10 +51,10 @@ $( document ).ready(function() {
     channel.onmessage = event => {
         switch (event.data.title) {
             case 'updateInfos':
-                setupOfflineMode(event.data.offlineMode);
+                localStorage.setItem("dataToSend", event.data.toPush);
                 setupNotifications(event.data.toPush);
                 if (event.data.date !== null && event.data.date !== undefined) {
-                    $('#last-update').html(event.data.date.toLocaleString('en-GB', {
+                    localStorage.setItem("lastUpdate", event.data.date.toLocaleString('en-GB', {
                         day: 'numeric',
                         month: 'numeric',
                         year: 'numeric',
@@ -44,18 +62,14 @@ $( document ).ready(function() {
                         minute: '2-digit',
                         hourCycle: 'h23'
                     }));
+                    $('#last-update').html(localStorage.getItem("lastUpdate"));
                 }
-                break
-
-            case 'getOfflineMode':
-                setupOfflineMode(event.data.offlineMode);
                 break
             case 'updateStatus':
                 switch (event.data.status) {
                     case 'loaded':
                         if (event.data.date !== null && event.data.date !== undefined) {
-                            date = event.data.date;
-                            $('#last-update').html(date.toLocaleString('en-GB', {
+                            localStorage.setItem("lastUpdate", event.data.date.toLocaleString('en-GB', {
                                 day: 'numeric',
                                 month: 'numeric',
                                 year: 'numeric',
@@ -63,6 +77,7 @@ $( document ).ready(function() {
                                 minute: '2-digit',
                                 hourCycle: 'h23'
                             }));
+                            $('#last-update').html(localStorage.getItem("lastUpdate"));
                         }
                         new PNotify({
                             title: 'Félicitations !',
@@ -87,16 +102,17 @@ $( document ).ready(function() {
                 }
                 break
             case 'toPush':
+                localStorage.setItem("dataToSend", event.data.toPush);
                 setupNotifications(event.data.toPush);
                 if (event.data.toPush > 0) {
                     new PNotify({
-                        title: 'Attention !',
+                        title: 'Echec !',
                         text: "Certaines de vos modifications n'ont pas été envoyées.",
                         type: 'error'
                     });
                 } else {
                     new PNotify({
-                        title: 'Félicitations !',
+                        title: 'Réussite !',
                         text: 'Toutes vos modifications ont été envoyées.',
                         type: 'success'
                     });
@@ -106,13 +122,12 @@ $( document ).ready(function() {
                 break
         }
     }
-    channel.postMessage({title:'getInfos', username:localStorage.getItem('username')})
 });
 
 /**
  * Requests notification computings and modifies the counters to alert the user
  */
-async function setupNotifications(toPush){
+function setupNotifications(toPush){
     let notificationList = $('#notification-content');
     let alertBadge = $('#alert-badge');
     let classicBadge = $('#classic-badge');
@@ -187,7 +202,6 @@ function startPageTour(){
 function setupOfflineMode(offlineMode){
     let alertOffline = $('#alert-offline');
     let offlineBadge = $('#offline-badge');
-    localStorage.setItem("offlineMode", offlineMode.toString());
 
     if (offlineMode){
         alertOffline.css('background-color', "red");

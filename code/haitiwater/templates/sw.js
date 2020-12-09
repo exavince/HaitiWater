@@ -284,9 +284,67 @@ const waterElement_handler = () => {
         );
 }
 
+const getDataFromDB = async (table) => {
+    try {
+        switch (table) {
+            case "all":
+                await Promise.all([
+                    consumerHandler(),
+                    zoneHandler(),
+                    managerHandler(),
+                    ticketHandler(),
+                    waterElement_handler(),
+                    paymentHandler(),
+                    logsHandler(),
+                    logsHistoryHandler()
+                ]);
+                break;
+            case "logs":
+                await logsHandler();
+                break;
+            case "logsHistory":
+                await logsHistoryHandler();
+                break;
+            case "consumer":
+                await consumerHandler();
+                break;
+            case "payment":
+                await paymentHandler();
+                break;
+            case "zone":
+                await zoneHandler();
+                break;
+            case "manager":
+                await managerHandler();
+                break;
+            case "ticket":
+                await ticketHandler();
+                break;
+            case "waterElement":
+                await waterElement_handler();
+                break;
+        }
+        isLoading = false;
+        setInfos('lastUpdate', new Date());
+        channel.postMessage({
+            title: 'updateStatus',
+            status: 'loaded',
+            date: lastUpdate
+        });
+    } catch (err) {
+        isLoading = false;
+        channel.postMessage({
+            title: 'updateStatus',
+            status: 'failed',
+            date: lastUpdate
+        });
+        console.log('[SW_POPULATEDB]', err);
+    }
+}
+
 const populateDB = async () => {
     isLoading = true;
-    await pushData();
+    await sendDataToDB();
     return Promise.all([
         consumerHandler(),
         zoneHandler(),
@@ -331,10 +389,10 @@ const emptyDB = () => {
     });
 }
 
-const pushData = async () => {
+const sendDataToDB = async () => {
     let tab = await db.update_queue.toArray();
-    return Promise.all(tab.map(element => {
-        return fetch(element.url, element.init).then(response => {
+    return Promise.all(tab.map(element =>
+        fetch(element.url, element.init).then(response => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
                 db.update_queue.delete(element.id);
@@ -343,15 +401,14 @@ const pushData = async () => {
                     console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
                 });
             }
-        }).catch(() => {
-            console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         })
-    })).then(async () => {
+    )).then(async () => {
         channel.postMessage({
             title: 'toPush',
             toPush: await db.update_queue.count()
         });
     }).catch(async () => {
+        console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         channel.postMessage({
             title: 'toPush',
             toPush: await db.update_queue.count()
@@ -403,11 +460,8 @@ const isConnected = () => {
 const getOfflineData = () => {
     isLoading = true;
     return Promise.all([
-        addCache(cacheVersion, ['/offline/']),
-        addCache(userCache, revalidatePages),
-        addCache(userCache, cachePages),
-        addCache(cacheVersion, staticFiles),
-        populateDB(),
+        getCache(),
+        getDataFromDB("all"),
     ]).then(() => {
         setInfos('dataLoaded', true);
         isLoading = false;
@@ -508,6 +562,23 @@ const StaleWhileRevalidate = event => {
         );
 }
 
+const CacheOrFetchAndCache = (event,cacheToUse) => {
+    return caches.match(event.request)
+        .then(cacheResponse =>
+            cacheResponse || fetch(event.request)
+                .then(networkResponse => {
+                    const clonedResponse = networkResponse.clone();
+                    caches.open(cacheToUse).then(cache => {
+                        cache.put(event.request, clonedResponse).catch(error => {
+                            console.error(error)
+                        });
+                    });
+                    return networkResponse;
+                }).catch(function (error) {
+                    console.error(error)
+                })
+        )
+}
 
 /*********************************************************************************
  * Event listener
@@ -559,7 +630,7 @@ self.addEventListener('fetch', async event => {
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request));
     } else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
-        event.respondWith(fetch(event.request));
+        event.respondWith(CacheOrFetchAndCache(event, cacheVersion));
     } else if (url.includes('/logout')) {
         await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
         event.respondWith(fetch(event.request)
@@ -596,7 +667,7 @@ self.addEventListener('fetch', async event => {
         event.respondWith(StaleWhileRevalidate(event))
     }
     else {
-        event.respondWith(CacheFirst(event));
+        event.respondWith(CacheOrFetchAndCache(event, userCache));
     }
 });
 
@@ -610,49 +681,19 @@ channel.addEventListener('message', async event => {
             channel.postMessage({
                 title: 'updateInfos',
                 date: lastUpdate,
-                offlineMode: offlineMode,
                 toPush: await db.update_queue.count()
             });
             break
-        case 'setOfflineMode':
-            setInfos('offlineMode', !offlineMode);
-            channel.postMessage({
-                title: 'getOfflineMode',
-                offlineMode: offlineMode
-            });
-            break
         case 'updateDB':
-            if (!isLoading) {
-                switch (event.data.db) {
-                    case 'all':
-                        populateDB();
-                        break
-                    case 'payment':
-                        break
-                    case 'consumer':
-                        break
-                    case 'logs':
-                        break
-                    case 'logs_history':
-                        break
-                    case 'manager':
-                        break
-                    case 'ticket':
-                        break
-                    case 'water_element':
-                        break
-                    case 'zone':
-                        break
-                }
-            }
+            if (!isLoading) getDataFromDB(event.data.db);
             channel.postMessage({
                 title: 'updateStatus',
                 date: lastUpdate,
                 status: 'loading'
             });
-            break
+            break;
         case 'pushData':
-            pushData();
+            sendDataToDB();
             break
     }
 });
