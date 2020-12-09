@@ -49,7 +49,7 @@ function drawDataTable(tableName){
  * @param table a String containing the table name
  * @param id an integer corresponding to the primary key of the element to remove
  */
-function removeElement(table, id, otherParameters) {
+async function removeElement(table, id, otherParameters) {
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/remove/";
     if (typeof otherParameters === 'undefined') { otherParameters = ''; }
@@ -63,7 +63,7 @@ function removeElement(table, id, otherParameters) {
     };
 
     console.log('[DELETE]', myInit);
-    navigator.serviceWorker.ready.then(async () => {
+    await navigator.serviceWorker.ready.then(async () => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');

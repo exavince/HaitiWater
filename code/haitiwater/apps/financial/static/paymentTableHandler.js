@@ -14,19 +14,29 @@ async function drawPaymentTable(userID) {
     let datatable = $('#datatable-payment');
     let table = datatable.DataTable(config);
 
-    datatable.find('tbody').on( 'click', '.remove-row', function () {
+    datatable.find('tbody').on( 'click', '.remove-row', async function () {
         let data = table.row($(this).closest('tr')).data();
         if (confirm("Voulez-vous supprimer: " + data[0] + ' ?')){
             let consumerIdParameter = '&id_consumer=' + $('#input-payment-id-consumer');
-            removeElement("payment", data[0], consumerIdParameter );
+            await removeElement("payment", data[0], consumerIdParameter );
+            redrawPayment(table, data[5]);
         } else {}
     } );
     datatable.find('tbody').on( 'click', '.edit-row', function () {
         let data = table.row($(this).closest('tr')).data();
         setupModalPaymentEdit(data);
+        redrawPayment(table, data[5]);
     } );
 
     prettifyHeader('payment');
+}
+
+async function redrawPayment(datatable, consumerID) {
+    datatable.clear();
+    let data = await  getPaymentData(consumerID);
+    console.log(data);
+    await datatable.rows.add(data);
+    datatable.draw();
 }
 
 async function getPaymentData(userID) {
