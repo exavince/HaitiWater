@@ -162,7 +162,6 @@ async function getTicketDatatableOfflineConfiguration(){
                 })
             }
             if (data[7] > 0) {
-                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }

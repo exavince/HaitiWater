@@ -30,7 +30,7 @@ async function drawManagerTable() {
     $('#datatable-manager tbody').on( 'click', '.remove-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
         if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
-            removeElement("manager", data[0].innerText);12
+            removeElement("manager", data[0].innerText);
         } else {}
     } );
     $('#datatable-manager tbody').on( 'click', '.edit-row', function () {
@@ -181,7 +181,6 @@ async function getManagerDatatableOfflineConfiguration(){
             $('td', row).eq(5).addClass('text-center');
             $('td', row).eq(6).addClass('text-center');
             if (data[7] > 0) {
-                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }

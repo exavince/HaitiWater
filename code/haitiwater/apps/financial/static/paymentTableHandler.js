@@ -17,27 +17,18 @@ async function drawPaymentTable(userID) {
     datatable.find('tbody').on( 'click', '.remove-row', async function () {
         let data = table.row($(this).closest('tr')).data();
         if (confirm("Voulez-vous supprimer: " + data[0] + ' ?')){
-            let consumerIdParameter = '&id_consumer=' + $('#input-payment-id-consumer');
+            let consumerIdParameter = '&id_consumer=' + data[5];
             await removeElement("payment", data[0], consumerIdParameter );
-            redrawPayment(table, data[5]);
         } else {}
     } );
-    datatable.find('tbody').on( 'click', '.edit-row', function () {
+    datatable.find('tbody').on( 'click', '.edit-row', async function () {
         let data = table.row($(this).closest('tr')).data();
         setupModalPaymentEdit(data);
-        redrawPayment(table, data[5]);
-    } );
+    });
 
     prettifyHeader('payment');
 }
 
-async function redrawPayment(datatable, consumerID) {
-    datatable.clear();
-    let data = await  getPaymentData(consumerID);
-    console.log(data);
-    await datatable.rows.add(data);
-    datatable.draw();
-}
 
 async function getPaymentData(userID) {
     if (userID === null) {
@@ -145,7 +136,6 @@ async function getPaymentDatatableOfflineConfiguration(userID){
         "data": getPaymentData(userID),
         "createdRow": (row, data) => {
             if (data[4] > 0) {
-                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }

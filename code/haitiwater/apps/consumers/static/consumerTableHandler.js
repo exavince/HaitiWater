@@ -71,6 +71,14 @@ async function getConsumerData() {
     return result;
 }
 
+async function redrawPayment(datatable) {
+    datatable.clear();
+    let data = await  getConsumerData();
+    console.log(data);
+    await datatable.rows.add(data);
+    datatable.draw();
+}
+
 function getConsumerDatatableConfiguration(dataURL, fullView){
     return {
         lengthMenu: [

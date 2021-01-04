@@ -407,6 +407,10 @@ async function getWaterDatatableGISOfflineConfiguration(withManagers, withAction
             if (withManagers) {
                 $('td', row).eq(7).addClass('text-center');
             }
+            if (data[9] > 0) {
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
         },
         "initComplete": function (settings, json) {
             // Removes the last column (both header and body) if we cannot edit or if required by withAction argument

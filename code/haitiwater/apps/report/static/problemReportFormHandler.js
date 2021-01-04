@@ -166,7 +166,7 @@ function dismissTicketModal() {
     form["select-state"].value = "unresolved";
 }
 
-function sendTicket(addOrEdit) {
+async function sendTicket(addOrEdit) {
     if (!validateForm())
         return;
     let form = document.forms["form-add-ticket"];
@@ -193,7 +193,7 @@ function sendTicket(addOrEdit) {
     };
 
     console.log('['+ addOrEdit +']', myInit);
-    navigator.serviceWorker.ready.then(async swRegistration => {
+    await navigator.serviceWorker.ready.then(async swRegistration => {
         beforeModalRequest();
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
@@ -224,8 +224,8 @@ function sendTicket(addOrEdit) {
             text: "Opération bien enregistrée",
             type: 'success'
         });
-        drawDataTable("ticket");
 
+        indexDBModify('ticket', form["input-id"].value);
         afterModalRequest();
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -264,4 +264,6 @@ function sendTicket(addOrEdit) {
                 });
             })
     });
+    await drawDataTable('ticket');
+
 }

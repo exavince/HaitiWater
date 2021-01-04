@@ -40,8 +40,43 @@ function editElement(data){
     }
 }
 
-function drawDataTable(tableName){
-    $('#datatable-' + tableName).DataTable().draw();
+async function drawDataTable(tableName, consumerID){
+    let table = $('#datatable-' + tableName).DataTable();
+    table.clear();
+
+    if (localStorage.getItem("offlineMode") === "true") {
+        let data;
+        switch (tableName) {
+            case 'payment':
+                drawDataTable('consumer');
+                data = await getPaymentData(consumerID);
+                break;
+            case 'consumer':
+                data = await getConsumerData();
+                break;
+            case 'zone':
+                data = await getZoneData();
+                break;
+            case 'ticket':
+                data = await getTicketData();
+                break;
+            case 'manager':
+                data = await getManagerData();
+                break;
+            case 'water_element':
+                data = await getWaterElementData();
+                break;
+            default:
+                data = null;
+                break;
+        }
+        table.rows.add(data);
+        table.draw();
+        return;
+    }
+    console.log("ajex");
+    table.ajax.reload();
+    table.draw();
 }
 
 /**
@@ -92,7 +127,6 @@ async function removeElement(table, id, otherParameters) {
         });
 
         await indexDBModify(table, id);
-        drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit).then(response => {
@@ -111,7 +145,6 @@ async function removeElement(table, id, otherParameters) {
                     type: 'error'
                 });
             }
-            drawDataTable(table);
         }).catch(err => {
             console.log('[DELETE]', err);
             new PNotify({
@@ -121,6 +154,13 @@ async function removeElement(table, id, otherParameters) {
             });
         });
     });
+
+    if (table === 'payment') {
+        let consumerID = otherParameters.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
+        console.log("Consumer ID : " + consumerID);
+        await drawDataTable(table, parseInt(consumerID));
+    }
+    else await drawDataTable(table);
 }
 
 /**
@@ -230,8 +270,6 @@ function postNewRow(table, callback){
             text: "Votre demande d'ajout est bien enregitrée",
             type: 'success'
         });
-
-        drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit)
@@ -253,7 +291,6 @@ function postNewRow(table, callback){
                         type: 'error'
                     });
                 }
-                drawDataTable(table);
             })
             .catch(err => {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
@@ -272,7 +309,7 @@ function postNewRow(table, callback){
 /**
  * Send a post request to server and handle it
  */
-function postEditRow(table, callback){
+async function postEditRow(table, callback){
     let request = getRequest(table);
     if(!request){
         // Form is not valid (missing/wrong fields)
@@ -293,7 +330,7 @@ function postEditRow(table, callback){
     };
 
     console.log('[EDIT]', myInit);
-    navigator.serviceWorker.ready.then(async swRegistration => {
+    await navigator.serviceWorker.ready.then(async() => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -323,8 +360,7 @@ function postEditRow(table, callback){
             type: 'success'
         });
 
-        indexDBModify(table, rowID)
-        drawDataTable(table);
+        indexDBModify(table, rowID);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL,myInit).then(response => {
@@ -347,7 +383,7 @@ function postEditRow(table, callback){
                     type: 'success'
                 });
             }
-            drawDataTable(table);
+
         }).catch(error => {
             console.log('[EDIT]',"POST error on new element");
             document.getElementById("form-" + table + "-error").className = "alert alert-danger";
@@ -360,7 +396,11 @@ function postEditRow(table, callback){
         })
     })
     afterModalRequest();
-    typeof callback === 'function' && callback();
+    if (table === 'payment') {
+        let consumerID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
+        await drawDataTable(table, parseInt(consumerID));
+    }
+    else await drawDataTable(table);
 }
 
 /**
@@ -461,6 +501,7 @@ function setTableURL(table, optional){
 async function indexDBModify(table, rowID) {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
+    console.log("idbModify : " + table);
     switch (table){
         case "payment":
             let consumerID = undefined;
@@ -470,6 +511,11 @@ async function indexDBModify(table, rowID) {
             });
             console.log(consumerID);
             await db.table('consumer').where('id').equals(consumerID).modify(data => {
+                data.sync += 1;
+            });
+            break;
+        case "manager":
+            db.table(table).where('id').equals(rowID).modify(data => {
                 data.sync += 1;
             });
             break;

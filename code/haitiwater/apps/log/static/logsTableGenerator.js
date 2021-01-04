@@ -54,15 +54,15 @@ async function drawLogTable() {
 
 function revertModification(elementID){
     let url = '../../api/log/?action=revert&id=' + elementID;
-    requestHandler(url);
+    requestHandler(url, elementID);
 }
 
 function acceptModification(elementID){
     let url = '../../api/log/?action=accept&id=' + elementID;
-    requestHandler(url);
+    requestHandler(url, elementID);
 }
 
-function requestHandler(url){
+async function requestHandler(url, elementID){
     var myInit = {
         method: 'post',
         headers: {
@@ -72,7 +72,7 @@ function requestHandler(url){
         body:'',
     };
 
-    navigator.serviceWorker.ready.then(async swRegistration => {
+    await navigator.serviceWorker.ready.then(async () => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -81,13 +81,21 @@ function requestHandler(url){
             init:myInit,
             unsync:true
         });
-        drawDataTable('logs');
-        drawDataTable('logs-history');
-        swRegistration.sync.register('updateQueue');
+        new PNotify({
+            title: 'Réussite!',
+            text: "Demande enregistrée",
+            type: 'success'
+        });
+
+        indexDBModify('logs', elementID);
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(url, myInit).then(() => {
-            drawDataTable('logs');
-            drawDataTable('logs-history');
+            new PNotify({
+                title: 'Réussite!',
+                text: "Modification acceptée",
+                type: 'success'
+            });
         }).catch(err => {
             console.error(this);
             new PNotify({
@@ -96,7 +104,8 @@ function requestHandler(url){
                 type: 'error'
             });
         })
-    })
+    });
+    await drawDataTable(table);
 }
 
 async function getLogsData() {
@@ -104,6 +113,7 @@ async function getLogsData() {
     let db = await dexie.open();
     let table = db.table('logs');
     let result = [];
+
     await table.each(log => {
         result.push(log);
     });
@@ -198,7 +208,6 @@ async function getLogsTableOfflineConfiguration(){
         "data": await getLogsData(),
         "createdRow": (row, data) => {
             if (data.sync > 0) {
-                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }
