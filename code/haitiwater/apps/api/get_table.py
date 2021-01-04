@@ -281,3 +281,27 @@ def get_details_network(request):
     }
 
     return HttpResponse(json.dumps(infos))
+
+
+def get_details_network_all():
+    result = []
+
+    for outlet in Element.objects.all():
+        location = Location.objects.filter(elem=outlet.id).first()
+        geo_json = location.json_representation if location is not None else None
+
+        infos = {
+            "id": outlet.id,
+            "type": outlet.get_type(),
+            "localization": outlet.location,
+            "manager": outlet.manager_names,
+            "users": outlet.get_consumers(),
+            "state": outlet.get_status(),
+            "currentMonthCubic": outlet.get_current_output(),
+            "averageMonthCubic": outlet.get_all_output()[1],
+            "totalCubic": outlet.get_all_output()[0],
+            "geoJSON": geo_json
+        }
+        result.append(infos)
+
+    return HttpResponse(json.dumps(result))

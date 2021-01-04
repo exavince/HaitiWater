@@ -21,7 +21,7 @@ function getAjaxController(dataURL){
             $('#datatable-ajax_wrapper').hide();
             new PNotify({
                 title: 'Échec du téléchargement!',
-                text: "Les données de la table n'ont pas pu être téléchargées: " + xhr.responseText,
+                text: "Veuillez passer en mode Hors-ligne.",
                 type: 'failure',
             });
         }

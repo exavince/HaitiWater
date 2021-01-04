@@ -79,6 +79,7 @@ let isLoading = false;
 let connected = false;
 
 
+
 /*********************************************************************************
  * IndexDB
  *********************************************************************************/
@@ -88,6 +89,7 @@ db.version(dbVersion).stores({
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
     water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up, sync',
+    water_element_details: 'id,type,localization,manager,users,state,currentMonthCubic,averageMonthCubic,totalCubic,geoJSON',
     manager: 'id,nom,prenom,telephone,mail,role,zone,unknown, sync',
     consumer_details: 'consumer_id,amount_due,validity, sync',
     payment: 'id,data,value,source,user_id, sync',
@@ -96,6 +98,32 @@ db.version(dbVersion).stores({
     update_queue: '++id, url, init, date, type, table, elemId, sync, details',
     sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded, sync'
 });
+
+const waterElementDetailsHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/details/?table=water_element_all')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.water_element_details.clear();
+                db.editable.put({table:'water_element_details', is_editable:true});
+                console.log(result);
+                for (let entry of result) {
+                    db.water_element_details.put({
+                        id: entry.id,
+                        type: entry.type,
+                        localization: entry.localization,
+                        manager: entry.manager,
+                        users: entry.users,
+                        state: entry.state,
+                        currentMonthCubic: entry.currentMonthCubic,
+                        averageMonthCubic: entry.averageMonthCubic,
+                        totalCubic: entry.totalCubic,
+                        geoJSON: entry.geoJSON,
+                        sync: 0
+                    });
+                }
+            })
+        );
+}
 
 const logsHandler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=logs&indexDB=true')
@@ -296,7 +324,8 @@ const getDataFromDB = async (table) => {
                     waterElement_handler(),
                     paymentHandler(),
                     logsHandler(),
-                    logsHistoryHandler()
+                    logsHistoryHandler(),
+                    waterElementDetailsHandler()
                 ]);
                 break;
             case "logs":
@@ -353,7 +382,8 @@ const populateDB = async () => {
         waterElement_handler(),
         paymentHandler(),
         logsHandler(),
-        logsHistoryHandler()
+        logsHistoryHandler(),
+        waterElementDetailsHandler()
     ]).then(() => {
         isLoading = false;
         setInfos('lastUpdate', new Date());
@@ -383,7 +413,8 @@ const emptyDB = () => {
         db.consumer_details.clear(),
         db.payment.clear(),
         db.logs.clear(),
-        db.logs_history.clear()
+        db.logs_history.clear(),
+        db.water_element_details.clear()
     ]).catch(err => {
         console.log('[SW_EMPTYDB]', err);
     });

@@ -439,6 +439,8 @@ def details(request):
         return get_payment_details(request)
     elif table_name == "water_element":
         return get_details_network(request)
+    elif table_name == "water_element_all":
+        return get_details_network_all()
     else:
         return HttpResponse("Impossible d'obtenir des détails pour la table " + table_name +
                             ", elle n'est pas reconnue", status=400)
