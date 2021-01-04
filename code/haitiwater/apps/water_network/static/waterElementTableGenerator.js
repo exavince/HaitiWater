@@ -112,9 +112,7 @@ function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
             }
         ],
         language: getDataTableFrenchTranslation(),
-        ajax: {
-            url: dataURL
-        },
+        ajax: getAjaxController(dataURL),
 
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {
@@ -307,9 +305,7 @@ function getWaterDatatableGISConfiguration(dataURL, withManagers, withActions){
             }
         ],
         language: getDataTableFrenchTranslation(),
-        ajax: {
-            url: dataURL
-        },
+        ajax: getAjaxController(dataURL),
 
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {

@@ -83,7 +83,7 @@ let connected = false;
  * IndexDB
  *********************************************************************************/
 db.version(dbVersion).stores({
-    editable:'table,is_editable',
+    editable:'table,is_editable,unSync_add',
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel, sync',
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
@@ -657,7 +657,9 @@ self.addEventListener('fetch', async event => {
         event.respondWith(NetworkFirst(event, event.request.url));
     } else if (url.includes('/api/table') || url.includes('.png')) {
         event.respondWith(fetch(event.request)
-            .catch(() => {console.error('cannot reach the dataTable online')})
+            .catch(() => {
+                console.error('cannot reach the dataTable online')
+            })
         );
     }
     else if (url.includes('/login')) {

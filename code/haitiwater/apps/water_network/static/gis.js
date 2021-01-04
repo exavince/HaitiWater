@@ -16,33 +16,34 @@ let currentElementID = 'undefined';
 
 $(document).ready(function() {
     //Setup water tables first
-    drawWaterElementTable(false, true, true);
-    waterElementTable = $("#datatable-water_element").DataTable();
-    detailTable = $("#detail-table");
-    errorDetailTable = $('#error-detail-table');
-    latLongDetail = $('#element-details-lat-lon');
+    drawWaterElementTable(false, true, true).then(() => {
+        waterElementTable = $("#datatable-water_element").DataTable();
+        detailTable = $("#detail-table");
+        errorDetailTable = $('#error-detail-table');
+        latLongDetail = $('#element-details-lat-lon');
 
-    //Request details on element click
-    $('#datatable-water_element tbody').on( 'click', 'tr', function () {
-        let data = waterElementTable.row(this).data();
-        requestWaterElementDetails(data[0]);
-    });
+        //Request details on element click
+        $('#datatable-water_element tbody').on( 'click', 'tr', function () {
+            let data = waterElementTable.row(this).data();
+            requestWaterElementDetails(data[0]);
+        });
 
-    //Init Leaflet map
-    waterGISInit(
-        L.map('map-water-network',
-        {
-            zoomControl: false //Set as fale to instantiate custom zoom control
-        })
-    );
+        //Init Leaflet map
+        waterGISInit(
+            L.map('map-water-network',
+            {
+                zoomControl: false //Set as fale to instantiate custom zoom control
+            })
+        );
 
-    displayDetailTableError('Sélectionnez un élément du réseau dans la table ou sur la carte.');
-    if(localStorage.getItem('mapDrawer')!=='closed'){
-        toggleDrawer();
-    }
+        displayDetailTableError('Sélectionnez un élément du réseau dans la table ou sur la carte.');
+        if(localStorage.getItem('mapDrawer')!=='closed'){
+            toggleDrawer();
+        }
 
-    //Populate map with known elements
-    requestAllElementsPosition();
+        //Populate map with known elements
+        requestAllElementsPosition();
+        });
 });
 
 /**
