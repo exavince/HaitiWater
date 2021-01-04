@@ -6,9 +6,8 @@ importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
-const onlinePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
-const doublePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique'];
-const offlinePages = ['/reseau/offline', 'gestion/offline', '/rapport/offline', '/consommateurs/offline', '/finances/offline', '/historique/offline', /modifications/]
+const revalidatePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
+const cachePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique/', 'reseau/gis', '/modifications/'];
 const staticExt = ['.js', '.woff', '/static/'];
 const staticFiles = [
     '/static/consumerFormHandler.js',
@@ -32,15 +31,6 @@ const staticFiles = [
     '/static/manifest.json',
     '/static/monthlyReportEditFormHandler.js',
     '/static/monthlyReportFormHandler.js',
-    '/static/offline_consumerTableHandler.js',
-    '/static/offline_financial.js',
-    '/static/offline_logsTableGenerator.js',
-    '/static/offline_logsHistoryTableGenerator.js',
-    '/static/offline_managersTableGenerator.js',
-    '/static/offline_paymentTableHandler.js',
-    '/static/offline_supportTicketTableHandler.js',
-    '/static/offline_waterElementTableGenerator.js',
-    '/static/offline_zoneTableGenerators.js',
     '/static/paymentModalHandler.js',
     '/static/paymentTableHandler.js',
     '/static/unsynchronizedTableGenerator.js',
@@ -93,24 +83,26 @@ let connected = false;
  * IndexDB
  *********************************************************************************/
 db.version(dbVersion).stores({
-    zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel',
-    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone',
-    ticket: 'id,urgence,emplacement,type,commentaire,statut,photo',
-    water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up',
-    manager: 'id,nom,prenom,telephone,mail,role,zone,unknown',
-    consumer_details: 'consumer_id,amount_due,validity',
-    payment: 'id,data,value,source,user_id',
-    logs: 'id,time,type,user,summary,details',
-    logs_history: 'id,time,type,user,summary,details,action',
-    update_queue: '++id, url, init, date, type, table, elemId, unsync, details',
-    sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded'
+    editable:'table,is_editable',
+    zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel, sync',
+    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
+    ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
+    water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up, sync',
+    manager: 'id,nom,prenom,telephone,mail,role,zone,unknown, sync',
+    consumer_details: 'consumer_id,amount_due,validity, sync',
+    payment: 'id,data,value,source,user_id, sync',
+    logs: 'id,time,type,user,summary,details, sync',
+    logs_history: 'id,time,type,user,summary,details,action, sync',
+    update_queue: '++id, url, init, date, type, table, elemId, sync, details',
+    sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded, sync'
 });
 
 const logsHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs')
+    return fetch('http://127.0.0.1:8000/api/table/?name=logs&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs.clear();
+                db.editable.put({table:'logs', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.logs.put({
                         id: entry.id,
@@ -119,6 +111,7 @@ const logsHandler = () => {
                         user: entry.user,
                         summary: entry.summary,
                         details: entry.details,
+                        sync: 0
                     });
                 }
             })
@@ -126,10 +119,11 @@ const logsHandler = () => {
 }
 
 const logsHistoryHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=logs_history')
+    return fetch('http://127.0.0.1:8000/api/table/?name=logs_history&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs_history.clear();
+                db.editable.put({table:'logs_history', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.logs_history.put({
                         id: entry.id,
@@ -139,6 +133,7 @@ const logsHistoryHandler = () => {
                         summary: entry.summary,
                         details: entry.details,
                         action: entry.action,
+                        sync: 0
                     });
                 }
             })
@@ -146,10 +141,11 @@ const logsHistoryHandler = () => {
 }
 
 const consumerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-consumers')
+    return fetch('http://127.0.0.1:8000/api/table/?name=consumer_full&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.consumer.clear();
+                db.editable.put({table:'consumer', is_editable:result.editable});
                 db.consumer_details.clear();
                 for (let entry of result.data) {
                     db.consumer.put({
@@ -163,12 +159,14 @@ const consumerHandler = () => {
                         sortie_eau: entry.consumer[7],
                         argent_du: entry.consumer[8],
                         zone: entry.consumer[9],
+                        sync: 0
                     });
 
                     db.consumer_details.put({
                         consumer_id: entry.consumer[0],
                         amount_due: entry.consumer[8],
-                        validity: entry.validity
+                        validity: entry.validity,
+                        sync: 0
                     });
                 }
             })
@@ -176,10 +174,11 @@ const consumerHandler = () => {
 }
 
 const paymentHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-payments')
+    return fetch('http://127.0.0.1:8000/api/table/?name=all_payment&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.payment.clear();
+                db.editable.put({table:'payment', is_editable:result.editable});
                 for (let payment of result.data) {
                     db.payment.put({
                         id: payment.payments[0],
@@ -187,6 +186,7 @@ const paymentHandler = () => {
                         value: payment.payments[2],
                         source: payment.payments[3],
                         user_id: payment.consumer_id,
+                        sync: 0
                     });
                 }
             })
@@ -194,10 +194,11 @@ const paymentHandler = () => {
 }
 
 const zoneHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=zone')
+    return fetch('http://127.0.0.1:8000/api/table/?name=zone&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.zone.clear();
+                db.editable.put({table:'zone', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.zone.put({
                         id: entry[0],
@@ -207,6 +208,7 @@ const zoneHandler = () => {
                         cout_kiosque: entry[4],
                         mois_kiosque: entry[5],
                         cout_mensuel: entry[6],
+                        sync: 0
                     })
                 }
             })
@@ -214,10 +216,11 @@ const zoneHandler = () => {
 }
 
 const managerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=manager')
+    return fetch('http://127.0.0.1:8000/api/table/?name=manager&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.manager.clear();
+                db.editable.put({table:'manager', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.manager.put({
                         id: entry[0],
@@ -228,6 +231,7 @@ const managerHandler = () => {
                         role: entry[5],
                         zone: entry[6],
                         unknown: entry[7],
+                        sync: 0
                     });
                 }
             })
@@ -235,10 +239,11 @@ const managerHandler = () => {
 }
 
 const ticketHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=ticket')
+    return fetch('http://127.0.0.1:8000/api/table/?name=ticket&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.ticket.clear();
+                db.editable.put({table:'ticket', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.ticket.put({
                         id: entry[0],
@@ -248,6 +253,7 @@ const ticketHandler = () => {
                         commentaire: entry[4],
                         statut: entry[5],
                         photo: entry[6],
+                        sync: 0
                     });
                 }
             })
@@ -255,10 +261,11 @@ const ticketHandler = () => {
 }
 
 const waterElement_handler = () => {
-    return fetch('http://127.0.0.1:8000/api/get-zone/?name=water_element')
+    return fetch('http://127.0.0.1:8000/api/table/?name=water_element&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element.clear();
+                db.editable.put({table:'water_element', is_editable:result.editable});
                 for (let entry of result.data) {
                     db.water_element.put({
                         id: entry[0],
@@ -270,15 +277,74 @@ const waterElement_handler = () => {
                         gallons: entry[6],
                         gestionnaire: entry[7],
                         zone_up: entry[8],
+                        sync: 0
                     })
                 }
             })
         );
 }
 
+const getDataFromDB = async (table) => {
+    try {
+        switch (table) {
+            case "all":
+                await Promise.all([
+                    consumerHandler(),
+                    zoneHandler(),
+                    managerHandler(),
+                    ticketHandler(),
+                    waterElement_handler(),
+                    paymentHandler(),
+                    logsHandler(),
+                    logsHistoryHandler()
+                ]);
+                break;
+            case "logs":
+                await logsHandler();
+                break;
+            case "logsHistory":
+                await logsHistoryHandler();
+                break;
+            case "consumer":
+                await consumerHandler();
+                break;
+            case "payment":
+                await paymentHandler();
+                break;
+            case "zone":
+                await zoneHandler();
+                break;
+            case "manager":
+                await managerHandler();
+                break;
+            case "ticket":
+                await ticketHandler();
+                break;
+            case "waterElement":
+                await waterElement_handler();
+                break;
+        }
+        isLoading = false;
+        setInfos('lastUpdate', new Date());
+        channel.postMessage({
+            title: 'updateStatus',
+            status: 'loaded',
+            date: lastUpdate
+        });
+    } catch (err) {
+        isLoading = false;
+        channel.postMessage({
+            title: 'updateStatus',
+            status: 'failed',
+            date: lastUpdate
+        });
+        console.log('[SW_POPULATEDB]', err);
+    }
+}
+
 const populateDB = async () => {
     isLoading = true;
-    await pushData();
+    await sendDataToDB();
     return Promise.all([
         consumerHandler(),
         zoneHandler(),
@@ -323,10 +389,10 @@ const emptyDB = () => {
     });
 }
 
-const pushData = async () => {
+const sendDataToDB = async () => {
     let tab = await db.update_queue.toArray();
-    return Promise.all(tab.map(element => {
-        return fetch(element.url, element.init).then(response => {
+    return Promise.all(tab.map(element =>
+        fetch(element.url, element.init).then(response => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
                 db.update_queue.delete(element.id);
@@ -335,15 +401,14 @@ const pushData = async () => {
                     console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
                 });
             }
-        }).catch(() => {
-            console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         })
-    })).then(async () => {
+    )).then(async () => {
         channel.postMessage({
             title: 'toPush',
             toPush: await db.update_queue.count()
         });
     }).catch(async () => {
+        console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         channel.postMessage({
             title: 'toPush',
             toPush: await db.update_queue.count()
@@ -368,15 +433,8 @@ const cacheCleanedPromise = () => {
     });
 }
 
-const isDoublePages = (url) => {
-    for (const ext of doublePages) {
-        if (url.includes(ext)) return true;
-    }
-    return false;
-}
-
-const isOnlinePages = (url) => {
-    for (const ext of onlinePages) {
+const isRevalidatePages = (url) => {
+    for (const ext of revalidatePages) {
         if (url.includes(ext)) return true;
     }
     return false;
@@ -402,11 +460,8 @@ const isConnected = () => {
 const getOfflineData = () => {
     isLoading = true;
     return Promise.all([
-        addCache(cacheVersion, ['/offline/']),
-        addCache(userCache, onlinePages),
-        addCache(userCache, offlinePages),
-        addCache(cacheVersion, staticFiles),
-        populateDB(),
+        getCache(),
+        getDataFromDB("all"),
     ]).then(() => {
         setInfos('dataLoaded', true);
         isLoading = false;
@@ -419,8 +474,8 @@ const getOfflineData = () => {
 const getCache = () => {
     return Promise.all([
         addCache(cacheVersion, ['/offline/']),
-        addCache(userCache, onlinePages),
-        addCache(userCache, offlinePages),
+        addCache(userCache, revalidatePages),
+        addCache(userCache, cachePages),
         addCache(cacheVersion, staticFiles),
     ]);
 }
@@ -487,7 +542,7 @@ const resetState = () => {
 
 const CacheFirst = event => {
     return caches.match(event.request)
-        .then(response => response || fetch(event.request));
+        .then(response => response || fetch(event.request).catch(() => caches.match('/offline/')));
 }
 
 const NetworkFirst = (event, page) => {
@@ -507,6 +562,23 @@ const StaleWhileRevalidate = event => {
         );
 }
 
+const CacheOrFetchAndCache = (event,cacheToUse) => {
+    return caches.match(event.request)
+        .then(cacheResponse =>
+            cacheResponse || fetch(event.request)
+                .then(networkResponse => {
+                    const clonedResponse = networkResponse.clone();
+                    caches.open(cacheToUse).then(cache => {
+                        cache.put(event.request, clonedResponse).catch(error => {
+                            console.error(error)
+                        });
+                    });
+                    return networkResponse;
+                }).catch(function (error) {
+                    console.error(error)
+                })
+        )
+}
 
 /*********************************************************************************
  * Event listener
@@ -558,7 +630,7 @@ self.addEventListener('fetch', async event => {
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request));
     } else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
-        event.respondWith(CacheFirst(event));
+        event.respondWith(CacheOrFetchAndCache(event, cacheVersion));
     } else if (url.includes('/logout')) {
         await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
         event.respondWith(fetch(event.request)
@@ -581,56 +653,21 @@ self.addEventListener('fetch', async event => {
                 return caches.match('/offline/');
             })
         );
-    } else if (offlineMode) {
-        if (url.includes('/reseau/gis')) {
-            event.respondWith(caches.match('/offline/'));
-        } else if (url.includes('/reseau')) {
-            event.respondWith(caches.match('/reseau/offline'));
-        } else if (url.includes('/gestion')) {
-            event.respondWith(caches.match('/gestion/offline'));
-        } else if (url.includes('/rapport')) {
-            event.respondWith(caches.match('/rapport/offline'));
-        } else if (url.includes('/consommateurs')) {
-            event.respondWith(caches.match('/consommateurs/offline'));
-        } else if (url.includes('/finances')) {
-            event.respondWith(caches.match('/finances/offline'));
-        } else if (url.includes('/historique')) {
-            event.respondWith(caches.match('/historique/offline'));
-        } else if (url.includes('/login')) {
-            event.respondWith(NetworkFirst(event, '/offline/'));
-        } else if (url.includes('/api/graph')) {
-            event.respondWith(StaleWhileRevalidate(event));
-        } else {
-            event.respondWith(StaleWhileRevalidate(event)
-                .catch(() => caches.match('/offline/'))
-            );
-        }
-    } else {
-        if (url.includes('/reseau/gis')) {
-            event.respondWith(NetworkFirst(event, '/offline/'));
-        } else if (url.includes('/reseau')) {
-            event.respondWith(NetworkFirst(event, '/reseau/offline'));
-        } else if (url.includes('/gestion')) {
-            event.respondWith(NetworkFirst(event, '/gestion/offline'))
-        } else if (url.includes('/rapport')) {
-            event.respondWith(NetworkFirst(event, '/rapport/offline'))
-        } else if (url.includes('/historique')) {
-            event.respondWith(NetworkFirst(event, '/historique/offline'))
-        } else if (url.includes('/consommateurs')) {
-            event.respondWith(NetworkFirst(event, '/consommateurs/offline'))
-        } else if (url.includes('/finances')) {
-            event.respondWith(NetworkFirst(event, '/finances/offline'))
-        } else if (url.includes('/login')) {
-            event.respondWith(NetworkFirst(event, '/offline/'))
-        } else if (url.includes('/api/graph')) {
-            event.respondWith(NetworkFirst(event, event.request.url));
-        } else if (url.includes('/api/table') || url.includes('.png')) {
-            event.respondWith(fetch(event.request)
-                .catch(() => {console.error('cannot reach the dataTable online')})
-            );
-        } else {
-            event.respondWith(NetworkFirst(event, '/offline/'));
-        }
+    } else if (url.includes('/api/graph')){
+        event.respondWith(NetworkFirst(event, event.request.url));
+    } else if (url.includes('/api/table') || url.includes('.png')) {
+        event.respondWith(fetch(event.request)
+            .catch(() => {console.error('cannot reach the dataTable online')})
+        );
+    }
+    else if (url.includes('/login')) {
+        event.respondWith(NetworkFirst(event, '/offline/'));
+    }
+    else if (isRevalidatePages(url)) {
+        event.respondWith(StaleWhileRevalidate(event))
+    }
+    else {
+        event.respondWith(CacheOrFetchAndCache(event, userCache));
     }
 });
 
@@ -644,49 +681,19 @@ channel.addEventListener('message', async event => {
             channel.postMessage({
                 title: 'updateInfos',
                 date: lastUpdate,
-                offlineMode: offlineMode,
                 toPush: await db.update_queue.count()
             });
             break
-        case 'setOfflineMode':
-            setInfos('offlineMode', !offlineMode);
-            channel.postMessage({
-                title: 'getOfflineMode',
-                offlineMode: offlineMode
-            });
-            break
         case 'updateDB':
-            if (!isLoading) {
-                switch (event.data.db) {
-                    case 'all':
-                        populateDB();
-                        break
-                    case 'payment':
-                        break
-                    case 'consumer':
-                        break
-                    case 'logs':
-                        break
-                    case 'logs_history':
-                        break
-                    case 'manager':
-                        break
-                    case 'ticket':
-                        break
-                    case 'water_element':
-                        break
-                    case 'zone':
-                        break
-                }
-            }
+            if (!isLoading) getDataFromDB(event.data.db);
             channel.postMessage({
                 title: 'updateStatus',
                 date: lastUpdate,
                 status: 'loading'
             });
-            break
+            break;
         case 'pushData':
-            pushData();
+            sendDataToDB();
             break
     }
 });

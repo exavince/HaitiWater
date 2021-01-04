@@ -10,11 +10,20 @@ function format ( d ) {
     return d.details;
 }
 
-function drawLogTable(){
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=logs";
-    console.log("[REQUEST DATA]" ,dataURL);
-    let table = $('#datatable-logs').DataTable(getLogsTableConfiguration(dataURL));
+async function drawLogTable() {
+    let config;
+    if (localStorage.getItem("offlineMode") === "true") {
+        $('#flavoured-part').css('background-color', '#8B0000');
+        config = await getLogsTableOfflineConfiguration();
+    }
+    else  {
+        let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+        let dataURL = baseURL + "/api/table/?name=logs";
+        console.log("[REQUEST DATA]" ,dataURL);
+        config = getLogsTableConfiguration(dataURL);
+    }
+
+    let table = $('#datatable-logs').DataTable(config);
 
     $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {
         var tr = $(this).closest('tr');
@@ -90,26 +99,38 @@ function requestHandler(url){
     })
 }
 
+async function getLogsData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('logs');
+    let result = [];
+    await table.each(log => {
+        result.push(log);
+    });
+
+    return result;
+}
+
 function getLogsTableConfiguration(dataURL){
-    let config = {
+    return {
         lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
         ],
         dom: 'Bfrtip',
         buttons: [
             'pageLength'
         ],
         "columns": [
-            { "data": "id" },
-            { "data": "time" },
-            { "data": "type" },
-            { "data": "user" },
-            { "data": "summary" },
+            {"data": "id"},
+            {"data": "time"},
+            {"data": "type"},
+            {"data": "user"},
+            {"data": "summary"},
             {
-                "className":      'actions',
-                "orderable":      false,
-                "data":           null,
+                "className": 'actions',
+                "orderable": false,
+                "data": null,
                 "defaultContent": getLogsActionButtonsHTML()
             }
         ],
@@ -120,11 +141,11 @@ function getLogsTableConfiguration(dataURL){
         "serverSide": true,
         "responsive": true,
         "autoWidth": true,
-        scrollX:        true,
+        scrollX: true,
         scrollCollapse: true,
-        paging:         true,
+        paging: true,
         pagingType: 'full_numbers',
-        fixedColumns:   {
+        fixedColumns: {
             leftColumns: 1,
             rightColumns: 1
         },
@@ -133,7 +154,56 @@ function getLogsTableConfiguration(dataURL){
             url: dataURL
         }
     };
-    return config;
+}
+
+async function getLogsTableOfflineConfiguration(){
+    return {
+        lengthMenu: [
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            'pageLength'
+        ],
+        "columns": [
+            {"data": "id"},
+            {"data": "time"},
+            {"data": "type"},
+            {"data": "user"},
+            {"data": "summary"},
+            {
+                "className": 'actions',
+                "orderable": false,
+                "data": null,
+                "defaultContent": getLogsActionButtonsHTML()
+            }
+        ],
+        "order": [[1, 'asc']],
+        "searching": false,
+        "sortable": true,
+        "processing": true,
+        "serverSide": false,
+        "responsive": true,
+        "autoWidth": true,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: true,
+        pagingType: 'full_numbers',
+        fixedColumns: {
+            leftColumns: 1,
+            rightColumns: 1
+        },
+        "language": getDataTableFrenchTranslation(),
+        "data": await getLogsData(),
+        "createdRow": (row, data) => {
+            if (data.sync > 0) {
+                console.log('The data: ', data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
+        },
+    };
 }
 
 function getLogsActionButtonsHTML(){

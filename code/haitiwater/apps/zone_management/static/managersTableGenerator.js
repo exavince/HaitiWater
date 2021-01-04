@@ -1,8 +1,17 @@
-function drawManagerTable(){
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=manager";
-    console.log("Request data from: " + dataURL);
-    $('#datatable-manager').DataTable(getManagerDatatableConfiguration(dataURL));
+async function drawManagerTable() {
+    let config;
+
+    if (localStorage.getItem("offlineMode") === "true") {
+        config = await getManagerDatatableOfflineConfiguration();
+    }
+    else {
+        let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+        let dataURL = baseURL + "/api/table/?name=manager";
+        console.log("Request data from: " + dataURL);
+        config = getManagerDatatableConfiguration(dataURL);
+    }
+
+    $('#datatable-manager').DataTable(config);
 
     let table = $('#datatable-manager').DataTable();
     $('#datatable-manager tbody').on( 'click', 'tr td:not(:last-child)', function () {
@@ -50,6 +59,28 @@ function filterWaterElementFromManager(managerTable){
         $('#datatable-water_element').DataTable().search(managerZone).draw();
     }
 
+}
+
+async function getManagerData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('manager');
+    let result = [];
+
+    await table.each(row => {
+        result.push([
+            row.id,
+            row.nom,
+            row.prenom,
+            row.telephone,
+            row.mail,
+            row.zone,
+            row.unknown,
+            row.sync
+        ]);
+    });
+
+    return result;
 }
 
 function getManagerDatatableConfiguration(dataURL){
@@ -104,4 +135,59 @@ function getManagerDatatableConfiguration(dataURL){
         }
     };
     return config;
+}
+
+async function getManagerDatatableOfflineConfiguration(){
+    return {
+        lengthMenu: [
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'print',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6],
+                },
+            },
+            'pageLength'
+        ],
+        "sortable": true,
+        "processing": true,
+        "serverSide": false,
+        "responsive": false,
+        "autoWidth": true,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: true,
+        pagingType: 'full_numbers',
+        fixedColumns: {
+            leftColumns: 1,
+            rightColumns: 1
+        },
+        "columnDefs": [{
+            "targets": -1,
+            "data": null,
+            "orderable": false,
+            "defaultContent": getActionButtonsHTML("modalManager"),
+        },
+        ],
+        "language": getDataTableFrenchTranslation(),
+        "data": await getManagerData(),
+
+        //Callbacks on fetched data
+        "createdRow": function (row, data, index) {
+            $('td', row).eq(5).addClass('text-center');
+            $('td', row).eq(6).addClass('text-center');
+            if (data[7] > 0) {
+                console.log('The data: ', data[4]);
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
+        },
+        "initComplete": function (settings, json) {
+            // Removes the last column (both header and body) if we cannot edit the table
+        }
+    };
 }

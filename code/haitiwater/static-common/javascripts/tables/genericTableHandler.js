@@ -49,7 +49,7 @@ function drawDataTable(tableName){
  * @param table a String containing the table name
  * @param id an integer corresponding to the primary key of the element to remove
  */
-function removeElement(table, id, otherParameters) {
+async function removeElement(table, id, otherParameters) {
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/remove/";
     if (typeof otherParameters === 'undefined') { otherParameters = ''; }
@@ -63,7 +63,7 @@ function removeElement(table, id, otherParameters) {
     };
 
     console.log('[DELETE]', myInit);
-    navigator.serviceWorker.ready.then(async swRegistration => {
+    await navigator.serviceWorker.ready.then(async () => {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');
@@ -81,12 +81,9 @@ function removeElement(table, id, otherParameters) {
             init:myInit,
             type:'Supprimer',
             elemId: id,
-            unsync:true,
+            sync:true,
             details:myInit
         });
-
-        let db_table = db.table(table);
-        db_table.delete(id);
 
         new PNotify({
             title: 'Succès!',
@@ -94,6 +91,7 @@ function removeElement(table, id, otherParameters) {
             type: 'success'
         });
 
+        await indexDBModify(table, id);
         drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -280,6 +278,8 @@ function postEditRow(table, callback){
         // Form is not valid (missing/wrong fields)
         return false;
     }
+
+    let rowID = request.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "");
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
@@ -323,6 +323,7 @@ function postEditRow(table, callback){
             type: 'success'
         });
 
+        indexDBModify(table, rowID)
         drawDataTable(table);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
@@ -455,4 +456,27 @@ function setTableURL(table, optional){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=" + table + optional;
     $('#datatable-'+table).DataTable().ajax.url(dataURL).load();
+}
+
+async function indexDBModify(table, rowID) {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    switch (table){
+        case "payment":
+            let consumerID = undefined;
+            await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
+                data.sync += 1;
+                consumerID = data.user_id;
+            });
+            console.log(consumerID);
+            await db.table('consumer').where('id').equals(consumerID).modify(data => {
+                data.sync += 1;
+            });
+            break;
+        default: // consumer, water_elem, ticket
+            db.table(table).where('id').equals(parseInt(rowID)).modify(data => {
+                data.sync += 1;
+            });
+            break;
+    }
 }

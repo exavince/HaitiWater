@@ -171,6 +171,12 @@ def table(request):
         result = get_payment_elements(request)
         if result is None:
             return success_200
+    elif table_name == "consumer_full":
+        result = get_all_details_consumers(request)
+    elif table_name == "all_payment":
+        if is_user_fountain(request):
+            json_object["editable"] = False
+        result = get_all_payments(request)
     else:
         return HttpResponse("Impossible de charger la table demandée (" + table_name + ").", status=404)
 
@@ -179,6 +185,10 @@ def table(request):
 
     cache.set(cache_key, json.dumps(result), 60)
     json_object["recordsTotal"] = len(result)
+
+    if request.GET.get('indexDB', None) == "true":
+        json_object["data"] = result
+        return HttpResponse(json.dumps(json_object), status=200)
 
     filtered = filter_search(params, result)
 
@@ -495,6 +505,15 @@ def is_same(element, user):
 
 
 def parse(request):
+    indexDB = request.GET.get("indexDB", None)
+    if indexDB == "true":
+        params = {
+            "table_name": request.GET.get('name', None),
+            "month_wanted": request.GET.get("month", "none")
+        }
+
+        return params
+
     column_regex = re.compile('order\[\d*\]\[column\]')
     dir_regex = re.compile('order\[\d*\]\[dir\]')
 
@@ -518,3 +537,11 @@ def parse(request):
     }
 
     return params
+
+
+def check_authentication(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("notConnected", status=403)
+    else:
+        return HttpResponse("connected", status=200)
+

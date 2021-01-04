@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from . import exports, offline
+from . import exports
 
 urlpatterns = [
     url(r'graph/$', exports.graph, name='graph'),
@@ -13,9 +13,5 @@ urlpatterns = [
     url(r'log/$', exports.compute_logs, name='compute_logs'),
     url(r'details/$', exports.details, name="details"),
     url(r'outlets/', exports.outlets, name="outlets"),
-    url(r'get-zone/', offline.get_zone, name="get-zone"),
-    url(r'check-authentication', offline.check_authentication, name="check_authentication"),
-    url(r'get-consumers', offline.get_consumers, name="get_consumers"),
-    url(r'get-payments', offline.get_payments, name="get_payments"),
-
+    url(r'check-authentication', exports.check_authentication, name="check_authentication"),
 ]
