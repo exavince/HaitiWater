@@ -557,10 +557,12 @@ const setInfos = (info, value) => {
     });
 }
 
-const resetState = () => {
+const resetState = async () => {
     channel.postMessage({
         title: 'resetNavigation'
     });
+    await cacheCleanedPromise()
+    await emptyDB();
     synced = false;
     setInfos('username', null);
     setInfos('offlineMode', false);
@@ -569,6 +571,7 @@ const resetState = () => {
     setInfos('lastUpdate', undefined);
     setInfos('isLoading', false);
     connected = false;
+    console.log("State reset")
 }
 
 const CacheFirst = event => {
@@ -724,14 +727,15 @@ channel.addEventListener('message', async event => {
                 date: lastUpdate,
                 status: 'loading'
             });
-            break;
+            break
         case 'pushData':
             sendDataToDB();
             break
         case 'getUsername':
-            setInfos('username', event.data.username);
+            console.log(event.data.username)
+            console.log(username)
             if(username !== null && username !== event.data.username && username !== undefined) resetState();
-            else if(username === null) setInfos('username', event.data.username);
+            else if (username === null) setInfos('username', event.data.username);
             break
     }
 });

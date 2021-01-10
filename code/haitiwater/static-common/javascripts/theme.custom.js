@@ -3,6 +3,8 @@ $( document ).ready(function() {
 
     const channel = new BroadcastChannel('sw-messages');
 
+    channel.postMessage({title:'getUsername', username:localStorage.getItem('username')});
+
     if (localStorage.getItem("offlineMode") === null) {
         localStorage.setItem("offlineMode", "false");
         setupOfflineMode(false);
@@ -119,6 +121,9 @@ $( document ).ready(function() {
                 }
                 break
             case 'resetNavigation':
+                localStorage.setItem('offlineMode', 'false')
+                localStorage.setItem('dataToSend', 0)
+                localStorage.setItem('lastUpdate', null)
                 break
         }
     }
