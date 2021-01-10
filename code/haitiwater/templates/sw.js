@@ -70,7 +70,7 @@ const db = new Dexie("user_db");
 
 let isConnecting = false;
 let synced = false;
-let username = undefined;
+let username = null;
 let offlineMode = false;
 let needDisconnect = false;
 let dataLoaded = false;
@@ -727,6 +727,11 @@ channel.addEventListener('message', async event => {
             break;
         case 'pushData':
             sendDataToDB();
+            break
+        case 'getUsername':
+            setInfos('username', event.data.username);
+            if(username !== null && username !== event.data.username && username !== undefined) resetState();
+            else if(username === null) setInfos('username', event.data.username);
             break
     }
 });

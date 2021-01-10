@@ -192,31 +192,47 @@ function toggleDrawer(){
     $('#details').collapse('toggle');
 }
 
+async function getWaterElementDetailsData(elementID) {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('water_element_details');
+    let result = await table.where('id').equals(elementID).first();
+    console.log(result);
+
+    return result;
+}
+
 /**
  * Requests the details of an element to the server
  * @param  {int} elementID
  */
 function requestWaterElementDetails(elementID){
-    let requestURL = "../api/details?table=water_element&id="+elementID;
-    let xhttp = new XMLHttpRequest();
+    if (localStorage.getItem('offlineMode') === 'true') {
+        getWaterElementDetailsData(elementID).then(result => {
+            setupWaterElementDetails(result);
+        });
+    }
+    else {
+        let requestURL = "../api/details?table=water_element&id="+elementID;
+        let xhttp = new XMLHttpRequest();
 
-    xhttp.onreadystatechange = function(){
-        if (this.readyState === 4) {
-            if (this.status === 200) {
-                $('.selected').removeClass('selected'); //de-select row as to not confuse in case of map selection (element click)
-                setupWaterElementDetails(JSON.parse(this.response));
-            } else {
-                console.log(this);
-                let msg = "Une erreur est survenue:<br>" + this.status + ": " + this.statusText;
-                displayDetailTableError(msg);
+        xhttp.onreadystatechange = function(){
+            if (this.readyState === 4) {
+                if (this.status === 200) {
+                    $('.selected').removeClass('selected'); //de-select row as to not confuse in case of map selection (element click)
+                    setupWaterElementDetails(JSON.parse(this.response));
+                } else {
+                    console.log(this);
+                    let msg = "Une erreur est survenue:<br>" + this.status + ": " + this.statusText;
+                    displayDetailTableError(msg);
+                }
             }
-        }
-    };
+        };
 
-    xhttp.open('GET', requestURL, true);
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.send();
-
+        xhttp.open('GET', requestURL, true);
+        xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+        xhttp.send();
+    }
 }
 
 function displayDetailTableError(errorMsg){
