@@ -54,15 +54,15 @@ async function drawLogTable() {
 
 function revertModification(elementID){
     let url = '../../api/log/?action=revert&id=' + elementID;
-    requestHandler(url, elementID);
+    requestHandler(url, elementID, 'Annuler');
 }
 
 function acceptModification(elementID){
     let url = '../../api/log/?action=accept&id=' + elementID;
-    requestHandler(url, elementID);
+    requestHandler(url, elementID,'Accepter');
 }
 
-async function requestHandler(url, elementID){
+async function requestHandler(url, elementID, type){
     var myInit = {
         method: 'post',
         headers: {
@@ -78,8 +78,20 @@ async function requestHandler(url, elementID){
         let db_table = db.table('update_queue');
         db_table.put({
             url:url,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'Logs',
             init:myInit,
-            unsync:true
+            type:type,
+            elemId: elementID,
+            status:"En attente",
+            details:myInit
         });
         new PNotify({
             title: 'Réussite!',

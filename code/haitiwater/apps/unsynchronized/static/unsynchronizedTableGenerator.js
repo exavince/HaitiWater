@@ -1,16 +1,16 @@
 $(document).ready(function() {
     // Draw the water element table without the managers
-    drawLogTable();
+    drawTosyncTable();
 });
 
 
 //Formatting function for row details
 function format ( d ) {
     // d is the original data object for the row
-    return d.details;
+    return d.details.url;
 }
 
-async function getLogsData() {
+async function getTosyncData() {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
     let table = db.table('update_queue');
@@ -22,10 +22,10 @@ async function getLogsData() {
     return result;
 }
 
-async function drawLogTable(){
-    let table = $('#datatable-logs').DataTable(await getLogsTableConfiguration());
+async function drawTosyncTable(){
+    let table = $('#datatable-tosync').DataTable(await getTosyncTableConfiguration());
 
-    $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {
+    $('#datatable-tosync tbody').on( 'click', 'tr td:not(:last-child)', function () {
         var tr = $(this).closest('tr');
         var row = table.row(tr);
 
@@ -41,11 +41,11 @@ async function drawLogTable(){
         }
     });
 
-    $('#datatable-logs tbody').on( 'click', '.revert-modification', function () {
+    $('#datatable-tosync tbody').on( 'click', '.revert-modification', function () {
         let data = table.row($(this).closest('tr')).data();
         revertModification(data.id);
     } );
-    $('#datatable-logs tbody').on( 'click', '.accept-modification', function () {
+    $('#datatable-tosync tbody').on( 'click', '.accept-modification', function () {
         let data = table.row($(this).closest('tr')).data();
         acceptModification(data.id);
     } );
@@ -53,49 +53,20 @@ async function drawLogTable(){
 }
 
 function revertModification(elementID){
-    let url = '../../api/log/?action=revert&id=' + elementID;
-    requestHandler(url);
-}
-
-function acceptModification(elementID){
-    let url = '../../api/log/?action=accept&id=' + elementID;
-    requestHandler(url);
-}
-
-function requestHandler(url){
-    var myInit = {
-        method: 'post',
-        headers: {
-            "Content-type": "application/x-www-form-urlencoded",
-            'X-CSRFToken':getCookie('csrftoken')
-        }
-    };
-
-    navigator.serviceWorker.ready.then(async swRegistration => {
-        let dexie = await new Dexie('user_db');
-        let db = await dexie.open();
-        let db_table = db.table('update_queue');
-        db_table.put({
-            url:url,
-            init:myInit,
-            unsync:true
-        });
-        return swRegistration.sync.register('updateQueue');
-    }).catch(() => {
-        fetch(url, myInit).then(() => {
-            drawDataTable('logs');
-        }).catch(err => {
-            console.error(this);
-            new PNotify({
-                title: 'Échec!',
-                text: "Opération impossible: " + err,
-                type: 'error'
-            });
-        })
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'revertModification',
+        id:elementID
     })
 }
 
-async function getLogsTableConfiguration(){
+function acceptModification(elementID){
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'acceptModification',
+        id:elementID
+    })
+}
+
+async function getTosyncTableConfiguration(){
     let config = {
         lengthMenu: [
             [ 10, 25, 50, -1 ],
@@ -110,7 +81,7 @@ async function getLogsTableConfiguration(){
             { "data": "table" },
             { "data": "type" },
             { "data": "elemId" },
-            { "data": "unsync" },
+            { "data": "status" },
             {
                 "className":      'actions',
                 "orderable":      false,
@@ -134,7 +105,7 @@ async function getLogsTableConfiguration(){
             rightColumns: 1
         },
         "language": getDataTableFrenchTranslation(),
-        "data": await getLogsData()
+        "data": await getTosyncData()
     };
     return config;
 }

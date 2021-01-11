@@ -95,7 +95,7 @@ db.version(dbVersion).stores({
     payment: 'id,data,value,source,user_id, sync',
     logs: 'id,time,type,user,summary,details, sync',
     logs_history: 'id,time,type,user,summary,details,action, sync',
-    update_queue: '++id, url, init, date, type, table, elemId, sync, details',
+    update_queue: '++id, url, init, date, type, table, elemId, status, details',
     sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded, sync'
 });
 
@@ -447,6 +447,32 @@ const sendDataToDB = async () => {
     })
 }
 
+const sendOneDataToDB = async (elementID) => {
+    let table = db.table('update_queue');
+    let result = await table.where('id').equals(elementID).first();
+    fetch(result.url, result.init).then(response => {
+        if (response.ok) {
+            console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
+            db.update_queue.delete(element.id);
+        } else {
+            db.update_queue.update(element.id, {unsync: response.status}).then(update => {
+                console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
+            });
+        }
+    }).then(async () => {
+        channel.postMessage({
+            title: 'toPush',
+            toPush: await db.update_queue.count()
+        });
+    }).catch(async () => {
+        console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
+        channel.postMessage({
+            title: 'toPush',
+            toPush: await db.update_queue.count()
+        });
+    })
+}
+
 /*********************************************************************************
  * Utils
  *********************************************************************************/
@@ -736,6 +762,11 @@ channel.addEventListener('message', async event => {
             console.log(username)
             if(username !== null && username !== event.data.username && username !== undefined) resetState();
             else if (username === null) setInfos('username', event.data.username);
+            break
+        case 'acceptModification':
+            await sendOneDataToDB(event.data.id)
+            break
+        case 'revertModification':
             break
     }
 });

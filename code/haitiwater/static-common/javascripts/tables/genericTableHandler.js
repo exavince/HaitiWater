@@ -74,7 +74,7 @@ async function drawDataTable(tableName, consumerID){
         table.draw();
         return;
     }
-    console.log("ajex");
+    console.log("ajax");
     table.ajax.reload();
     table.draw();
 }
@@ -116,7 +116,7 @@ async function removeElement(table, id, otherParameters) {
             init:myInit,
             type:'Supprimer',
             elemId: id,
-            sync:true,
+            status:"En attente",
             details:myInit
         });
 
@@ -259,7 +259,7 @@ function postNewRow(table, callback){
             init:myInit,
             type:'Ajouter',
             elemId: 2,
-            unsync:true,
+            status:"En attente",
             details:myInit
         });
 
@@ -348,7 +348,7 @@ async function postEditRow(table, callback){
             init:myInit,
             type:'Editer',
             elemId: 2,
-            unsync:'En attente',
+            status:'En attente',
             details:myInit
         });
 
