@@ -3,11 +3,120 @@ $(document).ready(function() {
     drawTosyncTable();
 });
 
+function formatTable(table) {
+    switch (table) {
+        case 'Logs':
+            return 'Historique'
+        case 'zone':
+            return 'Zone'
+        case 'consumer':
+            return 'Consommateur'
+        case 'manager':
+            return 'Gestionnaire'
+        case 'payment':
+            return 'Payement'
+        case 'ticket':
+            return 'Ticket'
+        case 'water_element':
+            return 'Element réseau'
+        case 'MonthlyReport':
+            return 'Rapport mensuel'
+        case 'IssueTable':
+            return 'Ticket'
+        default:
+            return table
+        }
+}
+
 
 //Formatting function for row details
-function format ( d ) {
-    // d is the original data object for the row
-    return d.details.url;
+function format (d) {
+    let result = ""
+    let init = d.init
+    let body = init.body
+
+    let infos = body.split('&')
+    infos.forEach(data => {
+        let tab = data.split("=")
+        switch (tab[0]) {
+            case 'table':
+                result = result + "Table : " + formatTable(tab[1]) + "<br>"
+                break
+            case 'id_consumer':
+                result = result + "ID du consommateur : " + tab[1] + "<br>"
+                break
+            case 'id':
+                result = result + "ID : " + tab[1] + "<br>"
+                break
+            case 'amount':
+                result = result + "Montant : " + tab[1] + "€" + "<br>"
+                break
+            case 'lastname':
+                result = result + "Nom : " + tab[1] + "<br>"
+                break
+            case 'firstname':
+                result = result + "Prénom : " + tab[1] + "<br>"
+                break
+            case 'gender':
+                result = result + "Genre : " + tab[1] + "<br>"
+                break
+            case 'address':
+                result = result + "Addresse : " + tab[1] + "<br>"
+                break
+            case 'phone':
+                result = result + "Télephone : " + tab[1] + "<br>"
+                break
+            case 'subconsumer':
+                result = result + "Autres consommateurs : " + tab[1] + "<br>"
+                break
+            case 'mainOutlet':
+                result = result + "ID source principale : " + tab[1] + "<br>"
+                break
+            case 'name':
+                result = result + "Nom : " + tab[1] + "<br>"
+                break
+            case 'fountain-price':
+                result = result + "Prix de la fontaine : " + tab[1] + "<br>"
+                break
+            case 'fountain-duration':
+                result = result + "Durée de la fontaine : " + tab[1] + "<br>"
+                break
+            case 'kiosk-price':
+                result = result + "Prix du kiosque : " + tab[1] + "<br>"
+                break
+            case 'kiosk-duration':
+                result = result + "Durée du kiosque : " + tab[1] + "<br>"
+                break
+            case 'indiv-price':
+                result = result + "Prix individuel : " + tab[1] + "<br>"
+                break
+            case 'type':
+                result = result + "Type de problème : " + tab[1] + "<br>"
+                break
+            case 'urgency':
+                result = result + "Urgence : " + tab[1] + "<br>"
+                break
+            case 'id_outlet':
+                result = result + "ID de la source : " + tab[1] + "<br>"
+                break
+            case 'comment':
+                result = result + "Commentaire : " + tab[1] + "<br>"
+                break
+            case 'state':
+                result = result + "Status : " + tab[1] + "<br>"
+                break
+            case 'picture':
+                break
+            case 'localization':
+                result = result + "Localisation : " + tab[1] + "<br>"
+                break
+            default:
+                result = result + tab[0] + " : " + tab[1] + "<br>"
+                break
+        }
+    })
+
+    return result
 }
 
 async function getTosyncData() {
@@ -16,6 +125,7 @@ async function getTosyncData() {
     let table = db.table('update_queue');
     let result = [];
     await table.each(log => {
+        log.table = formatTable(log.table)
         result.push(log);
     });
 
@@ -49,7 +159,7 @@ async function drawTosyncTable(){
         let data = table.row($(this).closest('tr')).data();
         acceptModification(data.id);
     } );
-    prettifyHeader('logs');
+    prettifyHeader('tosync');
 }
 
 function revertModification(elementID){

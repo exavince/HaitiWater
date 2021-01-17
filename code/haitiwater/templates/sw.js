@@ -428,7 +428,7 @@ const sendDataToDB = async () => {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
                 db.update_queue.delete(element.id);
             } else {
-                db.update_queue.update(element.id, {unsync: response.status}).then(update => {
+                db.update_queue.update(element.id, {status: response.status}).then(update => {
                     console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
                 });
             }
