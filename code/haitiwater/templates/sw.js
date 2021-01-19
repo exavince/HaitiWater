@@ -71,7 +71,6 @@ const db = new Dexie("user_db");
 let isConnecting = false;
 let synced = false;
 let username = null;
-let offlineMode = false;
 let needDisconnect = false;
 let dataLoaded = false;
 let lastUpdate = undefined;
@@ -96,7 +95,7 @@ db.version(dbVersion).stores({
     logs: 'id,time,type,user,summary,details, sync',
     logs_history: 'id,time,type,user,summary,details,action, sync',
     update_queue: '++id, url, init, date, type, table, elemId, status, details',
-    sessions: 'id,username,needDisconnect,offlineMode,lastUpdate,dataLoaded, sync'
+    sessions: 'id,username,needDisconnect,lastUpdate,dataLoaded, sync'
 });
 
 const waterElementDetailsHandler = () => {
@@ -542,13 +541,11 @@ const getInfos = () => {
     return db.sessions.where('id').equals(1).first(async data => {
         username = data.username;
         needDisconnect = data.needDisconnect;
-        offlineMode = data.offlineMode;
         lastUpdate = data.lastUpdate;
         dataLoaded = data.dataLoaded;
         channel.postMessage({
             title: 'getInfos',
             toPush: await db.update_queue.count(),
-            offlineMode: offlineMode,
             date: lastUpdate
         });
         return data;
@@ -563,9 +560,6 @@ const setInfos = (info, value) => {
         case 'needDisconnect':
             needDisconnect = value;
             break
-        case 'offlineMode':
-            offlineMode = value;
-            break
         case 'lastUpdate':
             lastUpdate = value;
             break
@@ -577,7 +571,6 @@ const setInfos = (info, value) => {
         id: 1,
         username: username,
         needDisconnect: needDisconnect,
-        offlineMode: offlineMode,
         lastUpdate: lastUpdate,
         dataLoaded: dataLoaded
     });
@@ -591,7 +584,6 @@ const resetState = async () => {
     await emptyDB();
     synced = false;
     setInfos('username', null);
-    setInfos('offlineMode', false);
     setInfos('needDisconnect', false);
     setInfos('dataLoaded', false);
     setInfos('lastUpdate', undefined);
@@ -653,13 +645,11 @@ self.addEventListener('activate', () => {
         id: 1,
         username: undefined,
         needDisconnect: false,
-        offlineMode: false,
         lastUpdate: undefined,
         dataLoaded: false
     }).then(async () => {
         channel.postMessage({
             title: 'updateInfos',
-            offlineMode: offlineMode,
             toPush: await db.update_queue.count(),
             date: lastUpdate
         });
@@ -669,7 +659,6 @@ self.addEventListener('activate', () => {
             if (!dataLoaded) getOfflineData();
             else channel.postMessage({
                 title: 'updateInfos',
-                offlineMode: offlineMode,
                 toPush: await db.update_queue.count(),
                 date: lastUpdate
             });

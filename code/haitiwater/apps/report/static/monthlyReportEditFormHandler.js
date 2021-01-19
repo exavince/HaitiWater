@@ -44,9 +44,9 @@ function postReportEdit(){
             }),
             table: 'MonthlyReport',
             init:myInit,
-            type:'EDIT',
-            elemId: 2,
-            unsync:true,
+            type:'Editer',
+            elemId: '?',
+            status:"En attente",
             details:myInit
         });
 

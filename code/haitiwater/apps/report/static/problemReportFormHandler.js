@@ -212,8 +212,8 @@ async function sendTicket(addOrEdit) {
             table: 'IssueTable',
             init:myInit,
             type:addOrEdit,
-            elemId: 2,
-            unsync:true,
+            elemId: (addOrEdit === 'add' ? "Ajouter" : "Editer"),
+            status:"En attente",
             details:myInit
         });
 

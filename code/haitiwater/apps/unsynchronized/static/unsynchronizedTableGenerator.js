@@ -34,8 +34,23 @@ function format (d) {
     let result = ""
     let init = d.init
     let body = init.body
-
     let infos = body.split('&')
+
+    if (d.table === 'Rapport mensuel') {
+        let json = JSON.parse(infos)
+        result += "ID élement réseau : " + json.selectedOutlets + "<br>"
+        result += "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>")
+        result += "Jours de fonctionnement : " + json.inputDays + "<br>"
+        result += "Heures de fonctionnement : " + json.inputHours + "<br>"
+        result += "Mois : " + json.month + "<br>"
+        let details = json.details[0]
+        result += "M³ : " + details.cubic + "<br>"
+        result += "Prix M³ : " + details.perCubic + "€" + "<br>"
+        result += "Total : " + details.bill + "€" + "<br>"
+        return result
+    }
+    if (d.table === 'Historique') return ''
+
     infos.forEach(data => {
         let tab = data.split("=")
         switch (tab[0]) {

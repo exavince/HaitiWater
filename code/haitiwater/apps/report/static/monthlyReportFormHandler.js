@@ -79,8 +79,8 @@ $(document).ready(function() {
 					table: 'MonthlyReport',
 					init:myInit,
 					type:'Ajouter',
-					elemId: 2,
-					unsync:true,
+					elemId: '?',
+					status:"En attente",
 					details:myInit
 				});
 
