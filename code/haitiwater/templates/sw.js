@@ -83,7 +83,7 @@ let connected = false;
  * IndexDB
  *********************************************************************************/
 db.version(dbVersion).stores({
-    editable:'table,is_editable,unSync_add',
+    editable:'table,is_editable,unSync_add,last_sync',
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel, sync',
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
@@ -103,7 +103,7 @@ const waterElementDetailsHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element_details.clear();
-                db.editable.put({table:'water_element_details', is_editable:true});
+                db.editable.put({table:'water_element_details', is_editable:true, last_sync: new Date()});
                 console.log(result);
                 for (let entry of result) {
                     db.water_element_details.put({
@@ -129,7 +129,7 @@ const logsHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs.clear();
-                db.editable.put({table:'logs', is_editable:result.editable});
+                db.editable.put({table:'logs', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.logs.put({
                         id: entry.id,
@@ -150,7 +150,7 @@ const logsHistoryHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs_history.clear();
-                db.editable.put({table:'logs_history', is_editable:result.editable});
+                db.editable.put({table:'logs_history', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.logs_history.put({
                         id: entry.id,
@@ -172,7 +172,7 @@ const consumerHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.consumer.clear();
-                db.editable.put({table:'consumer', is_editable:result.editable});
+                db.editable.put({table:'consumer', is_editable:result.editable, last_sync: new Date()});
                 db.consumer_details.clear();
                 for (let entry of result.data) {
                     db.consumer.put({
@@ -205,7 +205,7 @@ const paymentHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.payment.clear();
-                db.editable.put({table:'payment', is_editable:result.editable});
+                db.editable.put({table:'payment', is_editable:result.editable, last_sync: new Date()});
                 for (let payment of result.data) {
                     db.payment.put({
                         id: payment.payments[0],
@@ -225,7 +225,7 @@ const zoneHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.zone.clear();
-                db.editable.put({table:'zone', is_editable:result.editable});
+                db.editable.put({table:'zone', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.zone.put({
                         id: entry[0],
@@ -247,7 +247,7 @@ const managerHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.manager.clear();
-                db.editable.put({table:'manager', is_editable:result.editable});
+                db.editable.put({table:'manager', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.manager.put({
                         id: entry[0],
@@ -270,7 +270,7 @@ const ticketHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.ticket.clear();
-                db.editable.put({table:'ticket', is_editable:result.editable});
+                db.editable.put({table:'ticket', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.ticket.put({
                         id: entry[0],
@@ -292,7 +292,7 @@ const waterElement_handler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element.clear();
-                db.editable.put({table:'water_element', is_editable:result.editable});
+                db.editable.put({table:'water_element', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.water_element.put({
                         id: entry[0],
@@ -313,6 +313,7 @@ const waterElement_handler = () => {
 
 const getDataFromDB = async (table) => {
     try {
+        isLoading = true
         switch (table) {
             case "all":
                 await Promise.all([
@@ -325,81 +326,49 @@ const getDataFromDB = async (table) => {
                     logsHandler(),
                     logsHistoryHandler(),
                     waterElementDetailsHandler()
-                ]);
-                break;
+                ])
+                break
             case "logs":
-                await logsHandler();
-                break;
+                await logsHandler()
+                break
             case "logsHistory":
-                await logsHistoryHandler();
-                break;
+                await logsHistoryHandler()
+                break
             case "consumer":
-                await consumerHandler();
-                break;
+                await consumerHandler()
+                break
             case "payment":
-                await paymentHandler();
-                break;
+                await paymentHandler()
+                break
             case "zone":
-                await zoneHandler();
-                break;
+                await zoneHandler()
+                break
             case "manager":
-                await managerHandler();
-                break;
+                await managerHandler()
+                break
             case "ticket":
-                await ticketHandler();
-                break;
+                await ticketHandler()
+                break
             case "waterElement":
-                await waterElement_handler();
-                break;
+                await waterElement_handler()
+                break
         }
-        isLoading = false;
-        setInfos('lastUpdate', new Date());
+        isLoading = false
+        setInfos('lastUpdate', new Date())
         channel.postMessage({
             title: 'updateStatus',
             status: 'loaded',
             date: lastUpdate
-        });
+        })
     } catch (err) {
-        isLoading = false;
+        isLoading = false
         channel.postMessage({
             title: 'updateStatus',
             status: 'failed',
             date: lastUpdate
-        });
-        console.log('[SW_POPULATEDB]', err);
+        })
+        console.log('[SW_POPULATEDB]', err)
     }
-}
-
-const populateDB = async () => {
-    isLoading = true;
-    await sendDataToDB();
-    return Promise.all([
-        consumerHandler(),
-        zoneHandler(),
-        managerHandler(),
-        ticketHandler(),
-        waterElement_handler(),
-        paymentHandler(),
-        logsHandler(),
-        logsHistoryHandler(),
-        waterElementDetailsHandler()
-    ]).then(() => {
-        isLoading = false;
-        setInfos('lastUpdate', new Date());
-        channel.postMessage({
-            title: 'updateStatus',
-            status: 'loaded',
-            date: lastUpdate
-        });
-    }).catch(err => {
-        isLoading = false;
-        channel.postMessage({
-            title: 'updateStatus',
-            status: 'failed',
-            date: lastUpdate
-        });
-        console.log('[SW_POPULATEDB]', err);
-    });
 }
 
 const emptyDB = () => {
@@ -446,9 +415,10 @@ const sendDataToDB = async () => {
     })
 }
 
-const sendOneDataToDB = async (elementID) => {
+const sendOneDataToDB = async(elementID) => {
     let table = db.table('update_queue');
     let result = await table.where('id').equals(elementID).first();
+    console.log("DATA TO SEND", result)
     fetch(result.url, result.init).then(response => {
         if (response.ok) {
             console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');

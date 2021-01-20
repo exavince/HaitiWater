@@ -19,6 +19,7 @@ async function drawConsumerTable(fullView = true) {
     let datatable = $('#datatable-consumer');
     datatable.DataTable(config);
     let table = datatable.DataTable();
+    setTitle()
 
     datatable.find('tbody').on('click', 'tr', function () {
         if ($(this).hasClass('selected')) {
@@ -71,12 +72,12 @@ async function getConsumerData() {
     return result;
 }
 
-async function redrawPayment(datatable) {
-    datatable.clear();
-    let data = await  getConsumerData();
-    console.log(data);
-    await datatable.rows.add(data);
-    datatable.draw();
+async function reloadConsumer() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'consumer'
+    })
+    console.log("update consumer")
 }
 
 function getConsumerDatatableConfiguration(dataURL, fullView){
@@ -198,4 +199,25 @@ async function getConsumerDatatableOfflineConfiguration(fullView){
             }
         },
     };
+}
+
+async function setTitle() {
+    let title = $('#consumer-title')
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('editable');
+    table.where('table').equals('consumer').first().then(result => {
+        console.log(result)
+        if(result.last_sync !== null && result.last_sync !== undefined) {
+            title.html("Consommateurs " + ("(" + result.last_sync.toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }) + ")").fontsize(2)
+            )
+        }
+    })
 }

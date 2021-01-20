@@ -29,6 +29,7 @@ async function drawWaterElementTable(withManagers, withActions, gis){
 
     $('#datatable-water_element').DataTable(configuration);
     let table = $('#datatable-water_element').DataTable();
+    setTitleWaterElement()
 
     $('#datatable-water_element tbody').on( 'click', 'tr', function () {
         if ( $(this).hasClass('selected') ) {
@@ -444,4 +445,25 @@ function formatButton(monthYear){
     let yearInt = params[1];
     let monthInt = parseInt(params[0]) - 1;
     return monthNames[monthInt]+ " " + yearInt;
+}
+
+async function setTitleWaterElement() {
+    let title = $('#waterElement-title')
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('editable');
+    table.where('table').equals('water_element').first().then(result => {
+        console.log(result)
+        if(result.last_sync !== null && result.last_sync !== undefined) {
+            title.html("Éléments du réseau " + ("(" + result.last_sync.toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }) + ")").fontsize(2)
+            )
+        }
+    })
 }

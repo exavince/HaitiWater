@@ -11,6 +11,7 @@ async function drawZoneTable() {
     }
 
     let table = $('#datatable-zone').DataTable(config);
+    setTitleZone()
 
     $('#datatable-zone tbody').on( 'click', 'tr td:not(:last-child)', function () {
         let tr = $(this).closest('tr');
@@ -220,4 +221,25 @@ async function getZoneTableOfflineConfiguration(){
             //}
         }
     };
+}
+
+async function setTitleZone() {
+    let title = $('#zone-title')
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('editable');
+    table.where('table').equals('zone').first().then(result => {
+        console.log(result)
+        if(result.last_sync !== null && result.last_sync !== undefined) {
+            title.html(("(" + result.last_sync.toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }) + ")")
+            )
+        }
+    })
 }

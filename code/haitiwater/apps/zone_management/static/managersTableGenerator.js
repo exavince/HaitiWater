@@ -12,6 +12,7 @@ async function drawManagerTable() {
     }
 
     $('#datatable-manager').DataTable(config);
+    setTitleManager()
 
     let table = $('#datatable-manager').DataTable();
     $('#datatable-manager tbody').on( 'click', 'tr td:not(:last-child)', function () {
@@ -189,4 +190,25 @@ async function getManagerDatatableOfflineConfiguration(){
             // Removes the last column (both header and body) if we cannot edit the table
         }
     };
+}
+
+async function setTitleManager() {
+    let title = $('#manager-title')
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('editable');
+    table.where('table').equals('manager').first().then(result => {
+        console.log(result)
+        if(result.last_sync !== null && result.last_sync !== undefined) {
+            title.html("Gestionnaires et Techniciens " + ("(" + result.last_sync.toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }) + ")").fontsize(2)
+            )
+        }
+    })
 }
