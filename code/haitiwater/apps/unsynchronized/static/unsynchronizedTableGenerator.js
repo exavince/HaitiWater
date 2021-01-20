@@ -240,3 +240,9 @@ function getLogsActionButtonsHTML(){
             '&nbsp&nbsp&nbsp&nbsp' + // Non-breaking spaces to avoid clicking on the wrong icon
             '<a style="cursor:pointer;" class="revert-modification far fa-times-circle"></a></div>'
 }
+
+async function sendAllData() {
+    new BroadcastChannel("sw-message").postMessage({
+        title:"pushData"
+    })
+}
