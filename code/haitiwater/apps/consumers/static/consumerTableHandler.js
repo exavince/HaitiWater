@@ -208,7 +208,7 @@ async function setTitle() {
     let table = db.table('editable');
     table.where('table').equals('consumer').first().then(result => {
         console.log(result)
-        if(result.last_sync !== null && result.last_sync !== undefined) {
+        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Consommateurs " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',
                 month: 'numeric',

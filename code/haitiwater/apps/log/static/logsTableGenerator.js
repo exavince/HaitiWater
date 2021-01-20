@@ -242,7 +242,7 @@ async function setTitleLogs() {
     let table = db.table('editable');
     table.where('table').equals('logs').first().then(result => {
         console.log(result)
-        if(result.last_sync !== null && result.last_sync !== undefined) {
+        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Actions effectuées " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',
                 month: 'numeric',
@@ -263,7 +263,7 @@ async function setTitleLogsHistory() {
     let table = db.table('editable');
     table.where('table').equals('logs_history').first().then(result => {
         console.log(result)
-        if(result.last_sync !== null && result.last_sync !== undefined) {
+        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Actions effectuées " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',
                 month: 'numeric',
