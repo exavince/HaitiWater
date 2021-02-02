@@ -388,8 +388,11 @@ const emptyDB = () => {
     });
 }
 
-const sendDataToDB = async () => {
-    let tab = await db.update_queue.toArray();
+const sendDataToDB = async(dataID) => {
+    let tab = []
+    if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray();
+    else tab = await db.update_queue.toArray();
+
     return Promise.all(tab.map(element =>
         fetch(element.url, element.init).then(response => {
             if (response.ok) {
@@ -415,32 +418,6 @@ const sendDataToDB = async () => {
     })
 }
 
-const sendOneDataToDB = async(elementID) => {
-    let table = db.table('update_queue');
-    let result = await table.where('id').equals(elementID).first();
-    console.log("DATA TO SEND", result)
-    fetch(result.url, result.init).then(response => {
-        if (response.ok) {
-            console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
-            db.update_queue.delete(element.id);
-        } else {
-            db.update_queue.update(element.id, {unsync: response.status}).then(update => {
-                console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
-            });
-        }
-    }).then(async () => {
-        channel.postMessage({
-            title: 'toPush',
-            toPush: await db.update_queue.count()
-        });
-    }).catch(async () => {
-        console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
-        channel.postMessage({
-            title: 'toPush',
-            toPush: await db.update_queue.count()
-        });
-    })
-}
 
 /*********************************************************************************
  * Utils
@@ -714,7 +691,8 @@ channel.addEventListener('message', async event => {
             });
             break
         case 'pushData':
-            sendDataToDB();
+            if(event.data.elemID === null) sendDataToDB(null)
+            else sendDataToDB(event.data.elemID)
             break
         case 'getUsername':
             console.log(event.data.username)
@@ -723,7 +701,7 @@ channel.addEventListener('message', async event => {
             else if (username === null) setInfos('username', event.data.username);
             break
         case 'acceptModification':
-            await sendOneDataToDB(event.data.id)
+            await sendDataToDB(event.data.id)
             break
         case 'revertModification':
             break

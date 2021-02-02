@@ -13,6 +13,7 @@ $( document ).ready(function() {
     else setupOfflineMode(true);
 
     if (localStorage.getItem("lastUpdate") !== null) $('#last-update').html(localStorage.getItem("lastUpdate"));
+    else $('#last-update').html("Pas encore de données");
 
     if (localStorage.getItem("dataToSend") === null) localStorage.setItem("dataToSend", "0");
     setupNotifications(parseInt(localStorage.getItem("dataToSend")));
@@ -184,7 +185,7 @@ function appendNotification(notificationList, notification){
  * @return {String}       The notification with its theme format
  */
 function formatNotification(title, msg){
-    return '<a href="#" onclick="syncData()" id="notif-sync" class="clearfix">' +
+    return '<a href="/modifications/" id="notif-sync" class="clearfix">' +
         '<div class="image">' + // available for a small picture or icon
         '</div>' +
         '<span class="title">'+ title +'</span>' +

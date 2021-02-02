@@ -3,135 +3,10 @@ $(document).ready(function() {
     drawTosyncTable();
 });
 
-function formatTable(table) {
-    switch (table) {
-        case 'Logs':
-            return 'Historique'
-        case 'zone':
-            return 'Zone'
-        case 'consumer':
-            return 'Consommateur'
-        case 'manager':
-            return 'Gestionnaire'
-        case 'payment':
-            return 'Payement'
-        case 'ticket':
-            return 'Ticket'
-        case 'water_element':
-            return 'Element réseau'
-        case 'MonthlyReport':
-            return 'Rapport mensuel'
-        case 'IssueTable':
-            return 'Ticket'
-        default:
-            return table
-        }
-}
-
 
 //Formatting function for row details
 function format (d) {
-    let result = ""
-    let init = d.init
-    let body = init.body
-    let infos = body.split('&')
-
-    if (d.table === 'Rapport mensuel') {
-        let json = JSON.parse(infos)
-        result += "ID élement réseau : " + json.selectedOutlets + "<br>"
-        result += "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>")
-        result += "Jours de fonctionnement : " + json.inputDays + "<br>"
-        result += "Heures de fonctionnement : " + json.inputHours + "<br>"
-        result += "Mois : " + json.month + "<br>"
-        let details = json.details[0]
-        result += "M³ : " + details.cubic + "<br>"
-        result += "Prix M³ : " + details.perCubic + "€" + "<br>"
-        result += "Total : " + details.bill + "€" + "<br>"
-        return result
-    }
-    if (d.table === 'Historique') return ''
-
-    infos.forEach(data => {
-        let tab = data.split("=")
-        switch (tab[0]) {
-            case 'table':
-                result = result + "Table : " + formatTable(tab[1]) + "<br>"
-                break
-            case 'id_consumer':
-                result = result + "ID du consommateur : " + tab[1] + "<br>"
-                break
-            case 'id':
-                result = result + "ID : " + tab[1] + "<br>"
-                break
-            case 'amount':
-                result = result + "Montant : " + tab[1] + "€" + "<br>"
-                break
-            case 'lastname':
-                result = result + "Nom : " + tab[1] + "<br>"
-                break
-            case 'firstname':
-                result = result + "Prénom : " + tab[1] + "<br>"
-                break
-            case 'gender':
-                result = result + "Genre : " + tab[1] + "<br>"
-                break
-            case 'address':
-                result = result + "Addresse : " + tab[1] + "<br>"
-                break
-            case 'phone':
-                result = result + "Télephone : " + tab[1] + "<br>"
-                break
-            case 'subconsumer':
-                result = result + "Autres consommateurs : " + tab[1] + "<br>"
-                break
-            case 'mainOutlet':
-                result = result + "ID source principale : " + tab[1] + "<br>"
-                break
-            case 'name':
-                result = result + "Nom : " + tab[1] + "<br>"
-                break
-            case 'fountain-price':
-                result = result + "Prix de la fontaine : " + tab[1] + "<br>"
-                break
-            case 'fountain-duration':
-                result = result + "Durée de la fontaine : " + tab[1] + "<br>"
-                break
-            case 'kiosk-price':
-                result = result + "Prix du kiosque : " + tab[1] + "<br>"
-                break
-            case 'kiosk-duration':
-                result = result + "Durée du kiosque : " + tab[1] + "<br>"
-                break
-            case 'indiv-price':
-                result = result + "Prix individuel : " + tab[1] + "<br>"
-                break
-            case 'type':
-                result = result + "Type de problème : " + tab[1] + "<br>"
-                break
-            case 'urgency':
-                result = result + "Urgence : " + tab[1] + "<br>"
-                break
-            case 'id_outlet':
-                result = result + "ID de la source : " + tab[1] + "<br>"
-                break
-            case 'comment':
-                result = result + "Commentaire : " + tab[1] + "<br>"
-                break
-            case 'state':
-                result = result + "Status : " + tab[1] + "<br>"
-                break
-            case 'picture':
-                break
-            case 'localization':
-                result = result + "Localisation : " + tab[1] + "<br>"
-                break
-            default:
-                result = result + tab[0] + " : " + tab[1] + "<br>"
-                break
-        }
-    })
-
-    return result
+    return d.details
 }
 
 async function getTosyncData() {
@@ -139,9 +14,8 @@ async function getTosyncData() {
     let db = await dexie.open();
     let table = db.table('update_queue');
     let result = [];
-    await table.each(log => {
-        log.table = formatTable(log.table)
-        result.push(log);
+    await table.each(data => {
+        result.push(formatRender(data));
     });
 
     return result;
@@ -245,4 +119,175 @@ async function sendAllData() {
     new BroadcastChannel("sw-message").postMessage({
         title:"pushData"
     })
+}
+
+function formatRender(data) {
+    let init = data.init
+    let body = init.body
+    let json = {}
+
+    switch (data.table) {
+        case 'Logs':
+            data.table = 'Historique'
+            data.details = ""
+            break
+        case 'zone':
+            data.table = 'Zone'
+            json = urlToJSON(body)
+            data.details = 'ID de la zone : ' + json.id + '<br>' +
+                'Nom de la zone : ' + json.name + '<br>' +
+                'Fontaines : ' + json.fountain_price + ' gourdes tous les ' + json.fountain_duration + ' mois' + '<br>' +
+                'Kiosques : ' + json.kiosk_price + ' gourdes tous les ' + json.kiosk_duration + ' mois' + '<br>' +
+                'Prises individuelles : ' + json.indiv_price + ' gourdes tous les mois';
+            break
+        case 'consumer':
+            data.table = 'Consommateur'
+            json = urlToJSON(body)
+            data.details = 'ID du consommateur : ' + json.id + '<br>' +
+                'Nom : ' + json.lastname + '<br>' +
+                'Prénom : ' + json.firstname + '<br>' +
+                'Genre : ' + (json.gender === 'F' ? 'Femme' : 'Homme') + '<br>' +
+                'Adresse : ' + json.address + '<br>' +
+                'Telephone : ' + json.phone + '<br>' +
+                'Consommateurs additionnels : ' + json.subconsumer + '<br>' +
+                "ID sortie d'eau principale : " + json.mainOutlet
+            break
+        case 'manager':
+            data.table = 'Gestionnaire'
+            json = urlToJSON(body)
+            data.details = 'Pseudonyme : ' + json.id + '<br>' +
+                'Nom : ' + json.lastname + '<br>' +
+                'Prenom : ' + json.firstname + '<br>' +
+                'Courriel : ' + json.email + '<br>' +
+                'Telephone : ' + json.phone + '<br>' +
+                'Fonction : ' + (json.type === 'fountain-manager' ? 'Gestionnaire de fontaine' : 'Gestionnaire de kiosque') + '<br>' +
+                'ID de la zone : ' + (json.zone === 'none' ? 'Pas de zone' : json.zone) + '<br>' +
+                'ID des sources : ' + (json.outlets === 'none' ? 'Pas de sources' : json.outlets)
+            break
+        case 'payment':
+            data.table = 'Paiement'
+            json = urlToJSON(body)
+            data.details = 'ID du paiement : ' + json.id + '<br>' +
+                'ID du consommateur : ' + json.id_consumer + '<br>' +
+                'Montant : ' + json.amout
+            break
+        case 'water_element':
+            data.table = 'Element du réseau'
+            json = urlToJSON(body)
+            data.details = "ID de l'élement réseau : " + json.id + '<br>' +
+                'Type : ' + (json.type === 'fountain' ? 'Fontaine' : 'Kiosque') + '<br>' +
+                'Description : ' + json.localization + '<br>' +
+                'Status : ' + (json.state === 'ok' ? 'En service' : (json.state === 'repair' ? 'Nécessite réparation' : 'Hors service'))
+            break
+        case 'MonthlyReport':
+            data.table = 'Rapport mensuel'
+            json = JSON.parse(body)
+            let details = json.details[0]
+            data.details = "ID élement réseau : " + json.selectedOutlets + "<br>" +
+                "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>") +
+                "Jours de fonctionnement : " + json.inputDays + "<br>" +
+                "Heures de fonctionnement : " + json.inputHours + "<br>" +
+                "Mois : " + json.month + "<br>" +
+                "M³ : " + details.cubic + "<br>" +
+                "Prix M³ : " + details.perCubic + "€" + "<br>" +
+                "Total : " + details.bill + "€"
+            break
+        case 'IssueTable':
+            data.table = 'Ticket'
+            json = urlToJSON(body)
+            data.details = 'ID du ticket : ' + json.id + '<br>' +
+                'Type de probleme : ' + (json.type === 'mechanical' ? 'Mécanique' : (json.type === 'quality' ? 'Qualité' : 'Autre')) + '<br>' +
+                "Niveau d'urgence : " + (json.urgency === 'high' ? 'Haute' : (json.urgency === 'medium' ? 'Moyen' : 'Bas')) + '<br>' +
+                'ID élement concerné : ' + json.id_outlet + '<br>' +
+                'Description : ' + json.comment + '<br>' +
+                'Status : ' + (json.state === 'unresolved' ? 'Non résolu' : 'Résolu')
+            break
+    }
+    return data
+}
+
+function  urlToJSON(url) {
+    let json = {}
+    url.split('&').forEach(info => {
+        let temp = info.split('=')
+        switch (temp[0]) {
+            case 'id':
+                json.id = temp[1]
+                break
+            case 'name':
+                json.name = temp[1]
+                break
+            case 'fountain-price':
+                json.fountain_price = temp[1]
+                break
+            case 'fountain-duration':
+                json.fountain_duration = temp[1]
+                break
+            case 'kiosk-price':
+                json.kiosk_price = temp[1]
+                break
+            case 'kiosk-duration':
+                json.kiosk_duration = temp[1]
+                break
+            case 'indiv-price':
+                json.indiv_price = temp[1]
+                break
+            case 'lastname':
+                json.lastname = temp[1]
+                break
+            case 'firstname':
+                json.firstname = temp[1]
+                break
+            case 'gender':
+                json.gender = temp[1]
+                break
+            case 'address':
+                json.address = temp[1]
+                break
+            case 'phone':
+                json.phone = temp[1]
+                break
+            case 'subconsumer':
+                json.subconsumer = temp[1]
+                break
+            case 'mainOutlet':
+                json.mainOutlet = temp[1]
+                break
+            case 'email':
+                json.email = temp[1]
+                break
+            case 'type':
+                json.type = temp[1]
+                break
+            case 'zone':
+                json.zone = temp[1]
+                break
+            case 'outlets':
+                json.outlets = temp[1]
+                break
+            case 'id_consumer':
+                json.id_consumer = temp[1]
+                break
+            case 'amount':
+                json.amout = temp[1]
+                break
+            case 'localization':
+                json.localization = temp[1]
+                break
+            case 'state':
+                json.state = temp[1]
+                break
+            case 'urgency':
+                json.urgency = temp[1]
+                break
+            case 'id_outlet':
+                json.id_outlet = temp[1]
+                break
+            case 'comment':
+                json.comment = temp[1]
+                break
+        }
+    })
+
+    return json
 }

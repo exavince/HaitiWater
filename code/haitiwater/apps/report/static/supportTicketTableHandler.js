@@ -190,3 +190,11 @@ async function setTitleTicket() {
         }
     })
 }
+
+async function reloadTickets() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'ticket'
+    })
+    console.log("update consumer")
+}

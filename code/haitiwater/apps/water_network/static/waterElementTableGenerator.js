@@ -467,3 +467,11 @@ async function setTitleWaterElement() {
         }
     })
 }
+
+async function reloadWaterElement() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'waterElement'
+    })
+    console.log("update consumer")
+}

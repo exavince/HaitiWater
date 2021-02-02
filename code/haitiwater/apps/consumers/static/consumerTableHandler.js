@@ -221,3 +221,107 @@ async function setTitle() {
         }
     })
 }
+
+function format (data) {
+    let result = ""
+    let init = d.init
+    let body = init.body
+    let infos = body.split('&')
+
+    if (d.table === 'Rapport mensuel') {
+        let json = JSON.parse(infos)
+        result += "ID élement réseau : " + json.selectedOutlets + "<br>"
+        result += "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>")
+        result += "Jours de fonctionnement : " + json.inputDays + "<br>"
+        result += "Heures de fonctionnement : " + json.inputHours + "<br>"
+        result += "Mois : " + json.month + "<br>"
+        let details = json.details[0]
+        result += "M³ : " + details.cubic + "<br>"
+        result += "Prix M³ : " + details.perCubic + "€" + "<br>"
+        result += "Total : " + details.bill + "€" + "<br>"
+        return result
+    }
+    if (d.table === 'Historique') return ''
+
+    infos.forEach(data => {
+        let tab = data.split("=")
+        switch (tab[0]) {
+            case 'table':
+                result = result + "Table : " + formatTable(tab[1]) + "<br>"
+                break
+            case 'id_consumer':
+                result = result + "ID du consommateur : " + tab[1] + "<br>"
+                break
+            case 'id':
+                result = result + "ID : " + tab[1] + "<br>"
+                break
+            case 'amount':
+                result = result + "Montant : " + tab[1] + "€" + "<br>"
+                break
+            case 'lastname':
+                result = result + "Nom : " + tab[1] + "<br>"
+                break
+            case 'firstname':
+                result = result + "Prénom : " + tab[1] + "<br>"
+                break
+            case 'gender':
+                result = result + "Genre : " + tab[1] + "<br>"
+                break
+            case 'address':
+                result = result + "Addresse : " + tab[1] + "<br>"
+                break
+            case 'phone':
+                result = result + "Télephone : " + tab[1] + "<br>"
+                break
+            case 'subconsumer':
+                result = result + "Autres consommateurs : " + tab[1] + "<br>"
+                break
+            case 'mainOutlet':
+                result = result + "ID source principale : " + tab[1] + "<br>"
+                break
+            case 'name':
+                result = result + "Nom : " + tab[1] + "<br>"
+                break
+            case 'fountain-price':
+                result = result + "Prix de la fontaine : " + tab[1] + "<br>"
+                break
+            case 'fountain-duration':
+                result = result + "Durée de la fontaine : " + tab[1] + "<br>"
+                break
+            case 'kiosk-price':
+                result = result + "Prix du kiosque : " + tab[1] + "<br>"
+                break
+            case 'kiosk-duration':
+                result = result + "Durée du kiosque : " + tab[1] + "<br>"
+                break
+            case 'indiv-price':
+                result = result + "Prix individuel : " + tab[1] + "<br>"
+                break
+            case 'type':
+                result = result + "Type de problème : " + tab[1] + "<br>"
+                break
+            case 'urgency':
+                result = result + "Urgence : " + tab[1] + "<br>"
+                break
+            case 'id_outlet':
+                result = result + "ID de la source : " + tab[1] + "<br>"
+                break
+            case 'comment':
+                result = result + "Commentaire : " + tab[1] + "<br>"
+                break
+            case 'state':
+                result = result + "Status : " + tab[1] + "<br>"
+                break
+            case 'picture':
+                break
+            case 'localization':
+                result = result + "Localisation : " + tab[1] + "<br>"
+                break
+            default:
+                result = result + tab[0] + " : " + tab[1] + "<br>"
+                break
+        }
+    })
+
+    return result
+}

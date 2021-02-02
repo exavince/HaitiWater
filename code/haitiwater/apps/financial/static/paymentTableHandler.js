@@ -164,3 +164,11 @@ async function setTitlePayment() {
         }
     })
 }
+
+async function reloadPayment() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'payment'
+    })
+    console.log("update consumer")
+}

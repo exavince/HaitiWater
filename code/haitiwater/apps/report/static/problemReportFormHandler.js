@@ -211,8 +211,8 @@ async function sendTicket(addOrEdit) {
             }),
             table: 'IssueTable',
             init:myInit,
-            type:addOrEdit,
-            elemId: (addOrEdit === 'add' ? "Ajouter" : "Editer"),
+            type:(addOrEdit === 'add' ? "Ajouter" : "Editer"),
+            elemId: (addOrEdit === 'add' ? "?" : "0"),
             status:"En attente",
             details:myInit
         });
@@ -265,5 +265,5 @@ async function sendTicket(addOrEdit) {
             })
     });
     await drawDataTable('ticket');
-
 }
+

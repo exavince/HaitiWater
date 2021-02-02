@@ -276,3 +276,11 @@ async function setTitleLogsHistory() {
         }
     })
 }
+
+async function reloadLogs() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'logs'
+    })
+    console.log("update consumer")
+}

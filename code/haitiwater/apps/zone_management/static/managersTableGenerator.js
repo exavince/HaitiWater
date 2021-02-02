@@ -212,3 +212,11 @@ async function setTitleManager() {
         }
     })
 }
+
+async function reloadManager() {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:'manager'
+    })
+    console.log("update consumer")
+}
