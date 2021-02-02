@@ -27,6 +27,19 @@
 
         <!-- Uncompessed (minified) Vendor JS -->
         <script src="{% static "vendor/intro/intro.min.js" %}"></script>
+        <script type="application/javascript">
+            {% if user.is_authenticated %}
+                const outlets = [];
+                {% for outlet in water_outlets_report %}
+                    outlets.push([{{ outlet.0 }}, "{{ outlet.1 }}"]);
+                {% endfor %}
+                localStorage.setItem("username", "{{ user.get_username }}");
+                localStorage.setItem("outlets", JSON.stringify(outlets));
+            {% else %}
+                localStorage.removeItem("username");
+                localStorage.removeItem("outlets");
+            {% endif %}
+        </script>
 
         {% compress css %}
             {# Local Vendors #}
