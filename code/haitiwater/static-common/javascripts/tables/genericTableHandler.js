@@ -83,6 +83,7 @@ async function drawDataTable(tableName, consumerID){
  * Request the removal of element # id in table
  * @param table a String containing the table name
  * @param id an integer corresponding to the primary key of the element to remove
+ * @param otherParameters
  */
 async function removeElement(table, id, otherParameters) {
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
@@ -347,7 +348,7 @@ async function postEditRow(table, callback){
             table: table,
             init:myInit,
             type:'Editer',
-            elemId: 2,
+            elemId: rowID,
             status:'En attente',
             details:myInit
         });

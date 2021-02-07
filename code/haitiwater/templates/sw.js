@@ -73,7 +73,7 @@ let synced = false;
 let username = null;
 let needDisconnect = false;
 let dataLoaded = false;
-let lastUpdate = undefined;
+let lastUpdate = null;
 let isLoading = false;
 let connected = false;
 
@@ -418,6 +418,16 @@ const sendDataToDB = async(dataID) => {
     })
 }
 
+const cancelModification = async (id) => {
+    let data = db.update_queue.where('id').equals(id).first()
+    let table = data.table
+    let elemId = data.elemId
+    let synced = db.table.where('id').equals(elemId).first().sync
+    console.log(synced)
+    db.table(table).update(elemId, {sync:synced})
+    db.update_queue.where('id').equals(id).delete()
+}
+
 
 /*********************************************************************************
  * Utils
@@ -533,7 +543,7 @@ const resetState = async () => {
     setInfos('username', null);
     setInfos('needDisconnect', false);
     setInfos('dataLoaded', false);
-    setInfos('lastUpdate', undefined);
+    setInfos('lastUpdate', null);
     setInfos('isLoading', false);
     connected = false;
     console.log("State reset")
@@ -590,9 +600,9 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', () => {
     db.sessions.add({
         id: 1,
-        username: undefined,
+        username: null,
         needDisconnect: false,
-        lastUpdate: undefined,
+        lastUpdate: null,
         dataLoaded: false
     }).then(async () => {
         channel.postMessage({
@@ -704,6 +714,7 @@ channel.addEventListener('message', async event => {
             await sendDataToDB(event.data.id)
             break
         case 'revertModification':
+            await cancelModification(event.data.id)
             break
     }
 });
