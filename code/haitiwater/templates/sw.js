@@ -98,13 +98,23 @@ db.version(dbVersion).stores({
     sessions: 'id,username,needDisconnect,lastUpdate,dataLoaded, sync'
 });
 
+const getOldestDate = async () => {
+    let tab = await db.editable.toArray();
+    let date = new Date()
+    for (let entry of tab) {
+        if (date > entry.last_sync) {
+            date = entry.last_sync
+        }
+    }
+    return date
+}
+
 const waterElementDetailsHandler = () => {
     return fetch('http://127.0.0.1:8000/api/details/?table=water_element_all')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element_details.clear();
                 db.editable.put({table:'water_element_details', is_editable:true, last_sync: new Date()});
-                console.log(result);
                 for (let entry of result) {
                     db.water_element_details.put({
                         id: entry.id,
@@ -313,6 +323,7 @@ const waterElement_handler = () => {
 
 const getDataFromDB = async (table) => {
     try {
+        sendDataToDB()
         isLoading = true
         switch (table) {
             case "all":
@@ -358,14 +369,14 @@ const getDataFromDB = async (table) => {
         channel.postMessage({
             title: 'updateStatus',
             status: 'loaded',
-            date: lastUpdate
+            date: await getOldestDate()
         })
     } catch (err) {
         isLoading = false
         channel.postMessage({
             title: 'updateStatus',
             status: 'failed',
-            date: lastUpdate
+            date: await getOldestDate()
         })
         console.log('[SW_POPULATEDB]', err)
     }
@@ -503,7 +514,7 @@ const getInfos = () => {
         channel.postMessage({
             title: 'getInfos',
             toPush: await db.update_queue.count(),
-            date: lastUpdate
+            date: await getOldestDate()
         });
         return data;
     });
@@ -608,7 +619,7 @@ self.addEventListener('activate', () => {
         channel.postMessage({
             title: 'updateInfos',
             toPush: await db.update_queue.count(),
-            date: lastUpdate
+            date: await getOldestDate()
         });
         getOfflineData();
     }).catch(() => {
@@ -617,7 +628,7 @@ self.addEventListener('activate', () => {
             else channel.postMessage({
                 title: 'updateInfos',
                 toPush: await db.update_queue.count(),
-                date: lastUpdate
+                date: await getOldestDate()
             });
             getCache();
         });
@@ -688,7 +699,7 @@ channel.addEventListener('message', async event => {
             }
             channel.postMessage({
                 title: 'updateInfos',
-                date: lastUpdate,
+                date: await getOldestDate(),
                 toPush: await db.update_queue.count()
             });
             break
@@ -696,7 +707,7 @@ channel.addEventListener('message', async event => {
             if (!isLoading) getDataFromDB(event.data.db);
             channel.postMessage({
                 title: 'updateStatus',
-                date: lastUpdate,
+                date: await getOldestDate(),
                 status: 'loading'
             });
             break
@@ -705,8 +716,6 @@ channel.addEventListener('message', async event => {
             else sendDataToDB(event.data.elemID)
             break
         case 'getUsername':
-            console.log(event.data.username)
-            console.log(username)
             if(username !== null && username !== event.data.username && username !== undefined) resetState();
             else if (username === null) setInfos('username', event.data.username);
             break
