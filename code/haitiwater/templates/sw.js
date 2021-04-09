@@ -72,7 +72,8 @@ let isConnecting = false;
 let synced = false;
 let username = null;
 let needDisconnect = false;
-let dataLoaded = false;
+let dbLoaded = false
+let cacheLoaded = false
 let lastUpdate = null;
 let isLoading = false;
 let connected = false;
@@ -95,10 +96,11 @@ db.version(dbVersion).stores({
     logs: 'id,time,type,user,summary,details, sync',
     logs_history: 'id,time,type,user,summary,details,action, sync',
     update_queue: '++id, url, init, date, type, table, elemId, status, details',
-    sessions: 'id,username,needDisconnect,lastUpdate,dataLoaded, sync'
+    sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded, sync'
 });
 
 const getOldestDate = async () => {
+    if (!dbLoaded) return null
     let tab = await db.editable.toArray();
     let date = new Date()
     for (let entry of tab) {
@@ -323,7 +325,7 @@ const waterElement_handler = () => {
 
 const getDataFromDB = async (table) => {
     try {
-        sendDataToDB()
+        await sendDataToDB()
         isLoading = true
         switch (table) {
             case "all":
@@ -337,7 +339,9 @@ const getDataFromDB = async (table) => {
                     logsHandler(),
                     logsHistoryHandler(),
                     waterElementDetailsHandler()
-                ])
+                ]).then(() => {
+                    dbLoaded = true
+                })
                 break
             case "logs":
                 await logsHandler()
@@ -365,7 +369,6 @@ const getDataFromDB = async (table) => {
                 break
         }
         isLoading = false
-        setInfos('lastUpdate', new Date())
         channel.postMessage({
             title: 'updateStatus',
             status: 'loaded',
@@ -474,6 +477,7 @@ const isConnected = () => {
                 return true;
             }
             isConnecting = false;
+            return false
         })
         .catch(() => {
             isConnecting = false;
@@ -487,7 +491,6 @@ const getOfflineData = () => {
         getCache(),
         getDataFromDB("all"),
     ]).then(() => {
-        setInfos('dataLoaded', true);
         isLoading = false;
     }).catch(err => {
         isLoading = false;
@@ -501,7 +504,9 @@ const getCache = () => {
         addCache(userCache, revalidatePages),
         addCache(userCache, cachePages),
         addCache(cacheVersion, staticFiles),
-    ]);
+    ]).then(() => {
+        setInfos('cacheLoaded', true)
+    })
 }
 
 const getInfos = () => {
@@ -510,7 +515,8 @@ const getInfos = () => {
         username = data.username;
         needDisconnect = data.needDisconnect;
         lastUpdate = data.lastUpdate;
-        dataLoaded = data.dataLoaded;
+        dbLoaded = data.dbLoaded
+        cacheLoaded = data.cacheLoaded
         channel.postMessage({
             title: 'getInfos',
             toPush: await db.update_queue.count(),
@@ -531,16 +537,19 @@ const setInfos = (info, value) => {
         case 'lastUpdate':
             lastUpdate = value;
             break
-        case 'dataLoaded':
-            dataLoaded = value;
+        case 'dbLoaded':
+            dbLoaded = value
             break
+        case 'cacheLoaded':
+            cacheLoaded = value
     }
     db.sessions.put({
         id: 1,
         username: username,
         needDisconnect: needDisconnect,
         lastUpdate: lastUpdate,
-        dataLoaded: dataLoaded
+        cacheLoaded: cacheLoaded,
+        dbLoaded: dbLoaded
     });
 }
 
@@ -553,7 +562,8 @@ const resetState = async () => {
     synced = false;
     setInfos('username', null);
     setInfos('needDisconnect', false);
-    setInfos('dataLoaded', false);
+    setInfos('dbLoaded', false);
+    setInfos('cacheLoaded', false);
     setInfos('lastUpdate', null);
     setInfos('isLoading', false);
     connected = false;
@@ -614,7 +624,8 @@ self.addEventListener('activate', () => {
         username: null,
         needDisconnect: false,
         lastUpdate: null,
-        dataLoaded: false
+        dbLoaded: false,
+        cacheLoaded: false
     }).then(async () => {
         channel.postMessage({
             title: 'updateInfos',
@@ -624,13 +635,13 @@ self.addEventListener('activate', () => {
         getOfflineData();
     }).catch(() => {
         getInfos().then(async () => {
-            if (!dataLoaded) getOfflineData();
+            if (!dbLoaded) getOfflineData();
             else channel.postMessage({
                 title: 'updateInfos',
                 toPush: await db.update_queue.count(),
                 date: await getOldestDate()
             });
-            getCache();
+            if (!cacheLoaded) getCache();
         });
         console.log('[SW_SESSIONS]', 'Old configuration has been charged');
     });
@@ -642,7 +653,11 @@ self.addEventListener('fetch', async event => {
 
     if (!synced) await getInfos();
     if (!connected && !needDisconnect && !isConnecting) await isConnected();
-    if (!dataLoaded && connected && !isLoading) event.waitUntil(getOfflineData());
+    if (connected && !isLoading) {
+        if (!dbLoaded && !cacheLoaded) event.waitUntil(getOfflineData());
+        else if (!dbLoaded) event.waitUntil(getDataFromDB('all'))
+        else if (!cacheLoaded) event.waitUntil(getCache())
+    }
 
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request));
@@ -712,8 +727,8 @@ channel.addEventListener('message', async event => {
             });
             break
         case 'pushData':
-            if(event.data.elemID === null) sendDataToDB(null)
-            else sendDataToDB(event.data.elemID)
+            if(event.data.id === null) sendDataToDB(null)
+            else sendDataToDB(event.data.id)
             break
         case 'getUsername':
             if(username !== null && username !== event.data.username && username !== undefined) resetState();

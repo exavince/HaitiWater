@@ -12,7 +12,7 @@ $( document ).ready(function() {
     else if (localStorage.getItem("offlineMode") === "false") setupOfflineMode(false);
     else setupOfflineMode(true);
 
-    if (localStorage.getItem("lastUpdate") !== 'null' && localStorage.getItem("lastUpdate") !== 'undefined') $('#last-update').html(localStorage.getItem("lastUpdate"));
+    if (localStorage.getItem("lastUpdate") !== null && localStorage.getItem("lastUpdate") !== 'null' && localStorage.getItem("lastUpdate") !== 'undefined') $('#last-update').html(localStorage.getItem("lastUpdate"));
     else $('#last-update').html("Pas encore de données");
 
     if (localStorage.getItem("dataToSend") === null) localStorage.setItem("dataToSend", "0");

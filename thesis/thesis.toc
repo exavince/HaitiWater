@@ -1,0 +1,45 @@
+\babel@toc {french}{}
+\contentsline {chapter}{R\IeC {\'e}sum\IeC {\'e}}{3}{chapter*.2}%
+\contentsline {chapter}{Remerciements}{4}{chapter*.3}%
+\contentsline {chapter}{\numberline {1}Introduction}{5}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Contexte}{6}{chapter.2}%
+\contentsline {section}{\numberline {2.1}La gestion de l'eau en Ha\IeC {\"\i }ti}{6}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Introduction \IeC {\`a} l'application cr\IeC {\'e}er pr\IeC {\'e}cedemment}{7}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Accueil}{7}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}R\IeC {\'e}seau}{7}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Carte}{8}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}Gestion de zone}{8}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Historique}{9}{subsection.2.2.5}%
+\contentsline {subsection}{\numberline {2.2.6}Rapports}{9}{subsection.2.2.6}%
+\contentsline {subsection}{\numberline {2.2.7}Consommateurs}{9}{subsection.2.2.7}%
+\contentsline {subsection}{\numberline {2.2.8}Finances}{10}{subsection.2.2.8}%
+\contentsline {section}{\numberline {2.3}Probl\IeC {\`e}mes r\IeC {\'e}seaux}{10}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Organisation}{11}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Approche de travail}{11}{section.3.1}%
+\contentsline {section}{\numberline {3.2}M\IeC {\'e}thodologie}{11}{section.3.2}%
+\contentsline {chapter}{\numberline {4}Analyse des besoins}{12}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Besoins fonctionnels}{12}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Besoins non-fonctionnels}{12}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Structure modulaire}{12}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Structure des donn\IeC {\'e}es hors-ligne}{12}{section.4.4}%
+\contentsline {chapter}{\numberline {5}Impl\IeC {\'e}mentation}{13}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Description de l'app de base}{14}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Choix technologiques}{14}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Strat\IeC {\'e}gie de synchronisation des pages}{14}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Strat\IeC {\'e}gie de synchronisation de la DB}{14}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Gestion des changements d'utilisateurs}{14}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Syt\IeC {\`e}me de notification}{14}{subsection.5.2.4}%
+\contentsline {section}{\numberline {5.3}La hi\IeC {\'e}rarchie dans l'application}{14}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Interface utilisateur}{14}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Client}{14}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Serveur}{15}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Validation}{16}{chapter.6}%
+\contentsline {section}{\numberline {6.1}V\IeC {\'e}rifications automatiques}{16}{section.6.1}%
+\contentsline {section}{\numberline {6.2}V\IeC {\'e}rifications utilisateurs r\IeC {\'e}els}{16}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Am\IeC {\'e}liorations futures}{17}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Suite du projet}{17}{section.7.1}%
+\contentsline {section}{\numberline {7.2}D\IeC {\'e}fis rencontr\IeC {\'e}s}{17}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Propositions}{17}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Conclusion}{18}{chapter.8}%
+\contentsline {section}{\numberline {8.1}M\IeC {\'e}triques}{18}{section.8.1}%
+\contentsline {chapter}{Bibliographie}{18}{section.8.1}%

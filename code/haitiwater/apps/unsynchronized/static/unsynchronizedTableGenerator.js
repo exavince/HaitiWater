@@ -117,7 +117,8 @@ function getLogsActionButtonsHTML(){
 
 async function sendAllData() {
     new BroadcastChannel("sw-message").postMessage({
-        title:"pushData"
+        title:"pushData",
+        id: null
     })
 }
 

@@ -241,7 +241,6 @@ async function setTitleLogs() {
     let db = await dexie.open();
     let table = db.table('editable');
     table.where('table').equals('logs').first().then(result => {
-        console.log(result)
         if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Actions effectuées " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',
@@ -262,7 +261,6 @@ async function setTitleLogsHistory() {
     let db = await dexie.open();
     let table = db.table('editable');
     table.where('table').equals('logs_history').first().then(result => {
-        console.log(result)
         if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Actions effectuées " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',

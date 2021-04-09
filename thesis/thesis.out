@@ -1,0 +1,44 @@
+\BOOKMARK [0][-]{chapter*.2}{R\351sum\351}{}% 1
+\BOOKMARK [0][-]{chapter*.3}{Remerciements}{}% 2
+\BOOKMARK [0][-]{chapter.1}{Introduction}{}% 3
+\BOOKMARK [0][-]{chapter.2}{Contexte}{}% 4
+\BOOKMARK [1][-]{section.2.1}{La gestion de l'eau en Ha\357ti}{chapter.2}% 5
+\BOOKMARK [1][-]{section.2.2}{Introduction \340 l'application cr\351er pr\351cedemment}{chapter.2}% 6
+\BOOKMARK [2][-]{subsection.2.2.1}{Accueil}{section.2.2}% 7
+\BOOKMARK [2][-]{subsection.2.2.2}{R\351seau}{section.2.2}% 8
+\BOOKMARK [2][-]{subsection.2.2.3}{Carte}{section.2.2}% 9
+\BOOKMARK [2][-]{subsection.2.2.4}{Gestion de zone}{section.2.2}% 10
+\BOOKMARK [2][-]{subsection.2.2.5}{Historique}{section.2.2}% 11
+\BOOKMARK [2][-]{subsection.2.2.6}{Rapports}{section.2.2}% 12
+\BOOKMARK [2][-]{subsection.2.2.7}{Consommateurs}{section.2.2}% 13
+\BOOKMARK [2][-]{subsection.2.2.8}{Finances}{section.2.2}% 14
+\BOOKMARK [1][-]{section.2.3}{Probl\350mes r\351seaux}{chapter.2}% 15
+\BOOKMARK [0][-]{chapter.3}{Organisation}{}% 16
+\BOOKMARK [1][-]{section.3.1}{Approche de travail}{chapter.3}% 17
+\BOOKMARK [1][-]{section.3.2}{M\351thodologie}{chapter.3}% 18
+\BOOKMARK [0][-]{chapter.4}{Analyse des besoins}{}% 19
+\BOOKMARK [1][-]{section.4.1}{Besoins fonctionnels}{chapter.4}% 20
+\BOOKMARK [1][-]{section.4.2}{Besoins non-fonctionnels}{chapter.4}% 21
+\BOOKMARK [1][-]{section.4.3}{Structure modulaire}{chapter.4}% 22
+\BOOKMARK [1][-]{section.4.4}{Structure des donn\351es hors-ligne}{chapter.4}% 23
+\BOOKMARK [0][-]{chapter.5}{Impl\351mentation}{}% 24
+\BOOKMARK [1][-]{section.5.1}{Description de l'app de base}{chapter.5}% 25
+\BOOKMARK [1][-]{section.5.2}{Choix technologiques}{chapter.5}% 26
+\BOOKMARK [2][-]{subsection.5.2.1}{Strat\351gie de synchronisation des pages}{section.5.2}% 27
+\BOOKMARK [2][-]{subsection.5.2.2}{Strat\351gie de synchronisation de la DB}{section.5.2}% 28
+\BOOKMARK [2][-]{subsection.5.2.3}{Gestion des changements d'utilisateurs}{section.5.2}% 29
+\BOOKMARK [2][-]{subsection.5.2.4}{Syt\350me de notification}{section.5.2}% 30
+\BOOKMARK [1][-]{section.5.3}{La hi\351rarchie dans l'application}{chapter.5}% 31
+\BOOKMARK [1][-]{section.5.4}{Interface utilisateur}{chapter.5}% 32
+\BOOKMARK [1][-]{section.5.5}{Client}{chapter.5}% 33
+\BOOKMARK [1][-]{section.5.6}{Serveur}{chapter.5}% 34
+\BOOKMARK [0][-]{chapter.6}{Validation}{}% 35
+\BOOKMARK [1][-]{section.6.1}{V\351rifications automatiques}{chapter.6}% 36
+\BOOKMARK [1][-]{section.6.2}{V\351rifications utilisateurs r\351els}{chapter.6}% 37
+\BOOKMARK [0][-]{chapter.7}{Am\351liorations futures}{}% 38
+\BOOKMARK [1][-]{section.7.1}{Suite du projet}{chapter.7}% 39
+\BOOKMARK [1][-]{section.7.2}{D\351fis rencontr\351s}{chapter.7}% 40
+\BOOKMARK [1][-]{section.7.3}{Propositions}{chapter.7}% 41
+\BOOKMARK [0][-]{chapter.8}{Conclusion}{}% 42
+\BOOKMARK [1][-]{section.8.1}{M\351triques}{chapter.8}% 43
+\BOOKMARK [0][-]{section.8.1}{Bibliographie}{}% 44

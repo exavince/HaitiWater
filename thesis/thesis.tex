@@ -24,7 +24,8 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{graphicx}
-\usepackage[toc]{multitoc}
+%\usepackage[toc]{multitoc}
+%Vérifier la table des matière (une colonne)
 
 \usepackage{amssymb}% http://ctan.org/pkg/amssymb
 \usepackage{pifont}% http://ctan.org/pkg/pifont
@@ -35,6 +36,7 @@
 \usepackage{enumitem} % better formating of lists
 
 \usepackage[style=long,nonumberlist,toc,xindy,acronym,nomain]{glossaries}
+%Vé
 \makenoidxglossaries
 \input{../documents/requirements/glossary.gloss}
 
@@ -66,7 +68,6 @@
 
 		Si vous désirez tester l'application, il suffit de vous connecter sur un des liens cité précedemment de vous connecter à l'aide de l'uilisateur \emph{Protos} dont le mot de passe est également \emph{Protos}. Cependant je vous demanderai de ne pas modifier les données présentes car celle-ci ne sont pas des données fictives et on été entrée dans le but de tester l'application en Haïti.
 		
-		 le nom d'utilisateur principal ainsi que son mot de passe est \emph{Protos}. Nous vous demandons cependant de ne pas modifier les données présentes, car elles sont réelles et ont été entrées dans le but de tester l'application sur place.
 
 	\chapter*{Remerciements}
 	\addcontentsline{toc}{chapter}{Remerciements}
@@ -81,22 +82,24 @@
 		
 		\subsection*{Contexte}
 		
-			Ce mémoire appartient à un projet de développement financé par ARES-CCD avec quelques partenaires tels que Protos\footnote{\href{https://www.protos.ngo/fr/}{www.protos.ngo}}, l'UCL et l'UEH. 
+			%Ce mémoire appartient à un projet de développement financé par ARES-CCD avec quelques partenaires tels que Protos\footnote{\href{https://www.protos.ngo/fr/}{www.protos.ngo}}, l'UCL et l'UEH. 
 			
-			Protos est une ONG qui vise à améliorer l'accès à l'eau potable dans plusieurs pays du monde afin de les aider à se développer. 
+			%Protos est une ONG qui vise à améliorer l'accès à l'eau potable dans plusieurs pays du monde afin de les aider à se développer. 
 			
-			Suite à de nombreuses crises politiques et catastrophes naturelles qui ont détruit beaucoup d'infrastructure locale, l'accès à l'eau potables est devenu difficile en Haïti. De plus, des incertitudes politiques entravent la reconstruction de ces installations et les populations ne sont pas toujours aidées par les services publics pour assurer la distribution de l'eau. C'est pour cette rainson que l'ONG Protos est active dans le pays depuis quelques années et à permis aux anciens mémorants de créer l'application HaïtiWater.
-						
-			Il y a quelques années Protos est entré en contact avec l'UCL afin de réaliser un système logiciel pilote pour la gestion de la distribution d'eau potable en zone rurale.
+			%Suite à de nombreuses crises politiques et catastrophes naturelles qui ont détruit beaucoup d'infrastructures locales, l'accès à l'eau potables est devenu difficile en Haïti. De plus, des incertitudes politiques entravent la reconstruction de ces installations et les populations ne sont pas toujours aidées par les services publics pour assurer la distribution de l'eau. 
 			
-			 En effet, aucune gestion centralisée organisée par l'Etat n'existe pour ces zones, éloignées des grandes agglomérations. Des réseaux existent, constitués de points de prélèvement d'eau, de conduites de distribution d'eau et de fontaines situées dans les villages, mais la gestion publique de ceux-ci n'est pas opérationnelle. 
+			%Il y a quelques années Protos est entré en contact avec l'UCL afin de réaliser un système logiciel pilote pour la gestion de la distribution d'eau potable en zone rurale. C'est pour cette raison que l'ONG Protos est active dans le pays depuis quelques années et à permis aux anciens mémorants de créer l'application HaïtiWater.
+			
+			 %En effet, aucune gestion centralisée organisée par l'Etat n'existe pour ces zones, éloignées des grandes agglomérations. Des réseaux existent, constitués de points de prélèvement d'eau, de conduites de distribution d'eau et de fontaines situées dans les villages, mais la gestion publique de ceux-ci n'est pas opérationnelle. 
 
-			L'application créée précedemment propose un appui à ces organismes locaux afin de mieux organiser cette distribution. 
+			%L'application créée précedemment propose un appui à ces organismes locaux afin de mieux organiser cette distribution. 
 			%Explication de l'application des différents modules existants
 
 			
 
 		\subsection*{Problématiques}
+		
+			%Actuellement l'application HaïtiWater est prévue pour fonctionner uniquement lorsque le réseau est stable et fonctionnel. Malheureusement en Haïti le réseau est assez instable et par endroit ce réseau n'est même pas disponible. La suite du développement de l'application va donc devoir porter sur le fonctionnement hors-ligne de celle-ci. 
 
 			% Expliquer pourquoi l'application a besoin d'évoluer 
 
@@ -127,17 +130,86 @@
 
 		\section{La gestion de l'eau en Haïti}
 			\label{sec:situation}
+			
+				Haïti est l'un des pays les plus pauvres au monde. Le pays est situé dans une zone géographique où les risques de catastrope naturelle sont très éleves. Ces catastrophes détruisent les infrastructures et empêchent le bon développement des réseaux de distribution. Il y a quelques années, en 2010, le pays à subit un énorme séisme qui a ravagé une bonne partie du pays. Parmis tous les défis à relever viens celui de la gestion et de la distribution de l'eau potable sur le territoire, surtout dans les zones les plus rurales. Le climat de la région rendant excessivement difficle l'exploitation des cours d'eau, il faut beaucoup d'infrastructure afin de pouvoir exploiter l'eau potable.
+				
+				En raison de la grande pauvreté et de gros problèmes organisationnels qui règnent sur la plupart de l'île, il est très difficle de maintenir et de développer le réseau de distribution d'eau potable. Il y a un gros manque de collaboration entre les entités haïtiennes ou entre les villages dû en partie à la communication qui n'est pas du tout optimmisée voir inexistante dans certains cas. Dans les zones les plus rurales de l'île, le taux de recouvrement des factures est excessivement faible, jusqu'à 11\%.
+				
+				Pour toutes ces raisons, l'ONG Protos vient donc en aide à Haïti afin d'aider le service national des eaux à gérer la gestion des infrastructures et la facturation des clients surtout dans les zones rurales.
+				
+				Si vous désirez plus d'informations sur les porblèmes environementaux, politiques, sociaux ou organisationnels du contexte haïtiens, je vous invite à aller consulter le mémoire d'Adrien Hallet, Céline Deknop et Sébastien Strebelle intitulé :
+				"HaïtiWater, développement d'une application web pour gérer la distribution de l'eau en Haïti".
 
 				%Brève explication sur le contexte Haïtien
 
 
 		\section{Introduction à l'application créer précedemment}
-
+				Dans le cadre de la situation décrite précedemment, Protos a fait appel à l'UCL afin de créer une application d'aide à la gestion et la distribution de l'eau potable en Haïti. Cette application a été développée par 3 personnes dans le cadre de leur mémoire, elle comprend différents modules permettant de faciliter la gestion des infrastuctures et les clients qui vont y chercher de l'eau.
+				
+			\subsection{Accueil}
+				Ce module contient les informations condensées de la zone qui est attribuée à l'utilisateur. Il peut y retrouver le nombre de fontaines, de kiosques, de point de prises individuelles et de conduites que contient sa zone mais aussi le nombre de foyers et de consommateurs individuels de celle-ci. 
+				
+				Ce module n'est présent qu'à titre de présentation et de page d'accueil.
+				
+				
+			\subsection{Réseau}
+				Dans ce module, nous pouvons retrouver 3 éléments différents :
+				\begin{itemize}
+					\item Premièrement, une partie où l'on peut consulter le schéma de répartition des consommateurs par genre ou le volume d'eau mensuel distribué dans chaque zone.
+					\item Deuxièmement, une partie où l'on peut voir le nombre de consommateurs et de points d'eau présent dans sa zone ainsi que le volume d'eau distribué dans celle-ci.
+					\item Troisièmement, un tableau intéractif qui contient tous les différents éléments du réseau. Dans cette partie en fonction de nos privilèges, on peut supprimer, modifier ou ajouter des éléments du réseau. On peut également faire des recherche ou encore trier ce tableau selon nos besoins.
+				\end{itemize}
+				
+			\subsection{Carte}
+				Ce module comprend un tableau réduit des éléments du réseau ainsi qu'une carte interactive qui permet de voir où sont situés les différents éléments et de connaître ou d'encoder les coordonnées géographiques des différents éléments du réseau.
+				
+			\subsection{Gestion de zone}
+				Ce module comprend 3 tableaux permettent de gérer sa zone :
+				\begin{itemize}
+					\item Le premier tableau contient les différentes zones encodées dans le système. Cliquer sur un des éléments du tableau permet de filtrer les éléments des deux autres tableaux qui seront décris plus bàs afin de ne garder que les éléments de la zone concernée. Ce tableau permet également si vous en avez les privilèges d'ajouter, supprimer ou modifier une zone.
+					\item Le deuxième tableau contient la liste de tous les gestionnaires. Cliquer sur un gestionnaire vous permet de filtrer les éléments réseaux qui sont gérés par ce gestionnnaire. De nouveau si vous avez les privilèges nécessaires vous pourrez ajouter, modifier ou supprimer des gestionnaires.
+					\item Le dernier tableau contient le même tableau que la section réseau. Vous pouvez y faire tout ce qui a été décrit dans la section "Réseau".
+				\end{itemize}
+			
+			\subsection{Historique}
+				Ce module contient les actions ayant été effectuées par des personnes n'ayant pas tous les privilèges. Ces actions doivent être validées ou refusées par un gestionnaire plus haut placé. On peut y retrouver deux tableaux :
+				\begin{itemize}
+					\item Le premier contient les éléments devant être validés. Ici si vous avez les privilèges requis, vous pouvez choisier de confirmer ou non un action qui été encodée.
+					\item Le deuxième contient les éléments qui ont été validés ou refusés dans les 3 dernières semaines. Il s'agit simplement d'un historoque récent
+				\end{itemize}
+			
+			\subsection{Rapports}
+				Dans ce module vous pouvez signaler les différents problèmes que vous rencontrez avec les infrastructures de distribution d'eau. Une fois le problème signaler, vous pouvez consulter ce que vous avez encodé dans le tableau juste en dessous et modifier ou supprimer votre signalement. Si vous avezsuffisament de privilèges vous pourrez également gérer les signalements des autres personnes.
+				
+				Vous pouvez également encoder vos rapports mensuels dans ce module. Si jamais le réseau n'est plus présent, vous pouvez simplement enregistrer le formulaire avec les données que vous avez encodée afin de l'envoyer plus tard lorsque le réseau sera de nouveau accessible.
+			
+			\subsection{Consommateurs}
+				Dans ce module, vous pouvez retrouver 3 parties différentes :
+				\begin{itemize}
+					\item Dans la première partie vous pouvez afficher les mêmes schémas que ceux disponible dans la section "réseau".
+					\item La deuxième partie contient un résumé de la situation de votre zone (nombre de foyer consommant de l'eau, nombre de consommateur, nombre de foyer n'ayant pas payé leur facture).
+					\item Le dernière partie contient un tableau qui reprend tous nos consommateurs. Avec les bons privilèges, vous pouvez ajouter, modifier ou supprimer des consommateurs. Ou bien vous pouvez également juste consulter tous les détails sur les différents consommateurs.
+				\end{itemize}
+				
+			
+			\subsection{Finances}
+				Dans ce module, vous allez retrouver différents tableaux.
+				
+				Un tableau comprenant les différentes zones disponibles, lorsque que vous selectionnez l'une des zones cela va limiter les données présentes dans les autres tables à celle de la zone séléctionnée.
+				
+				Un deuxième tableau contenant tous les consommateurs disponibles. Lorsque vous selectionnez un consommateurs, les détails de celui-ci, ainsi que sont historique de paiements s'affichent dans le bas de la page.
+				
+				Ici vous pourrez ajouter, modifier ou supprimer des paiements sur le compte d'un consommateur. Si vous en avez les privilèges vous pouvez égalements effectuer toutes les actions citées précedemment sur les tables contenant les zones et les consommateurs.
 				
 
 		\section{Problèmes réseaux}
-
+			L'application HaïtiWater est une application web classique. Cela signifie que pour fonctionner, il faut qu'il y ai nécessairement du réseau. Hors en Haïti, le réseau n'est pas très stable en ville et celui-ci peut aller jusqu'à être inexistant lorsque vous vous aventurez dans les zones les plus rurales. 
+		
+		Ces problèmes de connexions font que l'application est difficilement utilisable sur le terrain en toute sérénité car on ne sait jamais quand le réseau va devenir capricieux. Pour palier à ce problème, il a été décidé de transformer l'application web existante pour que celle-ci puisse fonctionner même lorsque le réseau est absent.
 				
+				De part sa nature, une application web nécessite un connexion pour pouvoir fonctionner. Il a donc fallu étudier les différentes options qui pourrait permettre de faire fonctionner l'application hors-ligne. Les deux options les plus probables retenues étaient de soit créer une application mobile séparée de l'application web, soit de transformer l'application web existante en progressive web app permettant ainsi de ne pas avoir à récréer de 0 une nouvelle application et aussi de n'avoir qu'un seul code souce à gérer. Le défaut de cette solution étant que cette technologie est encore assez récente et peu répandue. De plus il faut compiler le fait que tous les navigateurs ne la prennent pas complètement en charge. 
+				
+				Après réflexion, il a été décidé que l'option de la progressive we app était la meilleure au vue du temps disponible et de la plus grande facilité de maintenance d'évolutivité dans le futur.
 
 	\chapter{Organisation}
 		

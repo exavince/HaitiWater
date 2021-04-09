@@ -453,7 +453,6 @@ async function setTitleWaterElement() {
     let db = await dexie.open();
     let table = db.table('editable');
     table.where('table').equals('water_element').first().then(result => {
-        console.log(result)
         if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Éléments du réseau " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',

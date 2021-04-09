@@ -198,7 +198,6 @@ async function setTitleManager() {
     let db = await dexie.open();
     let table = db.table('editable');
     table.where('table').equals('manager').first().then(result => {
-        console.log(result)
         if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
             title.html("Gestionnaires et Techniciens " + ("(" + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',
