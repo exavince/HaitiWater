@@ -54,11 +54,11 @@
 	
 		Ce travail de fin d'études a été réalisé dans le cadre de mon Master en Sciences Informatiques à l'École Polytechnique de Louvain-la-neuve durant l'année académique 2020-2021.
 		
-		Dans ce mémoire je vais présenter mon travail qui consistait à reprendre l'application HaïtiWater développée précedemment par Adrien Hallet, Céline Deknop et Sebastien Strebelle afin de la faire évoluer vers une application web qui serait entièrement utilisable hors-ligne.
+		Dans ce mémoire je vais présenter mon travail qui consistait à reprendre l'application HaïtiWater développée précedemment par Adrien Hallet, Céline Deknop et Sebastien Strebelle afin de la faire évoluer vers une application web qui serait entièrement utilisable \textbf{hors-ligne}.
 		 
-		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par une brève introduction sur le contexte Haitien et sur les raisons pour lesquels l'évolution de cette application était nécessaire. Ensuite je présenterai mes idées et réalisations en justifiant à chaque fois les différents choix d'implémentation qui on été fait et pourquoi j'ai utilisé certaines technologies plutot que d'autres. Je présenterai ensuite la validation de l'application et les feedbacks que j'ai reçu des utilisateurs. Puis je concluerai par une liste des améliorations possibles.
+		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par une brève introduction sur le contexte Haitien et sur les raisons pour lesquels l'évolution de cette application était nécessaire. Ensuite je présenterai le principe des progressive weba app et pourquoi j'ai choisis d'utiliser cette technologie plûtot qu'une autre. Je présenterai ensuite la validation de l'application et les feedbacks que j'ai reçu des utilisateurs ainsi que les conséquence de cette validation sur l'application finale. Puis je concluerai par une liste des améliorations possibles.
 
-		Tout le travail réaliser est disponible ici :
+		Tout le travail réalisé est disponible ici :
 
 \begin{itemize}
 	\item Github : \url{https://github.com/exavince/HaitiWater}
@@ -66,7 +66,7 @@
 	\item En Haïti : \url{unknown}
 \end{itemize}		
 
-		Si vous désirez tester l'application, il suffit de vous connecter sur un des liens cité précedemment de vous connecter à l'aide de l'uilisateur \emph{Protos} dont le mot de passe est également \emph{Protos}. Cependant je vous demanderai de ne pas modifier les données présentes car celle-ci ne sont pas des données fictives et on été entrée dans le but de tester l'application en Haïti.
+		Si vous désirez tester l'application, il suffit de vous rendre sur un des liens cité précedemment et de vous connecter à l'aide de l'uilisateur qui vous sera communiqué si vous en faite la demande. Ces données ne seront pas révélées ici car les données ne peuvent pas être modifiéés aléatoirement. 
 		
 
 	\chapter*{Remerciements}
@@ -137,14 +137,16 @@
 				
 				Pour toutes ces raisons, l'ONG Protos vient donc en aide à Haïti afin d'aider le service national des eaux à gérer la gestion des infrastructures et la facturation des clients surtout dans les zones rurales.
 				
-				Si vous désirez plus d'informations sur les porblèmes environementaux, politiques, sociaux ou organisationnels du contexte haïtiens, je vous invite à aller consulter le mémoire d'Adrien Hallet, Céline Deknop et Sébastien Strebelle intitulé :
+				Si vous désirez plus d'informations sur les problèmes environementaux, politiques, sociaux ou organisationnels du contexte haïtiens, je vous invite à aller consulter le mémoire d'Adrien Hallet, Céline Deknop et Sébastien Strebelle intitulé :
 				"HaïtiWater, développement d'une application web pour gérer la distribution de l'eau en Haïti".
 
 				%Brève explication sur le contexte Haïtien
 
 
-		\section{Introduction à l'application créer précedemment}
-				Dans le cadre de la situation décrite précedemment, Protos a fait appel à l'UCL afin de créer une application d'aide à la gestion et la distribution de l'eau potable en Haïti. Cette application a été développée par 3 personnes dans le cadre de leur mémoire, elle comprend différents modules permettant de faciliter la gestion des infrastuctures et les clients qui vont y chercher de l'eau.
+		\section{Introduction à l'application créée précedemment}
+				Dans le cadre de la situation décrite dans la section "Gestion de l'eau à Haïti, Protos a fait appel à l'UCL afin de créer une application d'aide à la gestion et la distribution de l'eau potable en Haïti. Une première version de l'application a été développée en 2018-2019 par 3 personnes dans le cadre de leur mémoire, elle comprend différents modules permettant de faciliter la gestion des infrastuctures et les clients qui vont y chercher de l'eau.
+				
+			\subsection{Utilisateurs}
 				
 			\subsection{Accueil}
 				Ce module contient les informations condensées de la zone qui est attribuée à l'utilisateur. Il peut y retrouver le nombre de fontaines, de kiosques, de point de prises individuelles et de conduites que contient sa zone mais aussi le nombre de foyers et de consommateurs individuels de celle-ci. 
@@ -214,9 +216,16 @@
 	\chapter{Organisation}
 		
 
-		%Brève intro à l'organisation
+		Etant le seul étudiant à réaliser ce mémoire, il n'a pas été nécessaire d'utiliser des outils de plannification complets. Cette section contiendra surtout la plannification des différentes tâches à accomplir permettant l'aboutissement de l'application ainsi que l'écriture de ce mémoire. Celles-ci ont été mises place grâce aux discussions avec mes deux promoteurs et une étudiante en informatique venue d'Haïti pour en apprendre plus sur l'application. 
 
 		\section{Approche de travail}
+			Comprendre les enjeux et les différentes problématiques a été la première tâche à accomplir. Il a fallut décider du type de technologie à utiliser afin d'apporter les fonctionnalités nécessaires au bon fonctionnement de l'application. 
+			
+			La meilleure option aurait été de pouvoir en discuter avec la plupart des acteurs en Haïti afin d'avoir le plus d'avis possible sur la question. Mais vu le temps que cela aurait pris cette option n'était pas du tout envisageable. Pour pallier à se problème, nous avons étudié la question avec mes deux promoteurs et Nahomie l'étudiante venue d'Haïti. Celle-ci à pu nous apporter son expertise afin de choisir l'option idéale.
+			
+			Une fois le choix technologique fait, nous avons effectuer la plannification des tâches.
+		
+		
 
 			%Etude du problème
 			%Prioritisation des taches

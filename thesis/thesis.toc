@@ -16,30 +16,30 @@
 \contentsline {section}{\numberline {2.3}Probl\IeC {\`e}mes r\IeC {\'e}seaux}{10}{section.2.3}%
 \contentsline {chapter}{\numberline {3}Organisation}{11}{chapter.3}%
 \contentsline {section}{\numberline {3.1}Approche de travail}{11}{section.3.1}%
-\contentsline {section}{\numberline {3.2}M\IeC {\'e}thodologie}{11}{section.3.2}%
-\contentsline {chapter}{\numberline {4}Analyse des besoins}{12}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Besoins fonctionnels}{12}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Besoins non-fonctionnels}{12}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Structure modulaire}{12}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Structure des donn\IeC {\'e}es hors-ligne}{12}{section.4.4}%
-\contentsline {chapter}{\numberline {5}Impl\IeC {\'e}mentation}{13}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Description de l'app de base}{14}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Choix technologiques}{14}{section.5.2}%
-\contentsline {subsection}{\numberline {5.2.1}Strat\IeC {\'e}gie de synchronisation des pages}{14}{subsection.5.2.1}%
-\contentsline {subsection}{\numberline {5.2.2}Strat\IeC {\'e}gie de synchronisation de la DB}{14}{subsection.5.2.2}%
-\contentsline {subsection}{\numberline {5.2.3}Gestion des changements d'utilisateurs}{14}{subsection.5.2.3}%
-\contentsline {subsection}{\numberline {5.2.4}Syt\IeC {\`e}me de notification}{14}{subsection.5.2.4}%
-\contentsline {section}{\numberline {5.3}La hi\IeC {\'e}rarchie dans l'application}{14}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Interface utilisateur}{14}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Client}{14}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Serveur}{15}{section.5.6}%
-\contentsline {chapter}{\numberline {6}Validation}{16}{chapter.6}%
-\contentsline {section}{\numberline {6.1}V\IeC {\'e}rifications automatiques}{16}{section.6.1}%
-\contentsline {section}{\numberline {6.2}V\IeC {\'e}rifications utilisateurs r\IeC {\'e}els}{16}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Am\IeC {\'e}liorations futures}{17}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Suite du projet}{17}{section.7.1}%
-\contentsline {section}{\numberline {7.2}D\IeC {\'e}fis rencontr\IeC {\'e}s}{17}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Propositions}{17}{section.7.3}%
-\contentsline {chapter}{\numberline {8}Conclusion}{18}{chapter.8}%
-\contentsline {section}{\numberline {8.1}M\IeC {\'e}triques}{18}{section.8.1}%
-\contentsline {chapter}{Bibliographie}{18}{section.8.1}%
+\contentsline {section}{\numberline {3.2}M\IeC {\'e}thodologie}{12}{section.3.2}%
+\contentsline {chapter}{\numberline {4}Analyse des besoins}{13}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Besoins fonctionnels}{13}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Besoins non-fonctionnels}{13}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Structure modulaire}{13}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Structure des donn\IeC {\'e}es hors-ligne}{13}{section.4.4}%
+\contentsline {chapter}{\numberline {5}Impl\IeC {\'e}mentation}{14}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Description de l'app de base}{15}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Choix technologiques}{15}{section.5.2}%
+\contentsline {subsection}{\numberline {5.2.1}Strat\IeC {\'e}gie de synchronisation des pages}{15}{subsection.5.2.1}%
+\contentsline {subsection}{\numberline {5.2.2}Strat\IeC {\'e}gie de synchronisation de la DB}{15}{subsection.5.2.2}%
+\contentsline {subsection}{\numberline {5.2.3}Gestion des changements d'utilisateurs}{15}{subsection.5.2.3}%
+\contentsline {subsection}{\numberline {5.2.4}Syt\IeC {\`e}me de notification}{15}{subsection.5.2.4}%
+\contentsline {section}{\numberline {5.3}La hi\IeC {\'e}rarchie dans l'application}{15}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Interface utilisateur}{15}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Client}{15}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Serveur}{16}{section.5.6}%
+\contentsline {chapter}{\numberline {6}Validation}{17}{chapter.6}%
+\contentsline {section}{\numberline {6.1}V\IeC {\'e}rifications automatiques}{17}{section.6.1}%
+\contentsline {section}{\numberline {6.2}V\IeC {\'e}rifications utilisateurs r\IeC {\'e}els}{17}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Am\IeC {\'e}liorations futures}{18}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Suite du projet}{18}{section.7.1}%
+\contentsline {section}{\numberline {7.2}D\IeC {\'e}fis rencontr\IeC {\'e}s}{18}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Propositions}{18}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Conclusion}{19}{chapter.8}%
+\contentsline {section}{\numberline {8.1}M\IeC {\'e}triques}{19}{section.8.1}%
+\contentsline {chapter}{Bibliographie}{19}{section.8.1}%
