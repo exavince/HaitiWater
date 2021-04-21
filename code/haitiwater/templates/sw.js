@@ -2,7 +2,7 @@ importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
 
 
 /*********************************************************************************
- * Variable globale
+ * Globals variables
  *********************************************************************************/
 const cacheVersion = 'static';
 const userCache = 'user_1';
@@ -68,15 +68,14 @@ const channel = new BroadcastChannel('sw-messages');
 const dbVersion = 1;
 const db = new Dexie("user_db");
 
-let isConnecting = false;
-let synced = false;
-let username = null;
-let needDisconnect = false;
+let isSyncing = false
+let synced = false
+let isDbLoading = false
 let dbLoaded = false
+let isCacheLoading = false
 let cacheLoaded = false
-let lastUpdate = null;
-let isLoading = false;
-let connected = false;
+let username = null
+let needDisconnect = false
 
 
 
@@ -324,9 +323,9 @@ const waterElement_handler = () => {
 }
 
 const getDataFromDB = async (table) => {
+    isDbLoading = true
     try {
         await sendDataToDB()
-        isLoading = true
         switch (table) {
             case "all":
                 await Promise.all([
@@ -340,7 +339,7 @@ const getDataFromDB = async (table) => {
                     logsHistoryHandler(),
                     waterElementDetailsHandler()
                 ]).then(() => {
-                    dbLoaded = true
+                    setInfos('dbLoaded', true)
                 })
                 break
             case "logs":
@@ -368,14 +367,14 @@ const getDataFromDB = async (table) => {
                 await waterElement_handler()
                 break
         }
-        isLoading = false
+        isDbLoading = false
         channel.postMessage({
             title: 'updateStatus',
             status: 'loaded',
             date: await getOldestDate()
         })
     } catch (err) {
-        isLoading = false
+        isDbLoading = false
         channel.postMessage({
             title: 'updateStatus',
             status: 'failed',
@@ -449,56 +448,26 @@ const cancelModification = async (id) => {
 const addCache = (cache, tab) => {
     return caches.open(cache)
         .then(cache => cache.addAll(tab))
-        .catch(err => {console.error('[SW_CACHEADD]', err);});
+        .catch(err => {console.error('[SW_CACHEADD]', err)})
 }
 
 const cacheCleanedPromise = () => {
     return caches.keys().then(keys => {
         keys.forEach(key => {
-            if (key !== cacheVersion) return caches.delete(key);
-        });
-    });
+            if (key !== cacheVersion) caches.delete(key)
+        })
+    })
 }
 
 const isRevalidatePages = (url) => {
     for (const ext of revalidatePages) {
-        if (url.includes(ext)) return true;
+        if (url.includes(ext)) return true
     }
-    return false;
-};
-
-const isConnected = () => {
-    isConnecting = true;
-    return fetch('/api/check-authentication')
-        .then(response => {
-            if (response.ok) {
-                connected = true;
-                isConnecting = false;
-                return true;
-            }
-            isConnecting = false;
-            return false
-        })
-        .catch(() => {
-            isConnecting = false;
-            return false;
-        });
-}
-
-const getOfflineData = () => {
-    isLoading = true;
-    return Promise.all([
-        getCache(),
-        getDataFromDB("all"),
-    ]).then(() => {
-        isLoading = false;
-    }).catch(err => {
-        isLoading = false;
-        console.error('[SW_GETDATA]', err);
-    });
+    return false
 }
 
 const getCache = () => {
+    isCacheLoading = true
     return Promise.all([
         addCache(cacheVersion, ['/offline/']),
         addCache(userCache, revalidatePages),
@@ -506,6 +475,9 @@ const getCache = () => {
         addCache(cacheVersion, staticFiles),
     ]).then(() => {
         setInfos('cacheLoaded', true)
+        isCacheLoading = false
+    }).catch(() => {
+        isCacheLoading = false
     })
 }
 
@@ -514,7 +486,6 @@ const getInfos = () => {
     return db.sessions.where('id').equals(1).first(async data => {
         username = data.username;
         needDisconnect = data.needDisconnect;
-        lastUpdate = data.lastUpdate;
         dbLoaded = data.dbLoaded
         cacheLoaded = data.cacheLoaded
         channel.postMessage({
@@ -534,9 +505,6 @@ const setInfos = (info, value) => {
         case 'needDisconnect':
             needDisconnect = value;
             break
-        case 'lastUpdate':
-            lastUpdate = value;
-            break
         case 'dbLoaded':
             dbLoaded = value
             break
@@ -547,7 +515,6 @@ const setInfos = (info, value) => {
         id: 1,
         username: username,
         needDisconnect: needDisconnect,
-        lastUpdate: lastUpdate,
         cacheLoaded: cacheLoaded,
         dbLoaded: dbLoaded
     });
@@ -564,7 +531,6 @@ const resetState = async () => {
     setInfos('needDisconnect', false);
     setInfos('dbLoaded', false);
     setInfos('cacheLoaded', false);
-    setInfos('lastUpdate', null);
     setInfos('isLoading', false);
     connected = false;
     console.log("State reset")
@@ -623,7 +589,6 @@ self.addEventListener('activate', () => {
         id: 1,
         username: null,
         needDisconnect: false,
-        lastUpdate: null,
         dbLoaded: false,
         cacheLoaded: false
     }).then(async () => {
@@ -631,39 +596,38 @@ self.addEventListener('activate', () => {
             title: 'updateInfos',
             toPush: await db.update_queue.count(),
             date: await getOldestDate()
-        });
-        getOfflineData();
+        })
+        getCache()
+        getDataFromDB('all')
     }).catch(() => {
         getInfos().then(async () => {
-            if (!dbLoaded) getOfflineData();
+            if (!cacheLoaded && !needDisconnect) getCache()
+            if (!dbLoaded && !needDisconnect) getOfflineData()
             else channel.postMessage({
                 title: 'updateInfos',
                 toPush: await db.update_queue.count(),
                 date: await getOldestDate()
-            });
-            if (!cacheLoaded) getCache();
-        });
-        console.log('[SW_SESSIONS]', 'Old configuration has been charged');
-    });
-});
+            })
+        })
+        console.log('[SW_SESSIONS]', 'Old configuration has been charged')
+    })
+})
 
 
 self.addEventListener('fetch', async event => {
     const url = event.request.url;
 
-    if (!synced) await getInfos();
-    if (!connected && !needDisconnect && !isConnecting) await isConnected();
-    if (connected && !isLoading) {
-        if (!dbLoaded && !cacheLoaded) event.waitUntil(getOfflineData());
-        else if (!dbLoaded) event.waitUntil(getDataFromDB('all'))
-        else if (!cacheLoaded) event.waitUntil(getCache())
-    }
+    if (!synced && ! isSyncing) await getInfos();
+    if (!cacheLoaded && !isCacheLoading && !needDisconnect) await getCache();
+    if (!dbLoaded && !isDbLoading && !needDisconnect) await getDataFromDB('all')
 
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request));
-    } else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
+    } 
+    else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(CacheOrFetchAndCache(event, cacheVersion));
-    } else if (url.includes('/logout')) {
+    } 
+    else if (url.includes('/logout')) {
         await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
         event.respondWith(fetch(event.request)
             .then(networkResponse => {
@@ -675,7 +639,8 @@ self.addEventListener('fetch', async event => {
                 return caches.match('/offline/');
             })
         );
-    } else if (needDisconnect) {
+    } 
+    else if (needDisconnect) {
         event.respondWith(fetch(event.request)
             .then(() => {
                 setInfos('needDisconnect', false);
@@ -685,9 +650,11 @@ self.addEventListener('fetch', async event => {
                 return caches.match('/offline/');
             })
         );
-    } else if (url.includes('/api/graph')){
+    } 
+    else if (url.includes('/api/graph')){
         event.respondWith(NetworkFirst(event, event.request.url));
-    } else if (url.includes('/api/table') || url.includes('.png')) {
+    } 
+    else if (url.includes('/api/table') || url.includes('.png')) {
         event.respondWith(fetch(event.request)
             .catch(() => {
                 console.error('cannot reach the dataTable online')
@@ -719,7 +686,7 @@ channel.addEventListener('message', async event => {
             });
             break
         case 'updateDB':
-            if (!isLoading) getDataFromDB(event.data.db);
+            if (!isDbLoading) getDataFromDB(event.data.db);
             channel.postMessage({
                 title: 'updateStatus',
                 date: await getOldestDate(),
