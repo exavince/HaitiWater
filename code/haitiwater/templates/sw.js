@@ -325,7 +325,7 @@ const waterElement_handler = () => {
 const getDataFromDB = async (table) => {
     isDbLoading = true
     try {
-        await sendDataToDB()
+        await sendDataToDB(null, true)
         switch (table) {
             case "all":
                 await Promise.all([
@@ -371,6 +371,7 @@ const getDataFromDB = async (table) => {
         channel.postMessage({
             title: 'updateStatus',
             status: 'loaded',
+            table,
             date: await getOldestDate()
         })
     } catch (err) {
@@ -378,6 +379,7 @@ const getDataFromDB = async (table) => {
         channel.postMessage({
             title: 'updateStatus',
             status: 'failed',
+            table,
             date: await getOldestDate()
         })
         console.log('[SW_POPULATEDB]', err)
@@ -401,7 +403,7 @@ const emptyDB = () => {
     });
 }
 
-const sendDataToDB = async(dataID) => {
+const sendDataToDB = async(dataID, silent=false) => {
     let tab = []
     if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray();
     else tab = await db.update_queue.toArray();
@@ -418,14 +420,17 @@ const sendDataToDB = async(dataID) => {
             }
         })
     )).then(async () => {
+        if (silent)
         channel.postMessage({
             title: 'toPush',
+            silent,
             toPush: await db.update_queue.count()
         });
     }).catch(async () => {
         console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         channel.postMessage({
             title: 'toPush',
+            silent,
             toPush: await db.update_queue.count()
         });
     })
@@ -690,12 +695,12 @@ channel.addEventListener('message', async event => {
             channel.postMessage({
                 title: 'updateStatus',
                 date: await getOldestDate(),
+                table: event.data.db,
                 status: 'loading'
             });
             break
         case 'pushData':
-            if(event.data.id === null) sendDataToDB(null)
-            else sendDataToDB(event.data.id)
+            sendDataToDB(event.data.id)
             break
         case 'getUsername':
             if(username !== null && username !== event.data.username && username !== undefined) resetState();

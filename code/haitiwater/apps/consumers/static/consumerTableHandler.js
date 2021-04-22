@@ -5,8 +5,8 @@
  */
 async function drawConsumerTable(fullView = true) {
     let config;
+
     if (localStorage.getItem("offlineMode") === "true") {
-        $('#flavoured-part').css('background-color', '#8B0000');
         config = await getConsumerDatatableOfflineConfiguration(fullView);
     }
     else {
@@ -19,11 +19,11 @@ async function drawConsumerTable(fullView = true) {
     let datatable = $('#datatable-consumer');
     datatable.DataTable(config);
     let table = datatable.DataTable();
-    setTitle()
+    setTitle();
 
     datatable.find('tbody').on('click', 'tr', function () {
         if ($(this).hasClass('selected')) {
-            //$(this).removeClass('selected');
+            $(this).removeClass('selected');
         }
         else {
             table.$('tr.selected').removeClass('selected');
@@ -36,7 +36,8 @@ async function drawConsumerTable(fullView = true) {
         if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
             removeElement("consumer", data[0].innerText);
         } else {}
-    } );
+    });
+
     datatable.find('tbody').on( 'click', '.edit-row', function () {
         let data = table.row($(this).closest('tr')).data();
         setupModalConsumerEdit(data);

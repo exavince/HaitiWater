@@ -23,27 +23,28 @@ function validateForm() {
     };
 
     const invalidFields = Object.entries(fieldsToValidate)
-    .filter(entry => {
-        // Extract field selector and validator for this field
-        const fieldSelector = entry[0];
-        const fieldValueValidator = entry[1];
-        const field = form.querySelector(fieldSelector);
+        .filter(entry => {
+            // Extract field selector and validator for this field
+            const fieldSelector = entry[0];
+            const fieldValueValidator = entry[1];
+            const field = form.querySelector(fieldSelector);
 
-        if(!fieldValueValidator(field.value)) {
-            // For invalid field, apply the error class
-            let fieldErrorSelector = '#' + field.id + '-error';
-            form.querySelector(fieldErrorSelector).className = 'error';
-            return true;
-        }
+            if(!fieldValueValidator(field.value)) {
+                // For invalid field, apply the error class
+                let fieldErrorSelector = '#' + field.id + '-error';
+                form.querySelector(fieldErrorSelector).className = 'error';
+                return true;
+            }
 
-        return false;
-    });
+            return false;
+        });
 
     // If invalid field length is greater than zero, this signifies
     // a form state that failed validation
-    if(invalidFields.length > 0){
-        return false
-    } else {
+    if (invalidFields.length > 0) {
+        return false;
+    }
+    else {
         return buildRequest(id,
             lastName,
             firstName,
@@ -55,7 +56,7 @@ function validateForm() {
     }
 }
 
-function buildRequest(id, lastName, firstName, gender, address, phone, subConsumers, mainOutlet){
+function buildRequest(id, lastName, firstName, gender, address, phone, subConsumers, mainOutlet) {
     let request = "table=consumer";
     request += "&id=" + id;
     request += "&lastname=" + lastName;

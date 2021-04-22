@@ -84,7 +84,7 @@ $( document ).ready(function() {
                         }
                         new PNotify({
                             title: 'Félicitations !',
-                            text: 'Vos données ont bien été chargées localement',
+                            text: 'Vos données ont bien été chargées localement !',
                             type: 'success'
                         });
                         break
@@ -98,7 +98,7 @@ $( document ).ready(function() {
                     case 'loading':
                         new PNotify({
                             title: 'Veuillez patienter',
-                            text: 'Vos données sont en cours de chargement',
+                            text: 'Vos données sont en cours de chargement !',
                             type: 'info'
                         });
                         break
@@ -107,18 +107,20 @@ $( document ).ready(function() {
             case 'toPush':
                 localStorage.setItem("dataToSend", event.data.toPush);
                 setupNotifications(event.data.toPush);
-                if (event.data.toPush > 0) {
-                    new PNotify({
-                        title: 'Echec !',
-                        text: "Certaines de vos modifications n'ont pas été envoyées.",
-                        type: 'error'
-                    });
-                } else {
-                    new PNotify({
-                        title: 'Réussite !',
-                        text: 'Toutes vos modifications ont été envoyées.',
-                        type: 'success'
-                    });
+                if (!event.data.silent) {
+                    if (event.data.toPush > 0) {
+                        new PNotify({
+                            title: 'Echec !',
+                            text: event.data.toPush + " modifications n'ont pas été envoyées.",
+                            type: 'error'
+                        });
+                    } else {
+                        new PNotify({
+                            title: 'Réussite !',
+                            text: 'Toutes vos modifications ont été envoyées.',
+                            type: 'success'
+                        });
+                    }
                 }
                 break
             case 'resetNavigation':

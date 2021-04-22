@@ -198,7 +198,7 @@ function prettifyHeader(tableName){
         print.trigger('click');
     });
 
-    let pageLength = wrapper.find('.buttons-page-length');
+    wrapper.find('.buttons-page-length');
     $('#' + tableName + '-options').on('click', function(){
         (buttons.hasClass('hidden') ? buttons.removeClass('hidden') : buttons.addClass('hidden'))
     })
