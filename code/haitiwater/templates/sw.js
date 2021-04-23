@@ -1,14 +1,14 @@
-importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js");
+importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js")
 
 
 /*********************************************************************************
  * Globals variables
  *********************************************************************************/
-const cacheVersion = 'static';
-const userCache = 'user_1';
-const revalidatePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/'];
-const cachePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique/', 'reseau/gis', '/modifications/'];
-const staticExt = ['.js', '.woff', '/static/'];
+const cacheVersion = 'static'
+const userCache = 'user_1'
+const revalidatePages = ['/accueil/', '/offline/', '/aide/', '/profil/editer/']
+const cachePages = ['/reseau/', '/gestion/', '/rapport/', '/consommateurs/', '/finances/', '/historique/', 'reseau/gis', '/modifications/']
+const staticExt = ['.js', '.woff', '/static/']
 const staticFiles = [
     '/static/consumerFormHandler.js',
     '/static/consumerTableHandler.js',
@@ -63,12 +63,11 @@ const staticFiles = [
     '/static/zoneManagement.js',
     '/static/zoneModalHandler.js',
     '/static/zoneTableGenerator.js',
-];
-const channel = new BroadcastChannel('sw-messages');
-const dbVersion = 1;
-const db = new Dexie("user_db");
+]
+const channel = new BroadcastChannel('sw-messages')
+const dbVersion = 1
+const db = new Dexie("user_db")
 
-let isSyncing = false
 let synced = false
 let isDbLoading = false
 let dbLoaded = false
@@ -95,12 +94,12 @@ db.version(dbVersion).stores({
     logs: 'id,time,type,user,summary,details, sync',
     logs_history: 'id,time,type,user,summary,details,action, sync',
     update_queue: '++id, url, init, date, type, table, elemId, status, details',
-    sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded, sync'
-});
+    sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded'
+})
 
 const getOldestDate = async () => {
     if (!dbLoaded) return null
-    let tab = await db.editable.toArray();
+    let tab = await db.editable.toArray()
     let date = new Date()
     for (let entry of tab) {
         if (date > entry.last_sync) {
@@ -129,10 +128,10 @@ const waterElementDetailsHandler = () => {
                         totalCubic: entry.totalCubic,
                         geoJSON: entry.geoJSON,
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const logsHandler = () => {
@@ -150,10 +149,10 @@ const logsHandler = () => {
                         summary: entry.summary,
                         details: entry.details,
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const logsHistoryHandler = () => {
@@ -172,19 +171,19 @@ const logsHistoryHandler = () => {
                         details: entry.details,
                         action: entry.action,
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const consumerHandler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=consumer_full&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.consumer.clear();
-                db.editable.put({table:'consumer', is_editable:result.editable, last_sync: new Date()});
-                db.consumer_details.clear();
+                db.consumer.clear()
+                db.editable.put({table:'consumer', is_editable:result.editable, last_sync: new Date()})
+                db.consumer_details.clear()
                 for (let entry of result.data) {
                     db.consumer.put({
                         id: entry.consumer[0],
@@ -198,25 +197,25 @@ const consumerHandler = () => {
                         argent_du: entry.consumer[8],
                         zone: entry.consumer[9],
                         sync: 0
-                    });
+                    })
 
                     db.consumer_details.put({
                         consumer_id: entry.consumer[0],
                         amount_due: entry.consumer[8],
                         validity: entry.validity,
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const paymentHandler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=all_payment&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.payment.clear();
-                db.editable.put({table:'payment', is_editable:result.editable, last_sync: new Date()});
+                db.payment.clear()
+                db.editable.put({table:'payment', is_editable:result.editable, last_sync: new Date()})
                 for (let payment of result.data) {
                     db.payment.put({
                         id: payment.payments[0],
@@ -225,18 +224,18 @@ const paymentHandler = () => {
                         source: payment.payments[3],
                         user_id: payment.consumer_id,
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const zoneHandler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=zone&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.zone.clear();
-                db.editable.put({table:'zone', is_editable:result.editable, last_sync: new Date()});
+                db.zone.clear()
+                db.editable.put({table:'zone', is_editable:result.editable, last_sync: new Date()})
                 for (let entry of result.data) {
                     db.zone.put({
                         id: entry[0],
@@ -250,15 +249,15 @@ const zoneHandler = () => {
                     })
                 }
             })
-        );
+        )
 }
 
 const managerHandler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=manager&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.manager.clear();
-                db.editable.put({table:'manager', is_editable:result.editable, last_sync: new Date()});
+                db.manager.clear()
+                db.editable.put({table:'manager', is_editable:result.editable, last_sync: new Date()})
                 for (let entry of result.data) {
                     db.manager.put({
                         id: entry[0],
@@ -270,18 +269,18 @@ const managerHandler = () => {
                         zone: entry[6],
                         unknown: entry[7],
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const ticketHandler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=ticket&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.ticket.clear();
-                db.editable.put({table:'ticket', is_editable:result.editable, last_sync: new Date()});
+                db.ticket.clear()
+                db.editable.put({table:'ticket', is_editable:result.editable, last_sync: new Date()})
                 for (let entry of result.data) {
                     db.ticket.put({
                         id: entry[0],
@@ -292,18 +291,18 @@ const ticketHandler = () => {
                         statut: entry[5],
                         photo: entry[6],
                         sync: 0
-                    });
+                    })
                 }
             })
-        );
+        )
 }
 
 const waterElement_handler = () => {
     return fetch('http://127.0.0.1:8000/api/table/?name=water_element&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.water_element.clear();
-                db.editable.put({table:'water_element', is_editable:result.editable, last_sync: new Date()});
+                db.water_element.clear()
+                db.editable.put({table:'water_element', is_editable:result.editable, last_sync: new Date()})
                 for (let entry of result.data) {
                     db.water_element.put({
                         id: entry[0],
@@ -319,7 +318,7 @@ const waterElement_handler = () => {
                     })
                 }
             })
-        );
+        )
 }
 
 const getDataFromDB = async (table) => {
@@ -398,25 +397,27 @@ const emptyDB = () => {
         db.logs.clear(),
         db.logs_history.clear(),
         db.water_element_details.clear()
-    ]).catch(err => {
-        console.log('[SW_EMPTYDB]', err);
-    });
+    ]).then(() => {
+        setInfos('dbLoaded', false)
+    }).catch(err => {
+        console.log('[SW_EMPTYDB]', err)
+    })
 }
 
 const sendDataToDB = async(dataID, silent=false) => {
     let tab = []
-    if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray();
-    else tab = await db.update_queue.toArray();
+    if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray()
+    else tab = await db.update_queue.toArray()
 
     return Promise.all(tab.map(element =>
         fetch(element.url, element.init).then(response => {
             if (response.ok) {
-                console.log('[SW_SYNC]', 'The ' + element.id + ' is synced');
-                db.update_queue.delete(element.id);
+                console.log('[SW_SYNC]', 'The ' + element.id + ' is synced')
+                db.update_queue.delete(element.id)
             } else {
                 db.update_queue.update(element.id, {status: response.status}).then(update => {
                     console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
-                });
+                })
             }
         })
     )).then(async () => {
@@ -425,14 +426,14 @@ const sendDataToDB = async(dataID, silent=false) => {
             title: 'toPush',
             silent,
             toPush: await db.update_queue.count()
-        });
+        })
     }).catch(async () => {
         console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
         channel.postMessage({
             title: 'toPush',
             silent,
             toPush: await db.update_queue.count()
-        });
+        })
     })
 }
 
@@ -461,6 +462,8 @@ const cacheCleanedPromise = () => {
         keys.forEach(key => {
             if (key !== cacheVersion) caches.delete(key)
         })
+    }).then(() => {
+        setInfos('cacheLoaded', false)
     })
 }
 
@@ -487,19 +490,20 @@ const getCache = () => {
 }
 
 const getInfos = () => {
-    synced = true;
     return db.sessions.where('id').equals(1).first(async data => {
-        username = data.username;
-        needDisconnect = data.needDisconnect;
+        username = data.username
+        needDisconnect = data.needDisconnect
         dbLoaded = data.dbLoaded
         cacheLoaded = data.cacheLoaded
         channel.postMessage({
             title: 'getInfos',
             toPush: await db.update_queue.count(),
             date: await getOldestDate()
-        });
-        return data;
-    });
+        })
+        return data
+    }).then(() => {
+        synced = true
+    })
 }
 
 const setInfos = (info, value) => {
@@ -522,33 +526,31 @@ const setInfos = (info, value) => {
         needDisconnect: needDisconnect,
         cacheLoaded: cacheLoaded,
         dbLoaded: dbLoaded
-    });
+    })
 }
 
 const resetState = async () => {
     channel.postMessage({
         title: 'resetNavigation'
-    });
+    })
     await cacheCleanedPromise()
-    await emptyDB();
-    synced = false;
-    setInfos('username', null);
-    setInfos('needDisconnect', false);
-    setInfos('dbLoaded', false);
-    setInfos('cacheLoaded', false);
-    setInfos('isLoading', false);
-    connected = false;
+    await emptyDB()
+    synced = false
+    setInfos('username', null)
+    setInfos('needDisconnect', false)
+    setInfos('dbLoaded', false)
+    setInfos('cacheLoaded', false)
     console.log("State reset")
 }
 
 const CacheFirst = event => {
     return caches.match(event.request)
-        .then(response => response || fetch(event.request).catch(() => caches.match('/offline/')));
+        .then(response => response || fetch(event.request).catch(() => caches.match('/offline/')))
 }
 
 const NetworkFirst = (event, page) => {
     return fetch(event.request)
-        .catch(() => caches.match(page));
+        .catch(() => caches.match(page))
 }
 
 const StaleWhileRevalidate = event => {
@@ -556,11 +558,11 @@ const StaleWhileRevalidate = event => {
         .then(cache => cache.match(event.request)
             .then(response => response || fetch(event.request)
                 .then(networkResponse => {
-                    cache.put(event.request, networkResponse.clone());
-                    return networkResponse;
+                    cache.put(event.request, networkResponse.clone())
+                    return networkResponse
                 })
             )
-        );
+        )
 }
 
 const CacheOrFetchAndCache = (event,cacheToUse) => {
@@ -568,13 +570,13 @@ const CacheOrFetchAndCache = (event,cacheToUse) => {
         .then(cacheResponse =>
             cacheResponse || fetch(event.request)
                 .then(networkResponse => {
-                    const clonedResponse = networkResponse.clone();
+                    const clonedResponse = networkResponse.clone()
                     caches.open(cacheToUse).then(cache => {
                         cache.put(event.request, clonedResponse).catch(error => {
                             console.error(error)
                         });
                     });
-                    return networkResponse;
+                    return networkResponse
                 }).catch(function (error) {
                     console.error(error)
                 })
@@ -585,8 +587,8 @@ const CacheOrFetchAndCache = (event,cacheToUse) => {
  * Event listener
  *********************************************************************************/
 self.addEventListener('install', event => {
-    event.waitUntil(cacheCleanedPromise());
-});
+    event.waitUntil(cacheCleanedPromise())
+})
 
 
 self.addEventListener('activate', () => {
@@ -602,12 +604,13 @@ self.addEventListener('activate', () => {
             toPush: await db.update_queue.count(),
             date: await getOldestDate()
         })
+        synced = true
         getCache()
         getDataFromDB('all')
     }).catch(() => {
         getInfos().then(async () => {
             if (!cacheLoaded && !needDisconnect) getCache()
-            if (!dbLoaded && !needDisconnect) getOfflineData()
+            if (!dbLoaded && !needDisconnect) getDataFromDB('all')
             else channel.postMessage({
                 title: 'updateInfos',
                 toPush: await db.update_queue.count(),
@@ -620,91 +623,91 @@ self.addEventListener('activate', () => {
 
 
 self.addEventListener('fetch', async event => {
-    const url = event.request.url;
+    const url = event.request.url
 
-    if (!synced && ! isSyncing) await getInfos();
-    if (!cacheLoaded && !isCacheLoading && !needDisconnect) await getCache();
-    if (!dbLoaded && !isDbLoading && !needDisconnect) await getDataFromDB('all')
+    if (!synced) await getInfos()
+    if (synced && !cacheLoaded && !isCacheLoading && !needDisconnect) getCache()
+    if (synced && !dbLoaded && !isDbLoading && !needDisconnect) getDataFromDB('all')
 
     if (event.request.method === 'POST' || event.request.method === 'post') {
-        event.respondWith(fetch(event.request));
+        event.respondWith(fetch(event.request))
     } 
     else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
-        event.respondWith(CacheOrFetchAndCache(event, cacheVersion));
+        event.respondWith(CacheOrFetchAndCache(event, cacheVersion))
     } 
     else if (url.includes('/logout')) {
-        await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()]);
+        await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()])
         event.respondWith(fetch(event.request)
             .then(networkResponse => {
-                setInfos('needDisconnect', false);
-                return networkResponse;
+                setInfos('needDisconnect', false)
+                return networkResponse
             })
             .catch(() => {
-                setInfos('needDisconnect', true);
-                return caches.match('/offline/');
+                setInfos('needDisconnect', true)
+                return caches.match('/offline/')
             })
-        );
+        )
     } 
     else if (needDisconnect) {
         event.respondWith(fetch(event.request)
             .then(() => {
-                setInfos('needDisconnect', false);
-                return Response.redirect('/logout/');
+                setInfos('needDisconnect', false)
+                return Response.redirect('/logout/')
             })
             .catch(() => {
-                return caches.match('/offline/');
+                return caches.match('/offline/')
             })
-        );
+        )
     } 
     else if (url.includes('/api/graph')){
-        event.respondWith(NetworkFirst(event, event.request.url));
+        event.respondWith(NetworkFirst(event, event.request.url))
     } 
     else if (url.includes('/api/table') || url.includes('.png')) {
         event.respondWith(fetch(event.request)
             .catch(() => {
                 console.error('cannot reach the dataTable online')
             })
-        );
+        )
     }
     else if (url.includes('/login')) {
-        event.respondWith(NetworkFirst(event, '/offline/'));
+        event.respondWith(NetworkFirst(event, '/offline/'))
     }
     else if (isRevalidatePages(url)) {
         event.respondWith(StaleWhileRevalidate(event))
     }
     else {
-        event.respondWith(CacheOrFetchAndCache(event, userCache));
+        event.respondWith(CacheOrFetchAndCache(event, userCache))
     }
-});
+})
 
 
 channel.addEventListener('message', async event => {
     switch (event.data.title) {
         case 'getInfos':
             if (username === null || username === undefined) {
-                username = event.data.username;
+                username = event.data.username
             }
             channel.postMessage({
                 title: 'updateInfos',
                 date: await getOldestDate(),
                 toPush: await db.update_queue.count()
-            });
+            })
             break
         case 'updateDB':
-            if (!isDbLoading) getDataFromDB(event.data.db);
+            if (!isDbLoading) getDataFromDB(event.data.db)
             channel.postMessage({
                 title: 'updateStatus',
                 date: await getOldestDate(),
                 table: event.data.db,
                 status: 'loading'
-            });
+            })
             break
         case 'pushData':
             sendDataToDB(event.data.id)
             break
         case 'getUsername':
-            if(username !== null && username !== event.data.username && username !== undefined) resetState();
-            else if (username === null) setInfos('username', event.data.username);
+            if(username !== null && username !== event.data.username && username !== undefined) resetState()
+            else if (username === null) setInfos('username', event.data.username)
             break
         case 'acceptModification':
             await sendDataToDB(event.data.id)
@@ -713,4 +716,4 @@ channel.addEventListener('message', async event => {
             await cancelModification(event.data.id)
             break
     }
-});
+})
