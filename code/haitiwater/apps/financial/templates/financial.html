@@ -36,7 +36,7 @@
                         <div class="panel-actions form-inline">
                             <a href="#modalZone" onclick="setupModalZoneAdd()" class="modal-with-form fa fa-plus" data-toggle="tooltip" title="Ajouter" id="plus-zone"></a>
                             <a id="zone-options" class="fas fa-cog clickable" data-toggle="tooltip" title="Options"></a>
-                            <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser""></a>
+                            <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
                         </div>
                         <h2 class="panel-title">Zones</h2>
                         <h2 class="panel-subtitle">Cliquez sur une zone pour filtrer les consommateurs</h2>
@@ -57,7 +57,7 @@
                         <a id="call-consumer-modal" href="#modal-consumer" onclick="setupModalConsumerAdd()" class="modal-with-form fa fa-plus" data-toggle="tooltip" title="Ajouter"></a>
                         <a id="print-manager" class="fa fa-print clickable" data-toggle="tooltip" title="Imprimer la table"></a>
                         <a id="manager-options" class="fas fa-cog clickable" data-toggle="tooltip" title="Options"></a>
-                        <a id="payment-reload" onclick="reloadConsumer()" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
+                        <a id="payment-reload" onclick="reloadTable('consumer')" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
                         <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
                     </div>
                     <h2 id="consumer-title" class="panel-title">Consommateurs</h2>
@@ -144,7 +144,7 @@
                            class="modal-with-form fa fa-plus" data-toggle="tooltip" title="Ajouter"></a>
                         <a id="print-payment" class="fa fa-print clickable" data-toggle="tooltip" title="Imprimer la table"></a>
                         <a id="payment-options" class="fas fa-cog clickable" data-toggle="tooltip" title="Options"></a>
-                        <a id="consumer-reload" onclick="reloadPayment()" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
+                        <a id="consumer-reload" onclick="reloadTable('payment')" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
                         <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
                     </div>
                     <h2 class="panel-title">Paiements de <b class="consumer-name-details">N/A</b></h2>

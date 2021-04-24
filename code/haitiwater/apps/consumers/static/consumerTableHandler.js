@@ -73,14 +73,6 @@ async function getConsumerData() {
     return result;
 }
 
-async function reloadConsumer() {
-    new BroadcastChannel('sw-messages').postMessage({
-        title:'updateDB',
-        db:'consumer'
-    })
-    console.log("update consumer")
-}
-
 function getConsumerDatatableConfiguration(dataURL, fullView){
     return {
         lengthMenu: [

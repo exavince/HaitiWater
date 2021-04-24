@@ -17,7 +17,7 @@
     <section class="panel" data-intro="Cette table rassemble les actions effectuées par vos subalternes. Vous pouvez les accepter ou les refuser, ce qui les annulera. Ces choix sont irréversibles.">
         <header class="panel-heading">
             <div class="panel-actions form-inline">
-                <a id="logs-reload" onclick="reloadLogs()" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
+                <a id="logs-reload" onclick="reloadTable('logs')" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
                 <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
             </div>
             <h2 id="logs-title" class="panel-title">Actions effectuées</h2>
@@ -47,7 +47,7 @@
     <section class="panel" data-intro="Vous pouvez voir les dernières actions acceptées et refusées, mais vous ne pouvez plus les modifier.">
         <header class="panel-heading">
             <div class="panel-actions form-inline">
-                <a id="logsHistory-reload" onclick="reloadLogsHistory()" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
+                <a id="logsHistory-reload" onclick="reloadTable('logsHistory')" class="fa fa-redo clickable" data-toggle="tooltip" title="Mettre a jour"></a>
                 <a href="#" class="fa fa-caret-down" data-toggle="tooltip" title="Minimiser"></a>
             </div>
             <h2 id="logsHistory-title" class="panel-title">Actions effectuées</h2>

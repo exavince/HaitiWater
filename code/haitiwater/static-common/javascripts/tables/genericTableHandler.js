@@ -527,3 +527,11 @@ async function indexDBModify(table, rowID) {
             break;
     }
 }
+
+async function reloadTable(table) {
+    new BroadcastChannel('sw-messages').postMessage({
+        title:'updateDB',
+        db:table
+    })
+    console.log("Update " + table)
+}

@@ -136,11 +136,3 @@ function getLogsHistoryTableConfiguration(dataURL){
         "ajax": getAjaxController(dataURL),
     };
 }
-
-async function reloadLogsHistory() {
-    new BroadcastChannel('sw-messages').postMessage({
-        title:'updateDB',
-        db:'logsHistory'
-    })
-    console.log("update consumer")
-}

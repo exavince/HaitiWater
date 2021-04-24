@@ -242,11 +242,3 @@ async function setTitleZone() {
         }
     })
 }
-
-async function reloadZone() {
-    new BroadcastChannel('sw-messages').postMessage({
-        title:'updateDB',
-        db:'zone'
-    })
-    console.log("update consumer")
-}
