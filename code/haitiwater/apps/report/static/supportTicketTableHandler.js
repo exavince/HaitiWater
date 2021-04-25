@@ -13,7 +13,7 @@ async function drawTicketTable(){
     }
 
     $('#datatable-ticket').DataTable(config);
-    setTitleTicket()
+    addLastUpdateToTitle('ticket')
 
     $('#datatable-ticket tbody').on( 'click', '.remove-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
@@ -168,24 +168,4 @@ async function getTicketDatatableOfflineConfiguration(){
             }
         }
     };
-}
-
-async function setTitleTicket() {
-    let title = $('#tickets-title')
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('editable');
-    table.where('table').equals('ticket').first().then(result => {
-        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
-            title.html("Tickets de support " + ("(" + result.last_sync.toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            }) + ")").fontsize(2)
-            )
-        }
-    })
 }

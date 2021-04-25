@@ -13,7 +13,7 @@ async function drawPaymentTable(userID) {
 
     let datatable = $('#datatable-payment');
     let table = datatable.DataTable(config);
-    setTitlePayment()
+    addLastUpdateToTitle('payment');
 
     datatable.find('tbody').on( 'click', '.remove-row', async function () {
         let data = table.row($(this).closest('tr')).data();
@@ -142,24 +142,4 @@ async function getPaymentDatatableOfflineConfiguration(userID){
             }
         },
     };
-}
-
-async function setTitlePayment() {
-    let title = $('#payment-title')
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('editable');
-    table.where('table').equals('payment').first().then(result => {
-        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
-            title.html(("(" + result.last_sync.toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            }) + ")").fontsize(2)
-            )
-        }
-    })
 }

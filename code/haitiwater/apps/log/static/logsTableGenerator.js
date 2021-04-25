@@ -24,8 +24,9 @@ async function drawLogTable() {
     }
 
     let table = $('#datatable-logs').DataTable(config);
-    setTitleLogs()
-    setTitleLogsHistory()
+    addLastUpdateToTitle('logs')
+    addLastUpdateToTitle('logsHistory')
+
 
     $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {
         var tr = $(this).closest('tr');
@@ -233,44 +234,4 @@ function getLogsActionButtonsHTML(){
     return '<div class="center"><a style="cursor:pointer;" class="accept-modification fas fa-check-square"></a>' +
             '&nbsp&nbsp&nbsp&nbsp' + // Non-breaking spaces to avoid clicking on the wrong icon
             '<a style="cursor:pointer;" class="revert-modification far fa-times-circle"></a></div>'
-}
-
-async function setTitleLogs() {
-    let title = $('#logs-title')
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('editable');
-    table.where('table').equals('logs').first().then(result => {
-        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
-            title.html("Actions effectuées " + ("(" + result.last_sync.toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            }) + ")").fontsize(2)
-            )
-        }
-    })
-}
-
-async function setTitleLogsHistory() {
-    let title = $('#logsHistory-title')
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('editable');
-    table.where('table').equals('logs_history').first().then(result => {
-        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
-            title.html("Actions effectuées " + ("(" + result.last_sync.toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            }) + ")").fontsize(2)
-            )
-        }
-    })
 }

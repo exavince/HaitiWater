@@ -207,7 +207,7 @@ function formatRender(data) {
     return data
 }
 
-function  urlToJSON(url) {
+function urlToJSON(url) {
     let json = {}
     url.split('&').forEach(info => {
         let temp = info.split('=')
