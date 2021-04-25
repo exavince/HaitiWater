@@ -36,32 +36,48 @@ function setupFountainOrZoneManagerDisplay(value, preSelection){
     }
 }
 
+async function getOutletsData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('outlets');
+    let result = [];
+
+    await table.each(row => {
+        result.push([
+            row.id,
+            row.name,
+        ]);
+    });
+
+    return result;
+}
+
 
 function requestAvailableZones(preSelection){
     let select = $('#select-manager-zone');
     select.html("");
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let postURL = baseURL + "/api/table/?name=zone&draw=0&columns%5B0%5D%5Bdata%5D=0&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=1&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=false&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=0&order%5B0%5D%5Bdir%5D=asc&start=0&length=-1&search%5Bvalue%5D=&search%5Bregex%5D=false";
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', postURL, true);
-    xhr.responseType = 'json';
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status === 200) {
-        let zones = xhr.response.data;
-        zones.forEach(function(zone){
-            select.append(
-                '<option value="' + zone[0] + '">' + zone[1] + '</option>'
-            )
-        });
-        // Pre-select data from edition
-        let idZoneOption = select.find('option').filter(function () { return $(this).html() === preSelection; }).val();
-        select.val(idZoneOption);
-      } else {
-        console.log(xhr.response);
-      }
-    };
-    xhr.send();
+    let postURL = baseURL + "/api/table/?name=zone&indexDB=true";
+
+    fetch(postURL).then(networkResponse => networkResponse.json()
+        .then(result => {
+            for (let zone of result.data) {
+                select.append('<option value="' + zone[0] + '">' + zone[1] + '</option>')
+            }
+            let idZoneOption = select.find('option').filter(function () { return $(this).html() === preSelection; }).val();
+            select.val(idZoneOption);
+        })
+    ).catch(err => {
+        console.log(err);
+        getZoneData().then(zones => {
+            zones.forEach(zone => {
+                select.append('<option value="' + zone[0] + '">' + zone[1] + '</option>')
+            });
+            // Pre-select data from edition
+            let idZoneOption = select.find('option').filter(function () { return $(this).html() === preSelection; }).val();
+            select.val(idZoneOption);
+        })
+    })
 }
 
 
@@ -78,26 +94,23 @@ function requestAvailableWaterElements(preSelection){
     // AJAX request
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/outlets/";
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', postURL, true);
-    xhr.responseType = 'json';
-    xhr.onload = function() {
-      var status = xhr.status;
-      if (status === 200) {
-        //Populate the select2
-        let zones = xhr.response.data;
-        zones.forEach(function(zone){
-            multiselect.append(
-                '<option value="' + zone[0] + '">' + zone[1] + '</option>'
-            )
-        });
-        //Pre select the data from edition
-        multiselect.val(preSelection).change();
-      } else {
-        console.log(xhr.response);
-      }
-    };
-    xhr.send();
+
+    fetch(postURL).then(networkResponse => networkResponse.json()
+        .then(result => {
+            for (let zone of result.data) {
+                multiselect.append('<option value="' + zone[0] + '">' + zone[1] + '</option>')
+            }
+            multiselect.val(preSelection).change();
+        })
+    ).catch(err => {
+        console.log(err)
+        getOutletsData().then(outlets => {
+            outlets.forEach(outlet => {
+                multiselect.append('<option value="' + outlet[0] + '">' + outlet[1] + '</option>')
+            })
+            multiselect.val(preSelection).change();
+        })
+    })
 }
 
 /**
