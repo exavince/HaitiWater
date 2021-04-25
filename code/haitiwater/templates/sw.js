@@ -94,7 +94,8 @@ db.version(dbVersion).stores({
     logs: 'id,time,type,user,summary,details, sync',
     logs_history: 'id,time,type,user,summary,details,action, sync',
     update_queue: '++id, url, init, date, type, table, elemId, status, details',
-    sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded'
+    sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded',
+    outlets: 'id, name'
 })
 
 const getOldestDate = async () => {
@@ -109,12 +110,28 @@ const getOldestDate = async () => {
     return date
 }
 
+const outletHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/outlets/')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.outlets.clear()
+                db.editable.put({table:'outlets', is_editable:false, last_sync: new Date()})
+                for (let entry of result.data) {
+                    db.outlets.put({
+                        id:entry[0],
+                        name:entry[1],
+                    })
+                }
+            })
+        )
+}
+
 const waterElementDetailsHandler = () => {
     return fetch('http://127.0.0.1:8000/api/details/?table=water_element_all')
         .then(networkResponse => networkResponse.json()
             .then(result => {
-                db.water_element_details.clear();
-                db.editable.put({table:'waterElementDetails', is_editable:true, last_sync: new Date()});
+                db.water_element_details.clear()
+                db.editable.put({table:'waterElementDetails', is_editable:true, last_sync: new Date()})
                 for (let entry of result) {
                     db.water_element_details.put({
                         id: entry.id,
@@ -336,7 +353,8 @@ const getDataFromDB = async (table) => {
                     paymentHandler(),
                     logsHandler(),
                     logsHistoryHandler(),
-                    waterElementDetailsHandler()
+                    waterElementDetailsHandler(),
+                    outletHandler(),
                 ]).then(() => {
                     setInfos('dbLoaded', true)
                 })
@@ -396,7 +414,8 @@ const emptyDB = () => {
         db.payment.clear(),
         db.logs.clear(),
         db.logs_history.clear(),
-        db.water_element_details.clear()
+        db.water_element_details.clear(),
+        db.outlets.clear(),
     ]).then(() => {
         setInfos('dbLoaded', false)
     }).catch(err => {
