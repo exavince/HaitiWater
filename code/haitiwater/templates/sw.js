@@ -114,7 +114,7 @@ const waterElementDetailsHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element_details.clear();
-                db.editable.put({table:'water_element_details', is_editable:true, last_sync: new Date()});
+                db.editable.put({table:'waterElementDetails', is_editable:true, last_sync: new Date()});
                 for (let entry of result) {
                     db.water_element_details.put({
                         id: entry.id,
@@ -160,7 +160,7 @@ const logsHistoryHandler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs_history.clear();
-                db.editable.put({table:'logs_history', is_editable:result.editable, last_sync: new Date()});
+                db.editable.put({table:'logsHistory', is_editable:result.editable, last_sync: new Date()});
                 for (let entry of result.data) {
                     db.logs_history.put({
                         id: entry.id,
@@ -302,7 +302,7 @@ const waterElement_handler = () => {
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element.clear()
-                db.editable.put({table:'water_element', is_editable:result.editable, last_sync: new Date()})
+                db.editable.put({table:'waterElement', is_editable:result.editable, last_sync: new Date()})
                 for (let entry of result.data) {
                     db.water_element.put({
                         id: entry[0],

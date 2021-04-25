@@ -543,14 +543,14 @@ async function addLastUpdateToTitle(tableName) {
     let table = db.table('editable');
     table.where('table').equals(tableName).first().then(result => {
         if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
-            title.append(result.last_sync.toLocaleString('en-GB', {
+            title.append("   " + result.last_sync.toLocaleString('en-GB', {
                 day: 'numeric',
                 month: 'numeric',
                 year: 'numeric',
                 hour: '2-digit',
                 minute: '2-digit',
                 hourCycle: 'h23'
-            })).addClass('panel-title')
+            }).fontsize(2))
         }
     })
 }
