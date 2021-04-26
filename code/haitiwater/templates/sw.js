@@ -87,7 +87,7 @@ db.version(dbVersion).stores({
     consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
     water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up, sync',
-    water_element_details: 'id,type,localization,manager,users,state,currentMonthCubic,averageMonthCubic,totalCubic,geoJSON',
+    water_element_details: 'id,type,localization,manager,users,state,currentMonthCubic,averageMonthCubic,totalCubic,geoJSON, sync',
     manager: 'id,nom,prenom,telephone,mail,role,zone,unknown, sync',
     consumer_details: 'consumer_id,amount_due,validity, sync',
     payment: 'id,data,value,source,user_id, sync',
@@ -95,7 +95,9 @@ db.version(dbVersion).stores({
     logs_history: 'id,time,type,user,summary,details,action, sync',
     update_queue: '++id, url, init, date, type, table, elemId, status, details',
     sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded',
-    outlets: 'id, name'
+    outlets: 'id, name',
+    gis: 'id, gisData'
+
 })
 
 const getOldestDate = async () => {
@@ -108,6 +110,20 @@ const getOldestDate = async () => {
         }
     }
     return date
+}
+
+const gisHandler = () => {
+    return fetch('http://127.0.0.1:8000/api/gis/?marker=all')
+        .then(networkResponse => networkResponse.json()
+            .then(result => {
+                db.gis.clear()
+                db.editable.put({table:'gis', is_editable:false, last_sync: new Date()})
+                db.gis.put({
+                    id:1,
+                    gis:result
+                })
+            })
+        )
 }
 
 const outletHandler = () => {
@@ -355,6 +371,7 @@ const getDataFromDB = async (table) => {
                     logsHistoryHandler(),
                     waterElementDetailsHandler(),
                     outletHandler(),
+                    gisHandler()
                 ]).then(() => {
                     setInfos('dbLoaded', true)
                 })
@@ -416,6 +433,7 @@ const emptyDB = () => {
         db.logs_history.clear(),
         db.water_element_details.clear(),
         db.outlets.clear(),
+        db.gis.clear()
     ]).then(() => {
         setInfos('dbLoaded', false)
     }).catch(err => {

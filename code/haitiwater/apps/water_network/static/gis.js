@@ -61,12 +61,21 @@ function waterGISPopulate(elementPosition){
         let drawElement = L.geoJSON(geoJSON).addTo(drawLayer);
         drawElement.id = id;
         drawElement.bindTooltip(tooltip, {
-        sticky:true
-    });
+            sticky:true
+        });
         drawElement.on('click', function(e){
+            console.log(drawElement.id)
             requestWaterElementDetails(drawElement.id);
         });
     }
+}
+
+async function getGisData() {
+    let dexie = await new Dexie('user_db');
+    let db = await dexie.open();
+    let table = db.table('gis');
+
+    return await table.where('id').equals(1).first();
 }
 
 
@@ -75,26 +84,27 @@ function waterGISPopulate(elementPosition){
  * @return {[JSONArray]} [The positions as a list of GeoJSON]
  */
 function requestAllElementsPosition(){
-    let requestURL = "../api/gis?marker=all";
-    let xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function(){
-        if (this.readyState == 4 && this.status == 200) {
-            waterGISPopulate(JSON.parse(this.response));
-        }
-        else if (this.readyState == 4){
-            console.log(this);
+    if (localStorage.getItem("offlineMode") === "true") {
+       getGisData().then(data => {
+           waterGISPopulate(data.gis)
+       })
+    }
+    else {
+        let requestURL = "../api/gis?marker=all";
+        fetch(requestURL).then(networkResponse => networkResponse.json()
+            .then(result => {
+                waterGISPopulate(result)
+            })
+        ).catch(err => {
+            console.log(err);
             new PNotify({
                 title: 'Erreur',
                 text: 'Les positions ne peuvent être téléchargées',
                 type: 'error'
             });
             waterGISPopulate(false);
-        }
-    };
-    xhttp.open('GET', requestURL, true);
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.send();
+        })
+    }
 }
 
 /**
@@ -196,9 +206,8 @@ async function getWaterElementDetailsData(elementID) {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
     let table = db.table('water_element_details');
-    let result = await table.where('id').equals(elementID).first();
+    let result = await table.where('id').equals(parseInt(elementID)).first();
     console.log(result);
-
     return result;
 }
 
@@ -214,24 +223,15 @@ function requestWaterElementDetails(elementID){
     }
     else {
         let requestURL = "../api/details?table=water_element&id="+elementID;
-        let xhttp = new XMLHttpRequest();
-
-        xhttp.onreadystatechange = function(){
-            if (this.readyState === 4) {
-                if (this.status === 200) {
-                    $('.selected').removeClass('selected'); //de-select row as to not confuse in case of map selection (element click)
-                    setupWaterElementDetails(JSON.parse(this.response));
-                } else {
-                    console.log(this);
-                    let msg = "Une erreur est survenue:<br>" + this.status + ": " + this.statusText;
-                    displayDetailTableError(msg);
-                }
-            }
-        };
-
-        xhttp.open('GET', requestURL, true);
-        xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-        xhttp.send();
+        fetch(requestURL).then(networkResponse => networkResponse.json()
+            .then(result => {
+                setupWaterElementDetails(result)
+            })
+        ).catch(err => {
+            console.log(err)
+            let msg = "Une erreur est survenue:<br>" + networkReponse.status + ": " + err;
+            displayDetailTableError(msg);
+        })
     }
 }
 
@@ -285,8 +285,6 @@ function setupWaterElementDetails(response){
     } else {
         latLongDetail.html('N/A');
     }
-
-
     readyMapDrawButtons(response.type, hasLocalization);
 }
 
@@ -446,30 +444,150 @@ function saveDraw(event){
  */
 function sendDrawToServer(geoJSON){
     let requestURL = "../api/gis/?action=add&id=" + currentElementID;
-    let xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function(){
-        if (this.readyState === 4) {
-            if (this.status === 200) {
-                console.log(this);
-            } else {
-                console.log(this);
-                let msg = "Une erreur est survenue:<br>" + this.status + ": " + this.statusText;
-                errorDetailTable.html(msg);
-                return this;
-            }
-        }
+    let myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/json",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: JSON.stringify(geoJSON)
     };
 
-    xhttp.open('POST', requestURL, true);
-    xhttp.setRequestHeader('Content-Type', 'application/json');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.send(JSON.stringify(geoJSON));
+    navigator.serviceWorker.ready.then(async () => {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_queue = db.table('update_queue');
+        db_queue.put({
+            url:requestURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'Carte',
+            init:myInit,
+            type:'Modifier',
+            elemId: currentElementID,
+            status:"En attente",
+            details:myInit
+        });
+
+        new PNotify({
+            title: 'Succès!',
+            text: 'Votre demande de modification est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
+            type: 'success'
+        })
+
+        await indexDBModify('water_element', currentElementID);
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+    }).catch(() => {
+        fetch(postURL, myInit)
+            .then(response => {
+                if(response.ok) {
+                    new PNotify({
+                        title: 'Succès!',
+                        text: 'Élément ajouté avec succès',
+                        type: 'success'
+                    });
+                } else {
+                    let msg = "Une erreur est survenue:<br>" + response.status + ": " + response.statusText;
+                    errorDetailTable.html(msg);
+                }
+            })
+            .catch(err => {
+                let msg = "Une erreur est survenue:<br>" + response.status + ": " + err;
+                errorDetailTable.html(msg);
+            })
+    });
 }
 
 function removeHandler(e){
     let requestURL = "../api/gis/?action=remove&id=" + currentElementID;
-    let xhttp = new XMLHttpRequest();
+    let myInit = {
+        method: 'post',
+        headers: {
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+    };
+
+    navigator.serviceWorker.ready.then(async () => {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_queue = db.table('update_queue');
+        db_queue.put({
+            url:requestURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'Carte',
+            init:myInit,
+            type:'Supprimer',
+            elemId: currentElementID,
+            status:"En attente",
+            details:myInit
+        });
+
+        new PNotify({
+            title: 'Succès!',
+            text: 'Votre demande de suppression est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
+            type: 'success'
+        })
+
+        drawLayer.eachLayer(function (draw) {
+            console.log(draw);
+            if (draw.id === currentElementID) {
+                drawLayer.removeLayer(draw);
+                $('#element-details-lat-lon').html("N/A");
+            }
+        });
+        readyMapDrawButtons(currentElementType, false);
+
+        await indexDBModify('water_element', currentElementID);
+        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+    }).catch(() => {
+        fetch(postURL, myInit)
+            .then(response => {
+                if(response.ok) {
+                    new PNotify({
+                        title: 'Succès!',
+                        text: 'Élément supprimé avec succès',
+                        type: 'success'
+                    });
+                    drawLayer.eachLayer(function (draw) {
+                        console.log(draw);
+                        if (draw.id === currentElementID) {
+                            drawLayer.removeLayer(draw);
+                            $('#element-details-lat-lon').html("N/A");
+                        }
+                    });
+                    readyMapDrawButtons(currentElementType, false);
+                } else {
+                    new PNotify({
+                    title: 'Erreur',
+                    text: "L'élément ne peut être supprimé: " + response.statusText,
+                    type: 'error'
+                });
+                }
+            })
+            .catch(err => {
+                new PNotify({
+                    title: 'Erreur',
+                    text: "L'élément ne peut être supprimé: " + err,
+                    type: 'error'
+                });
+            })
+    });
+
+
+
 
     xhttp.onreadystatechange = function(){
         if (this.readyState === 4) {
@@ -493,9 +611,6 @@ function removeHandler(e){
         }
     };
 
-    xhttp.open('POST', requestURL, true);
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.send();
 }
 
 function isMarker(type){

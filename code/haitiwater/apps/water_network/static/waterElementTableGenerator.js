@@ -1,3 +1,4 @@
+// TODO : offline month selection
 function setWaterDataTableURL(month){
     if (localStorage.getItem("offlineMode") === "true") {
         $('#datatable-water_element').DataTable().data(getWaterElementData());
@@ -13,8 +14,8 @@ function setWaterDataTableURL(month){
 async function drawWaterElementTable(withManagers, withActions, gis){
     let configuration;
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
+
     if (localStorage.getItem("offlineMode") === "true") {
         $('#flavoured-part').css('background-color', '#8B0000');
         if(gis) configuration = await getWaterDatatableGISOfflineConfiguration(withManagers, withActions);
@@ -22,7 +23,6 @@ async function drawWaterElementTable(withManagers, withActions, gis){
     }
     else {
         console.log("[REQUEST_DATA]", dataURL);
-
         if(gis) configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
         else configuration = getWaterDatatableConfiguration(dataURL, withManagers, withActions);
     }
@@ -416,6 +416,7 @@ async function getWaterDatatableGISOfflineConfiguration(withManagers, withAction
     };
 }
 
+// TODO : Month selector for offline mode
 function attachMonthSelectorHandler(){
     let button = $('#water-element-month-selector');
     button.datepicker({
