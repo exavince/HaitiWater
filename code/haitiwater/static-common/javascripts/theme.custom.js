@@ -213,11 +213,13 @@ function setupOfflineMode(offlineMode){
 
     if (offlineMode){
         alertOffline.css('background-color', "red");
+        $('#flavoured-part').css('background-color', '#8B0000');
         offlineBadge.html("Offline");
         alertOffline.html("X");
     }
     else {
         offlineBadge.html("Online");
+        $('#flavoured-part').css('background-color', '#293241');
         alertOffline.html("V");
         alertOffline.css('background-color', "green");
     }

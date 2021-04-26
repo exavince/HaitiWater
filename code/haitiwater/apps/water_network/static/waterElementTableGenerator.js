@@ -16,7 +16,6 @@ async function drawWaterElementTable(withManagers, withActions, gis){
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
 
     if (localStorage.getItem("offlineMode") === "true") {
-        $('#flavoured-part').css('background-color', '#8B0000');
         if(gis) configuration = await getWaterDatatableGISOfflineConfiguration(withManagers, withActions);
         else configuration = await getWaterDatatableOfflineConfiguration(withManagers, withActions);
     }
