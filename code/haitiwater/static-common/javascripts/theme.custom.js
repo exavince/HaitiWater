@@ -212,7 +212,7 @@ function setupOfflineMode(offlineMode){
     let offlineBadge = $('#offline-badge');
 
     if (offlineMode){
-        alertOffline.css('background-color', "red");
+        alertOffline.css('background-color', "#293241");
         $('#flavoured-part').css('background-color', '#8B0000');
         offlineBadge.html("Offline");
         alertOffline.html("X");
