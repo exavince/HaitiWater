@@ -52,7 +52,6 @@ async function getOutletsData() {
     return result;
 }
 
-
 function requestAvailableZones(preSelection){
     let select = $('#select-manager-zone');
     select.html("");
@@ -79,7 +78,6 @@ function requestAvailableZones(preSelection){
         })
     })
 }
-
 
 function requestAvailableWaterElements(preSelection){
     // Instantiate the select2 object and make sure it is empty from previous requests

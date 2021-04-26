@@ -48,7 +48,7 @@ async function drawDataTable(tableName, consumerID){
         let data;
         switch (tableName) {
             case 'payment':
-                drawDataTable('consumer');
+                await drawDataTable('consumer');
                 data = await getPaymentData(consumerID);
                 break;
             case 'consumer':
@@ -74,6 +74,7 @@ async function drawDataTable(tableName, consumerID){
         table.draw();
         return;
     }
+
     console.log("ajax");
     table.ajax.reload();
     table.draw();
@@ -89,7 +90,7 @@ async function removeElement(table, id, otherParameters) {
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/remove/";
     if (typeof otherParameters === 'undefined') { otherParameters = ''; }
-    var myInit = {
+    let myInit = {
         method: 'post',
         headers: {
             "Content-type": "application/x-www-form-urlencoded",
@@ -230,7 +231,7 @@ function postNewRow(table, callback){
     }
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/add/";
-    var myInit = {
+    let myInit = {
         method: 'post',
         headers: {
             "Content-type": "application/x-www-form-urlencoded",
@@ -321,7 +322,7 @@ async function postEditRow(table, callback){
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
-    var myInit = {
+    let myInit = {
         method: 'post',
         headers: {
             "Content-type": "application/x-www-form-urlencoded",

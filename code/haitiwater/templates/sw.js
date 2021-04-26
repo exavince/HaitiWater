@@ -113,7 +113,7 @@ const getOldestDate = async () => {
 }
 
 const gisHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/gis/?marker=all')
+    return fetch('../api/gis/?marker=all')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.gis.clear()
@@ -127,7 +127,7 @@ const gisHandler = () => {
 }
 
 const outletHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/outlets/')
+    return fetch('../api/outlets/')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.outlets.clear()
@@ -143,7 +143,7 @@ const outletHandler = () => {
 }
 
 const waterElementDetailsHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/details/?table=water_element_all')
+    return fetch('../api/details/?table=water_element_all')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element_details.clear()
@@ -168,7 +168,7 @@ const waterElementDetailsHandler = () => {
 }
 
 const logsHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=logs&indexDB=true')
+    return fetch('../api/table/?name=logs&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs.clear();
@@ -189,7 +189,7 @@ const logsHandler = () => {
 }
 
 const logsHistoryHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=logs_history&indexDB=true')
+    return fetch('../api/table/?name=logs_history&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.logs_history.clear();
@@ -211,7 +211,7 @@ const logsHistoryHandler = () => {
 }
 
 const consumerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=consumer_full&indexDB=true')
+    return fetch('../api/table/?name=consumer_full&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.consumer.clear()
@@ -244,7 +244,7 @@ const consumerHandler = () => {
 }
 
 const paymentHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=all_payment&indexDB=true')
+    return fetch('../api/table/?name=all_payment&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.payment.clear()
@@ -264,7 +264,7 @@ const paymentHandler = () => {
 }
 
 const zoneHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=zone&indexDB=true')
+    return fetch('../api/table/?name=zone&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.zone.clear()
@@ -286,7 +286,7 @@ const zoneHandler = () => {
 }
 
 const managerHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=manager&indexDB=true')
+    return fetch('../api/table/?name=manager&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.manager.clear()
@@ -309,7 +309,7 @@ const managerHandler = () => {
 }
 
 const ticketHandler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=ticket&indexDB=true')
+    return fetch('../api/table/?name=ticket&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.ticket.clear()
@@ -331,7 +331,7 @@ const ticketHandler = () => {
 }
 
 const waterElement_handler = () => {
-    return fetch('http://127.0.0.1:8000/api/table/?name=water_element&indexDB=true')
+    return fetch('../api/table/?name=water_element&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
                 db.water_element.clear()

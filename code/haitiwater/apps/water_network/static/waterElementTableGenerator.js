@@ -10,7 +10,6 @@ function setWaterDataTableURL(month){
     }
 }
 
-
 async function drawWaterElementTable(withManagers, withActions, gis){
     let configuration;
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
@@ -55,7 +54,6 @@ async function drawWaterElementTable(withManagers, withActions, gis){
     await attachMonthSelectorHandler();
     prettifyHeader('water_element');
 }
-
 
 function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
     return {

@@ -13,7 +13,6 @@ function format ( d ) {
 async function drawLogTable() {
     let config;
     if (localStorage.getItem("offlineMode") === "true") {
-        $('#flavoured-part').css('background-color', '#8B0000');
         config = await getLogsTableOfflineConfiguration();
     }
     else  {
