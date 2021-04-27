@@ -12,6 +12,7 @@ let drawLayer = 'undefined';
 let currentElementType = 'undefined';
 let currentElementAddress = 'undefined';
 let currentElementID = 'undefined';
+let geoData = 'undefined';
 
 
 $(document).ready(function() {
@@ -73,9 +74,15 @@ function waterGISPopulate(elementPosition){
 async function getGisData() {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
-    let table = db.table('gis');
+    let table = db.table('water_element_details');
 
-    return await table.where('id').equals(1).first();
+    let geoData = {}
+
+    await table.each(element => {
+        geoData[element.id.toString()] = [element.localization, element.geoJSON]
+    })
+
+    return geoData
 }
 
 
@@ -86,7 +93,8 @@ async function getGisData() {
 function requestAllElementsPosition(){
     if (localStorage.getItem("offlineMode") === "true") {
        getGisData().then(data => {
-           waterGISPopulate(data.gis)
+           console.log(data)
+           waterGISPopulate(data)
        })
     }
     else {

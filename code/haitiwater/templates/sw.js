@@ -96,8 +96,6 @@ db.version(dbVersion).stores({
     update_queue: '++id, url, init, date, type, table, elemId, status, details',
     sessions: 'id,username,needDisconnect,dbLoaded, cacheLoaded',
     outlets: 'id, name',
-    gis: 'id, gisData'
-
 })
 
 const getOldestDate = async () => {
@@ -110,20 +108,6 @@ const getOldestDate = async () => {
         }
     }
     return date
-}
-
-const gisHandler = () => {
-    return fetch('../api/gis/?marker=all')
-        .then(networkResponse => networkResponse.json()
-            .then(result => {
-                db.gis.clear()
-                db.editable.put({table:'gis', is_editable:false, last_sync: new Date()})
-                db.gis.put({
-                    id:1,
-                    gis:result
-                })
-            })
-        )
 }
 
 const outletHandler = () => {
@@ -371,7 +355,6 @@ const getDataFromDB = async (table) => {
                     logsHistoryHandler(),
                     waterElementDetailsHandler(),
                     outletHandler(),
-                    gisHandler()
                 ]).then(() => {
                     setInfos('dbLoaded', true)
                 })
@@ -433,7 +416,6 @@ const emptyDB = () => {
         db.logs_history.clear(),
         db.water_element_details.clear(),
         db.outlets.clear(),
-        db.gis.clear()
     ]).then(() => {
         setInfos('dbLoaded', false)
     }).catch(err => {
@@ -447,9 +429,10 @@ const sendDataToDB = async(dataID, silent=false) => {
     else tab = await db.update_queue.toArray()
 
     return Promise.all(tab.map(element =>
-        fetch(element.url, element.init).then(response => {
+        fetch(element.url, element.init).then(async response => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced')
+                console.log('[SW_ANSWER]', await response.json())
                 db.update_queue.delete(element.id)
             } else {
                 db.update_queue.update(element.id, {status: response.status}).then(update => {
@@ -753,6 +736,4 @@ channel.addEventListener('message', async event => {
             await cancelModification(event.data.id)
             break
     }
-}).catch(err => {
-    console.log('[SW_MESSAGE]', err)
 })

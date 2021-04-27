@@ -50,7 +50,7 @@ def add_consumer_element(request):
                           creation=creation, expiration=expiration)
         invoice.save()
 
-    return HttpResponse(consumer.id, status=200)
+    return HttpResponse(consumer.descript(), status=200)
 
 
 def add_network_element(request):
@@ -300,4 +300,5 @@ def add_location_element(request, elem):
     loc = Location(elem=elem, lat=lat, lon=lon, poly=poly, json_representation=body)
 
     log_element(loc, request)
-    return HttpResponse(loc.id, status=200)
+
+    return HttpResponse(json.dumps(json_value), status=200)

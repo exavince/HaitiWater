@@ -1,6 +1,7 @@
 import json
 from datetime import date
 
+from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import User, Group
 from django.http import HttpResponse
 
@@ -63,7 +64,10 @@ def edit_water_element(request):
     elem.name = elem.get_type() + " " + elem.location
 
     log_element(elem, old, request)
-    return success_200
+
+    json_object = {'data': elem.network_descript()}
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def edit_consumer(request):
@@ -107,7 +111,9 @@ def edit_consumer(request):
                               creation=creation, expiration=expiration)
             invoice.save()
 
-    return success_200
+    json_object = {'data': consumer.descript()}
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def edit_zone(request):
