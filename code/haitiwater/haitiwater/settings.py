@@ -45,6 +45,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'haitiwater-1.herokuapp.com',
     'haitiwater.sipr.ucl.ac.be',
+    'tfe-haiti.info.ucl.ac.be'
     '.ngrok.io',
 ]
 
@@ -132,8 +133,8 @@ DATABASES = {
         'NAME': 'haitiwater',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'exavince',
-        'PASSWORD': 'shippuden95',
+        'USER': 'haitiwater',
+        'PASSWORD': 'zYe5PRRE',
     },
 }
 

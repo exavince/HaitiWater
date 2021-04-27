@@ -753,4 +753,6 @@ channel.addEventListener('message', async event => {
             await cancelModification(event.data.id)
             break
     }
+}).catch(err => {
+    console.log('[SW_MESSAGE]', err)
 })
