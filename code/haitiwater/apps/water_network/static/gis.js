@@ -93,7 +93,6 @@ async function getGisData() {
 function requestAllElementsPosition(){
     if (localStorage.getItem("offlineMode") === "true") {
        getGisData().then(data => {
-           console.log(data)
            waterGISPopulate(data)
        })
     }

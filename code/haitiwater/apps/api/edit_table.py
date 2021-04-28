@@ -65,7 +65,11 @@ def edit_water_element(request):
 
     log_element(elem, old, request)
 
-    json_object = {'data': elem.network_descript()}
+    json_object = {
+        'data': elem.network_descript(),
+        'type': 'edit',
+        'table': 'water_element'
+    }
 
     return HttpResponse(json.dumps(json_object), status=200)
 
@@ -111,7 +115,11 @@ def edit_consumer(request):
                               creation=creation, expiration=expiration)
             invoice.save()
 
-    json_object = {'data': consumer.descript()}
+    json_object = {
+        'data': consumer.descript(),
+        'type': 'edit',
+        'table': 'consumer'
+    }
 
     return HttpResponse(json.dumps(json_object), status=200)
 
@@ -145,7 +153,14 @@ def edit_zone(request):
         superzone.save()
 
     log_element(zone, old, request)
-    return success_200
+
+    json_object = {
+        'data': zone.descript(),
+        'type': 'edit',
+        'table': 'zone'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def edit_ticket(request):
@@ -178,7 +193,14 @@ def edit_ticket(request):
         ticket.image = image
 
     log_element(ticket, old, request)
-    return success_200
+
+    json_object = {
+        'data': ticket.descript(),
+        'type': 'edit',
+        'table': 'ticket'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def edit_manager(request):
@@ -194,6 +216,7 @@ def edit_manager(request):
     phone = request.POST.get("phone", None)
     user.profile.phone_number = phone
     type = request.POST.get("type", None)
+    tab = []
 
     if type == "fountain-manager":
         outlets = request.POST.get("outlets", None)
@@ -236,6 +259,9 @@ def edit_manager(request):
 
         log_element(user.profile, old, request)
 
+        tab = [user.username, user.last_name, user.first_name, user.profile.get_phone_number(),
+               user.email, "Gestionnaire de fontaine", user.profile.get_zone(), user.profile.outlets]
+
     elif type == "zone-manager":
         zone_id = request.POST.get("zone", None)
         zone = Zone.objects.filter(id=zone_id).first()
@@ -255,7 +281,16 @@ def edit_manager(request):
 
         log_element(user.profile, old, request)
 
-    return success_200
+        tab = [user.username, user.last_name, user.first_name, user.profile.get_phone_number(),
+               user.email, "Gestionnaire de zone", user.profile.zone.name, user.profile.outlets]
+
+    json_object = {
+        'data': tab,
+        'type': 'edit',
+        'table': 'manager'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def edit_payment(request):
@@ -276,8 +311,14 @@ def edit_payment(request):
     payment.water_outlet = consumer.water_outlet
     payment.amount = request.POST.get("amount", None)
 
+    json_object = {
+        'data': payment.descript(),
+        'type': 'edit',
+        'table': 'payment'
+    }
+
     log_element(payment, old, request)
-    return success_200
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def edit_report(request):

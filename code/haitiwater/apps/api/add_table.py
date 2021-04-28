@@ -50,7 +50,13 @@ def add_consumer_element(request):
                           creation=creation, expiration=expiration)
         invoice.save()
 
-    return HttpResponse(consumer.descript(), status=200)
+    json_object = {
+        'data': consumer.descript(),
+        'type': 'add',
+        'table': 'consumer'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def add_network_element(request):
@@ -69,7 +75,14 @@ def add_network_element(request):
     element = Element(name=name, type=type, status=state, location=loc, zone=zone)  # Creation
 
     log_element(element, request)
-    return HttpResponse(element.id, status=200)
+
+    json_object = {
+        'data': element.network_descript(),
+        'type': 'add',
+        'table': 'water_element'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def add_report_element(request):
@@ -169,7 +182,15 @@ def add_zone_element(request):
         superzone = superzone.superzone
 
     log_element(zone, request)
-    return HttpResponse(zone.id, status=200)
+
+    json_object = {
+        'data': zone.descript(),
+        'type': 'add',
+        'table': 'zone'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
+
 
 
 def add_collaborator_element(request):
@@ -214,6 +235,10 @@ def add_collaborator_element(request):
 
         my_group = Group.objects.get(name='Gestionnaire de fontaine')
         my_group.user_set.add(user)
+
+        tab = [user.username, user.last_name, user.first_name, user.profile.get_phone_number(),
+               user.email, "Gestionnaire de zone", user.profile.zone.name, user.profile.outlets]
+
     elif type == "zone-manager":
         zone_id = request.POST.get("zone", None)
         zone = Zone.objects.filter(id=zone_id).first()
@@ -228,6 +253,9 @@ def add_collaborator_element(request):
 
         my_group = Group.objects.get(name='Gestionnaire de zone')
         my_group.user_set.add(user)
+
+        tab = [user.username, user.last_name, user.first_name, user.profile.get_phone_number(),
+               user.email, "Gestionnaire de fontaine", user.profile.get_zone(), user.profile.outlets]
     else:
         user.delete()
         return HttpResponse("Impossible d'ajouter l'utilisateur", status=400)
@@ -239,7 +267,15 @@ def add_collaborator_element(request):
               '', [email], fail_silently=False)
 
     log_element(user.profile, request)
-    return HttpResponse(user.id, status=200)
+
+
+    json_object = {
+        'data': tab,
+        'type': 'add',
+        'table': 'manager'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def add_ticket_element(request):
@@ -265,7 +301,14 @@ def add_ticket_element(request):
     ticket = Ticket(water_outlet=outlet, type=type, comment=comment, urgency=urgency, image=image)
 
     log_element(ticket, request)
-    return HttpResponse(ticket.id, status=200)
+
+    json_object = {
+        'data': ticket.descript(),
+        'type': 'add',
+        'table': 'ticket'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def add_payment_element(request):
@@ -285,7 +328,14 @@ def add_payment_element(request):
     payment = Payment(consumer=consumer, water_outlet=outlet, amount=amount)
 
     log_element(payment, request)
-    return HttpResponse(payment.id, status=200)
+
+    json_object = {
+        'data': payment.descript(),
+        'type': 'add',
+        'table': 'payment'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)
 
 
 def add_location_element(request, elem):
@@ -301,4 +351,10 @@ def add_location_element(request, elem):
 
     log_element(loc, request)
 
-    return HttpResponse(json.dumps(json_value), status=200)
+    json_object = {
+        'data': [loc.elem.name, loc.json_representation],
+        'type': 'add',
+        'table': 'water_element_details'
+    }
+
+    return HttpResponse(json.dumps(json_object), status=200)

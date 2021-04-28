@@ -116,7 +116,13 @@ def gis_infos(request):
 
             log_element(loc, request)
             loc.delete()
-            return success_200
+
+            json_object = {
+                'data': elem_id,
+                'type': 'delete'
+            }
+            return HttpResponse(json.dumps(json_object), status=200)
+
         else:
             return HttpResponse("Impossible de traiter cette requête", status=400)
 
@@ -271,19 +277,33 @@ def remove_element(request):
 
         elem_delete.delete()
 
+        tickets_list = []
         tickets = Ticket.objects.filter(water_outlet=element_id)
         for t in tickets:
+            tickets_list.append(t.descript()[0])
             if not is_same(t, request.user):
                 t.log_delete(transaction)
             t.delete()
 
+        users_list = []
         for user in User.objects.filter(profile__outlets__contains=[str(element_id)]):
+            users_list.append(user)
             old = user.profile.infos()
             user.profile.outlets.remove(str(element_id))
             user.save()
             user.profile.log_edit(old, transaction)
 
-        return success_200
+        json_object = {
+            'data': element_id,
+            'type': 'delete',
+            'table': 'water_element',
+            'linked': {
+                'ticket': tickets_list,
+            }
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
+
 
     elif element == "consumer":
         consumer_id = request.POST.get("id", None)
@@ -296,7 +316,13 @@ def remove_element(request):
         log_element(to_delete, request)
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': consumer_id,
+            'type': 'delete',
+            'table': 'consumer'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "manager":
         if request.user.profile.zone is None:
@@ -327,7 +353,14 @@ def remove_element(request):
         cache_key = "water_element" + request.user.username
         cache.delete(cache_key)
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': manager_id,
+            'type': 'delete',
+            'table': 'manager'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
+
 
     elif element == "ticket":
         ticket_id = request.POST.get("id", None)
@@ -340,7 +373,13 @@ def remove_element(request):
         log_element(to_delete, request)
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': ticket_id,
+            'type': 'delete',
+            'table': 'ticket'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "payment":
         payment_id = request.POST.get("id", None)
@@ -353,7 +392,14 @@ def remove_element(request):
         log_element(to_delete, request)
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': payment_id,
+            'type': 'delete',
+            'table': 'payment'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
+
 
     elif element == "zone":
         if request.user.profile.zone is None:
@@ -393,7 +439,13 @@ def remove_element(request):
         transaction.save()
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': zone_id,
+            'type': 'delete',
+            'table' : 'zone'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     else:
         return HttpResponse("Impossible de trouver l'élement " + element, status=400)
@@ -471,12 +523,29 @@ def compute_logs(request):
         log_finished(transaction, "ACCEPT")
         cache.delete(cache_key)
         cache.delete(cache_key2)
-        return success_200
+
+        json_object = {
+            'data': id_val,
+            'type': 'edit',
+            'action': action,
+            'table' : 'logs'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
     elif action == "revert":
         roll_back(transaction)
         cache.delete(cache_key)
         cache.delete(cache_key2)
-        return success_200
+
+        json_object = {
+            'data': id_val,
+            'type': 'edit',
+            'action': action,
+            'table': 'logs'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
+
     else:
         return HttpResponse("Action non reconnue", status=400)
 
