@@ -227,7 +227,7 @@ const consumerHandler = () => {
         )
 }
 
-const paymentHandler = () => {
+ const paymentHandler = () => {
     return fetch('../api/table/?name=all_payment&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
@@ -391,6 +391,7 @@ const getDataFromDB = async (table) => {
             table,
             date: await getOldestDate()
         })
+        console.log('[SW_POPULATE_DB]', 'The table ' + table + 'is synced !')
     } catch (err) {
         isDbLoading = false
         channel.postMessage({
@@ -399,7 +400,7 @@ const getDataFromDB = async (table) => {
             table,
             date: await getOldestDate()
         })
-        console.log('[SW_POPULATEDB]', err)
+        console.log('[SW_POPULATE_DB]', err)
     }
 }
 
@@ -418,8 +419,9 @@ const emptyDB = () => {
         db.outlets.clear(),
     ]).then(() => {
         setInfos('dbLoaded', false)
+        console.log('[SW_EMPTY_DB]', 'IndexDB is cleared !')
     }).catch(err => {
-        console.log('[SW_EMPTYDB]', err)
+        console.log('[SW_EMPTY_DB]', err)
     })
 }
 
@@ -432,23 +434,21 @@ const sendDataToDB = async(dataID, silent=false) => {
         fetch(element.url, element.init).then(async response => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced')
-                console.log('[SW_ANSWER]', await response.json())
                 db.update_queue.delete(element.id)
             } else {
                 db.update_queue.update(element.id, {status: response.status}).then(update => {
-                    console.log('[SW_PUSH]', 'Server refused the modifications for element ' + update.id)
+                    console.log('[SW_PUSH_'+ update.id +']', response.statusText)
                 })
             }
         })
     )).then(async () => {
-        if (silent)
         channel.postMessage({
             title: 'toPush',
             silent,
             toPush: await db.update_queue.count()
         })
-    }).catch(async () => {
-        console.log('[SW_PUSH]', 'Cannot reach the network, data still need to be pushed');
+    }).catch(async err => {
+        console.log('[SW_PUSH]', err);
         channel.postMessage({
             title: 'toPush',
             silent,
@@ -484,6 +484,8 @@ const cacheCleanedPromise = () => {
         })
     }).then(() => {
         setInfos('cacheLoaded', false)
+    }).catch(err => {
+        console.log('[SW_CACHE_CLEAN]', err)
     })
 }
 
@@ -504,8 +506,10 @@ const getCache = () => {
     ]).then(() => {
         setInfos('cacheLoaded', true)
         isCacheLoading = false
-    }).catch(() => {
+        console.log('[SW_GET_CACHE]', 'Cache is loaded !')
+    }).catch(err => {
         isCacheLoading = false
+        console.log('[SW_GET_CACHE]', err)
     })
 }
 
@@ -523,6 +527,9 @@ const getInfos = () => {
         return data
     }).then(() => {
         synced = true
+        console.log('[SW_GET_INFOS]', 'Old service worker state has been charged')
+    }).catch(err => {
+        console.log('[SW_GET_INFOS]', err)
     })
 }
 
@@ -560,7 +567,7 @@ const resetState = async () => {
     setInfos('needDisconnect', false)
     setInfos('dbLoaded', false)
     setInfos('cacheLoaded', false)
-    console.log("State reset")
+    console.log('[SW_RESET_STATE]' ,"IndexDB session is reset")
 }
 
 const CacheFirst = event => {
@@ -637,7 +644,6 @@ self.addEventListener('activate', () => {
                 date: await getOldestDate()
             })
         })
-        console.log('[SW_SESSIONS]', 'Old configuration has been charged')
     })
 })
 
