@@ -227,7 +227,7 @@ const consumerHandler = () => {
         )
 }
 
- const paymentHandler = () => {
+const paymentHandler = () => {
     return fetch('../api/table/?name=all_payment&indexDB=true')
         .then(networkResponse => networkResponse.json()
             .then(result => {
@@ -391,7 +391,7 @@ const getDataFromDB = async (table) => {
             table,
             date: await getOldestDate()
         })
-        console.log('[SW_POPULATE_DB]', 'The table ' + table + 'is synced !')
+        console.log('[SW_POPULATE_DB]', 'The table ' + table + ' is synced !')
     } catch (err) {
         isDbLoading = false
         channel.postMessage({
@@ -425,6 +425,43 @@ const emptyDB = () => {
     })
 }
 
+const updateIndexDB = data => {
+    switch (data.table) {
+        case 'water_element':
+            if(data.type === 'delete') db.table(data.table).where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
+            else {
+                db.table(data.table).put({
+                    id: data.data[0],
+                    type: data.data[1],
+                    place: data.data[2],
+                    users: data.data[3],
+                    state: data.data[4],
+                    m3: data.data[5],
+                    gallons: data.data[6],
+                    gestionnaire: data.data[7],
+                    zone_up: data.data[8],
+                    sync: 0
+                })
+            }
+            break
+        case 'water_element_details':
+            break
+        case 'consumer':
+            break
+        case 'logs':
+            break
+        case 'manager':
+            break
+        case 'payment':
+            break
+        case 'ticket':
+            break
+        case 'zone':
+            break
+        default:
+    }
+}
+
 const sendDataToDB = async(dataID, silent=false) => {
     let tab = []
     if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray()
@@ -435,6 +472,7 @@ const sendDataToDB = async(dataID, silent=false) => {
             if (response.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced')
                 db.update_queue.delete(element.id)
+                updateIndexDB(await response.json())
             } else {
                 db.update_queue.update(element.id, {status: response.status}).then(update => {
                     console.log('[SW_PUSH_'+ update.id +']', response.statusText)
@@ -513,47 +551,67 @@ const getCache = () => {
     })
 }
 
-const getInfos = () => {
-    return db.sessions.where('id').equals(1).first(async data => {
+const getInfos = async () => {
+    try {
+        let data = await db.sessions.toCollection().first()
+        console.log(data)
+
         username = data.username
         needDisconnect = data.needDisconnect
         dbLoaded = data.dbLoaded
         cacheLoaded = data.cacheLoaded
+
         channel.postMessage({
             title: 'getInfos',
             toPush: await db.update_queue.count(),
             date: await getOldestDate()
         })
-        return data
-    }).then(() => {
+
+        if (!cacheLoaded && !needDisconnect) getCache()
+        if (!dbLoaded && !needDisconnect) getDataFromDB('all')
+
         synced = true
-        console.log('[SW_GET_INFOS]', 'Old service worker state has been charged')
-    }).catch(err => {
-        console.log('[SW_GET_INFOS]', err)
-    })
+        console.log('[SW_GET_INFOS]', 'Old service worker state has been charged !')
+        return data
+    } catch (err) {
+        console.log('[SW_GET_INFOS]', 'New sessions !')
+        db.sessions.add({
+            id: 1,
+            username: null,
+            needDisconnect: false,
+            dbLoaded: false,
+            cacheLoaded: false
+        })
+        synced = true
+        channel.postMessage({
+            title: 'updateInfos',
+            toPush: await db.update_queue.count(),
+            date: await getOldestDate()
+        })
+        getCache()
+        getDataFromDB('all')
+    }
 }
 
 const setInfos = (info, value) => {
     switch (info) {
         case 'username':
+            db.sessions.toCollection().modify(data => {data.username = value})
             username = value;
             break
         case 'needDisconnect':
+            db.sessions.toCollection().modify(data => {data.needDisconnect = value})
             needDisconnect = value;
             break
         case 'dbLoaded':
+            db.sessions.toCollection().modify(data => {data.dbLoaded = value})
             dbLoaded = value
             break
         case 'cacheLoaded':
+            db.sessions.toCollection().modify(data => {data.cacheLoaded = value})
             cacheLoaded = value
+            break
     }
-    db.sessions.put({
-        id: 1,
-        username: username,
-        needDisconnect: needDisconnect,
-        cacheLoaded: cacheLoaded,
-        dbLoaded: dbLoaded
-    })
 }
 
 const resetState = async () => {
@@ -619,32 +677,8 @@ self.addEventListener('install', event => {
 
 
 self.addEventListener('activate', () => {
-    db.sessions.add({
-        id: 1,
-        username: null,
-        needDisconnect: false,
-        dbLoaded: false,
-        cacheLoaded: false
-    }).then(async () => {
-        channel.postMessage({
-            title: 'updateInfos',
-            toPush: await db.update_queue.count(),
-            date: await getOldestDate()
-        })
-        synced = true
-        getCache()
-        getDataFromDB('all')
-    }).catch(() => {
-        getInfos().then(async () => {
-            if (!cacheLoaded && !needDisconnect) getCache()
-            if (!dbLoaded && !needDisconnect) getDataFromDB('all')
-            else channel.postMessage({
-                title: 'updateInfos',
-                toPush: await db.update_queue.count(),
-                date: await getOldestDate()
-            })
-        })
-    })
+    console.log('SW_ACTIVATE')
+    getInfos()
 })
 
 
