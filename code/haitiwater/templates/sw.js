@@ -510,8 +510,18 @@ const updateIndexDB = async data => {
             })
             break
         case 'payment':
-            if (data.type === 'delete') await db.payment.where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
+            if (data.type === 'delete') {
+                let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
+                await db.payment.where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
+                db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du += amount.value; result.sync -= 1})
+            }
             else {
+                if (data.type === 'edit') {
+                    let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
+                    db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du += (amount.value-data.data[2]); result.sync -= 1})
+                }
+                else db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du -= data.data[2]})
+
                 await db.payment.put({
                     id: data.data[0],
                     data: data.data[1],
@@ -521,15 +531,6 @@ const updateIndexDB = async data => {
                     sync: 0
                 })
             }
-
-            let total = 0
-            let payments = await db.payment.where('user_id').equals(parseInt(data.consumer))
-            await payments.each(payment => {
-                total += parseInt(payment.value)
-            })
-
-            if (data.type === 'add') db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du -= total})
-            else db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du -= total; result.sync -= 1})
             break
         case 'ticket':
             db.ticket.put({
