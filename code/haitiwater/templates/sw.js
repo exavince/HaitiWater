@@ -427,7 +427,7 @@ const emptyDB = () => {
 
 const updateIndexDB = async data => {
     console.log(data)
-    if(data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details') {
+    if(data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details'  && data.table !== 'payment') {
         db.table(data.table ).where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
         channel.postMessage({
             title: 'reloadTable',
@@ -510,15 +510,26 @@ const updateIndexDB = async data => {
             })
             break
         case 'payment':
-            console.log('payment')
-            db.payment.put({
-                id: data.data[0],
-                data: data.data[1],
-                value: data.data[2],
-                source: data.data[3],
-                user_id: data.consumer,
-                sync: 0
+            if (data.type === 'delete') await db.payment.where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
+            else {
+                await db.payment.put({
+                    id: data.data[0],
+                    data: data.data[1],
+                    value: data.data[2],
+                    source: data.data[3],
+                    user_id: data.consumer,
+                    sync: 0
+                })
+            }
+
+            let total = 0
+            let payments = await db.payment.where('user_id').equals(parseInt(data.consumer))
+            await payments.each(payment => {
+                total += parseInt(payment.value)
             })
+
+            if (data.type === 'add') db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du -= total})
+            else db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du -= total; result.sync -= 1})
             break
         case 'ticket':
             db.ticket.put({

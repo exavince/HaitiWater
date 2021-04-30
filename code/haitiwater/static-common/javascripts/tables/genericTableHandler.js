@@ -260,7 +260,7 @@ function postNewRow(table, callback){
             table: table,
             init:myInit,
             type:'Ajouter',
-            elemId: 2,
+            elemId: '?',
             status:"En attente",
             details:myInit
         });

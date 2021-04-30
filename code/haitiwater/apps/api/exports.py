@@ -382,6 +382,7 @@ def remove_element(request):
     elif element == "payment":
         payment_id = request.POST.get("id", None)
         to_delete = Payment.objects.filter(id=payment_id).first()
+        consumer = to_delete.infos()["Identifiant consommateur"]
         if to_delete is None:
             return HttpResponse("Impossible de supprimer ce ticket, il n'existe pas", status=400)
         elif not has_access(to_delete.water_outlet, request):
@@ -393,7 +394,8 @@ def remove_element(request):
         json_object = {
             'data': payment_id,
             'type': 'delete',
-            'table': 'payment'
+            'table': 'payment',
+            'consumer': consumer
         }
 
         return HttpResponse(json.dumps(json_object), status=200)
