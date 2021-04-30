@@ -44,7 +44,14 @@ $(document).ready(function() {
 
         //Populate map with known elements
         requestAllElementsPosition();
-        });
+    });
+
+    new BroadcastChannel('sw-messages').onmessage = event => {
+        if (event.data.title === 'reloadTable') {
+            drawDataTable('water_element_details')
+            drawDataTable('water_element')
+        }
+    }
 });
 
 /**
@@ -488,7 +495,7 @@ function sendDrawToServer(geoJSON){
             type: 'success'
         })
 
-        await indexDBModify('water_element', currentElementID);
+        await indexDBModify('water_element_details', currentElementID);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit)
@@ -549,7 +556,6 @@ function removeHandler(e){
         })
 
         drawLayer.eachLayer(function (draw) {
-            console.log(draw);
             if (draw.id === currentElementID) {
                 drawLayer.removeLayer(draw);
                 $('#element-details-lat-lon').html("N/A");
@@ -557,7 +563,7 @@ function removeHandler(e){
         });
         readyMapDrawButtons(currentElementType, false);
 
-        await indexDBModify('water_element', currentElementID);
+        await indexDBModify('water_element_details', currentElementID);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit)
@@ -592,32 +598,6 @@ function removeHandler(e){
                 });
             })
     });
-
-
-
-
-    xhttp.onreadystatechange = function(){
-        if (this.readyState === 4) {
-            if (this.status === 200) {
-                drawLayer.eachLayer(function (draw) {
-                    console.log(draw);
-                    if (draw.id === currentElementID) {
-                        drawLayer.removeLayer(draw);
-                        $('#element-details-lat-lon').html("N/A");
-                    }
-                });
-                readyMapDrawButtons(currentElementType, false);
-            } else {
-                new PNotify({
-                    title: 'Erreur',
-                    text: "L'élément ne peut être supprimé: " + this.statusText,
-                    type: 'error'
-                });
-                return this;
-            }
-        }
-    };
-
 }
 
 function isMarker(type){

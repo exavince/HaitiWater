@@ -444,3 +444,9 @@ function formatButton(monthYear){
     let monthInt = parseInt(params[0]) - 1;
     return monthNames[monthInt]+ " " + yearInt;
 }
+
+new BroadcastChannel('sw-messages').onmessage = event => {
+    if (event.data.title === 'reloadTable') {
+        drawDataTable('water_element')
+    }
+}

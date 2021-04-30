@@ -425,41 +425,132 @@ const emptyDB = () => {
     })
 }
 
-const updateIndexDB = data => {
+const updateIndexDB = async data => {
+    console.log(data)
+    if(data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details') {
+        db.table(data.table ).where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
+        channel.postMessage({
+            title: 'reloadTable',
+            table:data.table
+        })
+        return
+    }
     switch (data.table) {
         case 'water_element':
-            if(data.type === 'delete') db.table(data.table).where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
-            else {
-                db.table(data.table).put({
-                    id: data.data[0],
-                    type: data.data[1],
-                    place: data.data[2],
-                    users: data.data[3],
-                    state: data.data[4],
-                    m3: data.data[5],
-                    gallons: data.data[6],
-                    gestionnaire: data.data[7],
-                    zone_up: data.data[8],
-                    sync: 0
-                })
-            }
+            db.water_element.put({
+                id: data.data[0],
+                type: data.data[1],
+                place: data.data[2],
+                users: data.data[3],
+                state: data.data[4],
+                m3: data.data[5],
+                gallons: data.data[6],
+                gestionnaire: data.data[7],
+                zone_up: data.data[8],
+                sync: 0
+            })
             break
         case 'water_element_details':
+            if (data.type === 'delete') db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = null})
+            else db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = data.data[1]})
             break
         case 'consumer':
+            db.consumer.put({
+                id: data.data[0],
+                nom: data.data[1],
+                prenom: data.data[2],
+                genre: data.data[3],
+                adresse: data.data[4],
+                telephone: data.data[5],
+                membres: data.data[6],
+                sortie_eau: data.data[7],
+                argent_du: data.data[8],
+                zone: data.data[9],
+                sync: 0
+            })
+
+            db.consumer_details.put({
+                consumer_id: data.data[0],
+                amount_due: data.data[8],
+                validity: data.validity,
+                sync: 0
+            })
             break
         case 'logs':
+            let log = await db.logs.where('id').equals(parseInt(data.data)).first()
+
+            db.logs_history.put({
+                id: log.id,
+                time: log.time,
+                type: log.type,
+                user: log.user,
+                summary: log.summary,
+                details: log.details,
+                action: data.action,
+                sync: 0
+            })
+
+            db.logs.where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
             break
         case 'manager':
+            if (data.type === 'delete') {
+                db.manager.where('id').equals(data.data).delete().then((delete_count)=> {console.log(delete_count)})
+                break
+            }
+            db.manager.put({
+                id: data.data[0],
+                nom: data.data[1],
+                prenom: data.data[2],
+                telephone: data.data[3],
+                mail: data.data[4],
+                role: data.data[5],
+                zone: data.data[6],
+                unknown: data.data[7],
+                sync: 0
+            })
             break
         case 'payment':
+            console.log('payment')
+            db.payment.put({
+                id: data.data[0],
+                data: data.data[1],
+                value: data.data[2],
+                source: data.data[3],
+                user_id: data.consumer,
+                sync: 0
+            })
             break
         case 'ticket':
+            db.ticket.put({
+                id: data.data[0],
+                urgence: data.data[1],
+                emplacement: data.data[2],
+                type: data.data[3],
+                commentaire: data.data[4],
+                statut: data.data[5],
+                photo: data.data[6],
+                sync: 0
+            })
             break
         case 'zone':
+            db.zone.put({
+                id: data.data[0],
+                name: data.data[1],
+                cout_fontaine: data.data[2],
+                mois_fontaine: data.data[3],
+                cout_kiosque: data.data[4],
+                mois_kiosque: data.data[5],
+                cout_mensuel: data.data[6],
+                sync: 0
+            })
             break
         default:
+            break
     }
+    channel.postMessage({
+        title: 'reloadTable',
+        table:data.table
+    })
 }
 
 const sendDataToDB = async(dataID, silent=false) => {

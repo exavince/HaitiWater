@@ -115,10 +115,15 @@ def edit_consumer(request):
                               creation=creation, expiration=expiration)
             invoice.save()
 
+    invoices = Invoice.objects.filter(consumer_id__in=consumer_id).order_by('expiration')
+    invoice = invoices.filter(consumer_id=consumer.id).order_by('-expiration').first()
+    validity = str(invoice.expiration) if invoice is not None else "Pas de prochaine facturation"
+
     json_object = {
         'data': consumer.descript(),
         'type': 'edit',
-        'table': 'consumer'
+        'table': 'consumer',
+        'validity': validity
     }
 
     return HttpResponse(json.dumps(json_object), status=200)
@@ -314,7 +319,8 @@ def edit_payment(request):
     json_object = {
         'data': payment.descript(),
         'type': 'edit',
-        'table': 'payment'
+        'table': 'payment',
+        'consumer': payment.infos()["Identifiant consommateur"]
     }
 
     log_element(payment, old, request)

@@ -304,7 +304,6 @@ def remove_element(request):
 
         return HttpResponse(json.dumps(json_object), status=200)
 
-
     elif element == "consumer":
         consumer_id = request.POST.get("id", None)
         to_delete = Consumer.objects.filter(id=consumer_id).first()
@@ -361,7 +360,6 @@ def remove_element(request):
 
         return HttpResponse(json.dumps(json_object), status=200)
 
-
     elif element == "ticket":
         ticket_id = request.POST.get("id", None)
         to_delete = Ticket.objects.filter(id=ticket_id).first()
@@ -399,7 +397,6 @@ def remove_element(request):
         }
 
         return HttpResponse(json.dumps(json_object), status=200)
-
 
     elif element == "zone":
         if request.user.profile.zone is None:
@@ -442,7 +439,7 @@ def remove_element(request):
         json_object = {
             'data': zone_id,
             'type': 'delete',
-            'table' : 'zone'
+            'table': 'zone'
         }
 
         return HttpResponse(json.dumps(json_object), status=200)
@@ -528,7 +525,7 @@ def compute_logs(request):
             'data': id_val,
             'type': 'edit',
             'action': action,
-            'table' : 'logs'
+            'table': 'logs'
         }
 
         return HttpResponse(json.dumps(json_object), status=200)

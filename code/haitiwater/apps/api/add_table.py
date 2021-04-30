@@ -192,7 +192,6 @@ def add_zone_element(request):
     return HttpResponse(json.dumps(json_object), status=200)
 
 
-
 def add_collaborator_element(request):
     if request.user.profile.zone is None:
         return HttpResponse("Vous n'êtes pas connecté en tant que gestionnaire de zone", status=403)
@@ -237,7 +236,7 @@ def add_collaborator_element(request):
         my_group.user_set.add(user)
 
         tab = [user.username, user.last_name, user.first_name, user.profile.get_phone_number(),
-               user.email, "Gestionnaire de zone", user.profile.zone.name, user.profile.outlets]
+               user.email, "Gestionnaire de fontaine", user.profile.get_zone(), user.profile.outlets]
 
     elif type == "zone-manager":
         zone_id = request.POST.get("zone", None)
@@ -255,7 +254,7 @@ def add_collaborator_element(request):
         my_group.user_set.add(user)
 
         tab = [user.username, user.last_name, user.first_name, user.profile.get_phone_number(),
-               user.email, "Gestionnaire de fontaine", user.profile.get_zone(), user.profile.outlets]
+               user.email, "Gestionnaire de zone", user.profile.zone.name, user.profile.outlets]
     else:
         user.delete()
         return HttpResponse("Impossible d'ajouter l'utilisateur", status=400)
@@ -267,7 +266,6 @@ def add_collaborator_element(request):
               '', [email], fail_silently=False)
 
     log_element(user.profile, request)
-
 
     json_object = {
         'data': tab,
@@ -332,7 +330,8 @@ def add_payment_element(request):
     json_object = {
         'data': payment.descript(),
         'type': 'add',
-        'table': 'payment'
+        'table': 'payment',
+        'consumer': payment.infos()["Identifiant consommateur"]
     }
 
     return HttpResponse(json.dumps(json_object), status=200)
