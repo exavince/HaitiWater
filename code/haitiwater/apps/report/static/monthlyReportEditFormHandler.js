@@ -50,11 +50,11 @@ function postReportEdit(){
             details:myInit
         });
 
-        new PNotify({
-            title: 'Succès!',
-            text: 'Le rapport mensuel a été édité !',
-            type: 'success'
-        });
+        //new PNotify({
+        //    title: 'Succès!',
+        //    text: 'Le rapport mensuel a été édité !',
+        //    type: 'success'
+        //});
         dismissModal();
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {

@@ -122,11 +122,11 @@ async function removeElement(table, id, otherParameters) {
             details:myInit
         });
 
-        new PNotify({
-            title: 'Succès!',
-            text: 'Votre demande de suppression est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
-            type: 'success'
-        });
+        //new PNotify({
+        //    title: 'Succès!',
+        //    text: 'Votre demande de suppression est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
+        //    type: 'success'
+        //});
 
         await indexDBModify(table, id);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
@@ -140,7 +140,7 @@ async function removeElement(table, id, otherParameters) {
                 });
             }
             else {
-                console.log('[DELETE]', "POST error on remove element");
+                console.log('[DELETE]', response.statusText);
                 new PNotify({
                     title: 'Échec!',
                     text: 'Veuillez vérifier votre connexion.',
@@ -267,11 +267,11 @@ function postNewRow(table, callback){
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         dismissModal();
-        new PNotify({
-            title: 'Succès!',
-            text: "Votre demande d'ajout est bien enregitrée",
-            type: 'success'
-        });
+        //new PNotify({
+        //    title: 'Succès!',
+        //    text: "Votre demande d'ajout est bien enregitrée",
+        //    type: 'success'
+        //});
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit)
@@ -356,11 +356,11 @@ async function postEditRow(table, callback){
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         dismissModal();
-        new PNotify({
-            title: 'Succès!',
-            text: 'Votre demande de modification est bien enregitrée',
-            type: 'success'
-        });
+        //new PNotify({
+        //    title: 'Succès!',
+        //    text: 'Votre demande de modification est bien enregitrée',
+        //    type: 'success'
+        //});
 
         indexDBModify(table, rowID);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});

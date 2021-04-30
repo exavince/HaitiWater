@@ -95,11 +95,11 @@ async function requestHandler(url, elementID, type){
             status:"En attente",
             details:myInit
         });
-        new PNotify({
-            title: 'Réussite!',
-            text: "Demande enregistrée",
-            type: 'success'
-        });
+        //new PNotify({
+        //    title: 'Réussite!',
+        //    text: "Demande enregistrée",
+        //    type: 'success'
+        //});
 
         indexDBModify('logs', elementID);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});

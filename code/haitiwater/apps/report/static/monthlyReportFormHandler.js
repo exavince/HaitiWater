@@ -84,11 +84,11 @@ $(document).ready(function() {
 					details:myInit
 				});
 
-				new PNotify({
-					title: 'Succès!',
-					text: 'Le rapport mensuel a bien été enregistré!',
-					type: 'success'
-				});
+				//new PNotify({
+				//	title: 'Succès!',
+				//	text: 'Le rapport mensuel a bien été enregistré!',
+				//	type: 'success'
+				//});
 				localStorage.removeItem("monthlyReport");
 				drawDataTable('report');
 				dismissModal();
