@@ -102,12 +102,14 @@ async function removeElement(table, id, otherParameters) {
         },
         body: "table=" + table + "&id=" + id + otherParameters
     };
+    console.log('[DELETE]', myInit)
 
-    console.log('[DELETE]', myInit);
-    await navigator.serviceWorker.ready.then(async () => {
+    try {
+        await navigator.serviceWorker.ready
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');
+
         db_queue.put({
             url:postURL,
             date: new Date().toLocaleString('en-GB', {
@@ -126,17 +128,12 @@ async function removeElement(table, id, otherParameters) {
             details:myInit
         });
 
-        //new PNotify({
-        //    title: 'Succès!',
-        //    text: 'Votre demande de suppression est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
-        //    type: 'success'
-        //});
-
-        await indexDBModify(table, id);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(postURL, myInit).then(response => {
-            if(response.ok) {
+        await indexDBModify(table, id);
+    } catch (e) {
+        try {
+            let networkResponse = fetch(postURL, myInit)
+            if(networkResponse.ok) {
                 new PNotify({
                     title: 'Succès!',
                     text: 'Élément supprimé avec succès',
@@ -144,22 +141,22 @@ async function removeElement(table, id, otherParameters) {
                 });
             }
             else {
-                console.log('[DELETE]', response.statusText);
+                console.log('[DELETE]', networkResponse.statusText);
                 new PNotify({
                     title: 'Échec!',
                     text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
             }
-        }).catch(err => {
+        } catch (err) {
             console.log('[DELETE]', err);
             new PNotify({
                 title: 'Échec!',
                 text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
-        });
-    });
+        }
+    }
 
     if (table === 'payment') {
         let consumerID = otherParameters.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
@@ -227,7 +224,7 @@ function getRequest(table){
 /**
  * Send a post request to server and handle it
  */
-function postNewRow(table, callback){
+async function postNewRow(table, callback){
     let request = getRequest(table);
     if(!request){
         console.log('[ADD]', "invalid form");
@@ -243,10 +240,11 @@ function postNewRow(table, callback){
         },
         body: request
     };
-
     beforeModalRequest();
     console.log('[ADD]', myInit);
-    navigator.serviceWorker.ready.then(async swRegistration => {
+
+    try {
+        await navigator.serviceWorker.ready
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -270,45 +268,44 @@ function postNewRow(table, callback){
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-        dismissModal();
-
         if (table === 'payment') {
             let rowID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
             indexDBModify('payment', rowID, true)
         }
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(postURL, myInit)
-            .then(response => {
-                if(response.ok) {
-                    document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                    dismissModal();
-                    new PNotify({
-                        title: 'Succès!',
-                        text: 'Élément ajouté avec succès',
-                        type: 'success'
-                    });
-                } else {
-                    document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = err;
-                    new PNotify({
-                        title: 'Échec!',
-                        text: 'Veuillez vérifier votre connexion.',
-                        type: 'error'
-                    });
-                }
-            })
-            .catch(err => {
+    } catch (e) {
+        try {
+            let networkResponse = await fetch(postURL, myInit)
+            if(networkResponse.ok) {
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+                dismissModal();
+                new PNotify({
+                    title: 'Succès!',
+                    text: 'Élément ajouté avec succès',
+                    type: 'success'
+                });
+            }
+            else {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+                document.getElementById("form-" + table + "-error-msg").innerHTML = networkResponse.statusText;
                 new PNotify({
                     title: 'Échec!',
                     text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
-            })
-    });
+            }
+        } catch (err) {
+            document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+            document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+            new PNotify({
+                title: 'Échec!',
+                text: 'Veuillez vérifier votre connexion.',
+                type: 'error'
+            });
+        }
+    }
 
+    dismissModal();
     afterModalRequest();
 }
 
@@ -317,13 +314,8 @@ function postNewRow(table, callback){
  */
 async function postEditRow(table, callback){
     let request = getRequest(table);
-    if(!request){
-        // Form is not valid (missing/wrong fields)
-        return false;
-    }
-
+    if(!request) return false;
     let rowID = request.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "");
-    beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
     let myInit = {
@@ -334,9 +326,11 @@ async function postEditRow(table, callback){
         },
         body: request
     };
-
+    beforeModalRequest();
     console.log('[EDIT]', myInit);
-    await navigator.serviceWorker.ready.then(async() => {
+
+    try {
+        await navigator.serviceWorker.ready
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -359,21 +353,15 @@ async function postEditRow(table, callback){
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-        dismissModal();
-        //new PNotify({
-        //    title: 'Succès!',
-        //    text: 'Votre demande de modification est bien enregitrée',
-        //    type: 'success'
-        //});
-
         indexDBModify(table, rowID);
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(postURL,myInit).then(response => {
-            if (!response.ok) {
+    } catch (e) {
+        try {
+            let networkResponse = await fetch(postURL,myInit)
+            if (!networkResponse.ok) {
                 console.log("POST error on new element");
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+                document.getElementById("form-" + table + "-error-msg").innerHTML = await networkResponse.statusText;
                 new PNotify({
                     title: 'Échec!',
                     text: 'Veuillez vérifier votre connexion.',
@@ -382,25 +370,25 @@ async function postEditRow(table, callback){
             }
             else {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                dismissModal();
                 new PNotify({
                     title: 'Succès!',
                     text: 'Élément édité avec succès',
                     type: 'success'
                 });
             }
-
-        }).catch(error => {
+        }  catch (err) {
             console.log('[EDIT]',"POST error on new element");
             document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-            document.getElementById("form-" + table + "-error-msg").innerHTML = error;
+            document.getElementById("form-" + table + "-error-msg").innerHTML = err;
             new PNotify({
                 title: 'Échec!',
                 text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
-        })
-    })
+        }
+    }
+
+    dismissModal();
     afterModalRequest();
     if (table === 'payment') {
         let consumerID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
@@ -505,38 +493,41 @@ function setTableURL(table, optional){
 }
 
 async function indexDBModify(table, rowID, isAdd = false) {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    console.log("[IDB_MODIFY]", table);
-    switch (table) {
-        case "payment":
-            if (isAdd) {
-                console.log('[IDB_MODIFY]', rowID)
-                await db.table('consumer').where('id').equals(parseInt(rowID)).modify(data => {
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        console.log("[IDB_MODIFY]", table);
+        switch (table) {
+            case "payment":
+                if (isAdd) {
+                    console.log('[IDB_MODIFY]', rowID)
+                    await db.table('consumer').where('id').equals(parseInt(rowID)).modify(data => {
+                        data.sync += 1;
+                    });
+                } else {
+                    let consumerID = undefined;
+                    await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
+                        data.sync += 1;
+                        consumerID = data.user_id;
+                    });
+                    await db.table('consumer').where('id').equals(consumerID).modify(data => {
+                        data.sync += 1;
+                    });
+                }
+                break;
+            case "manager":
+                db.table(table).where('id').equals(rowID).modify(data => {
                     data.sync += 1;
                 });
-            }
-            else {
-                let consumerID = undefined;
-                await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
-                    data.sync += 1;
-                    consumerID = data.user_id;
-                });
-                await db.table('consumer').where('id').equals(consumerID).modify(data => {
+                break;
+            default:
+                db.table(table).where('id').equals(parseInt(rowID)).modify(data => {
                     data.sync += 1;
                 });
-            }
-            break;
-        case "manager":
-            db.table(table).where('id').equals(rowID).modify(data => {
-                data.sync += 1;
-            });
-            break;
-        default:
-            db.table(table).where('id').equals(parseInt(rowID)).modify(data => {
-                data.sync += 1;
-            });
-            break;
+                break;
+        }
+    } catch (e) {
+        consolo.log('[INDEX_DB_MODIFY]', e);
     }
 }
 
@@ -545,24 +536,28 @@ async function reloadTable(table) {
         title:'updateDB',
         db:table
     })
-    console.log("Update " + table)
+    console.log('[RELOAD_TABLE]',table)
 }
 
 async function addLastUpdateToTitle(tableName) {
-    let title = $('#' + tableName + '-title')
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('editable');
-    table.where('table').equals(tableName).first().then(result => {
-        if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
-            title.append("   " + result.last_sync.toLocaleString('en-GB', {
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hourCycle: 'h23'
-            }).fontsize(2))
-        }
-    })
+    try {
+        let title = $('#' + tableName + '-title')
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('editable');
+        table.where('table').equals(tableName).first().then(result => {
+            if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
+                title.append("   " + result.last_sync.toLocaleString('en-GB', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hourCycle: 'h23'
+                }).fontsize(2))
+            }
+        })
+    } catch (e) {
+        console.log('[LAST_UPDATE_TITLE]', e);
+    }
 }

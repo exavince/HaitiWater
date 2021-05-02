@@ -445,8 +445,3 @@ function formatButton(monthYear){
     return monthNames[monthInt]+ " " + yearInt;
 }
 
-new BroadcastChannel('sw-messages').onmessage = event => {
-    if (event.data.title === 'reloadTable') {
-        drawDataTable('water_element')
-    }
-}

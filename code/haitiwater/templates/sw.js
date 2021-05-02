@@ -391,9 +391,7 @@ const emptyDB = async () => {
 const updateIndexDB = async (data) => {
     try {
         if (data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details' && data.table !== 'payment') {
-            db.table(data.table).where('id').equals(parseInt(data.data)).delete().then((delete_count) => {
-                console.log(delete_count)
-            })
+            await db.table(data.table).where('id').equals(parseInt(data.data)).delete()
             channel.postMessage({
                 title: 'reloadTable',
                 table: data.table
@@ -403,7 +401,7 @@ const updateIndexDB = async (data) => {
 
         switch (data.table) {
             case 'water_element':
-                db.water_element.put({
+                await db.water_element.put({
                     id: data.data[0],
                     type: data.data[1],
                     place: data.data[2],
@@ -418,16 +416,12 @@ const updateIndexDB = async (data) => {
                 break
 
             case 'water_element_details':
-                if (data.type === 'delete') db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {
-                    result.geoJSON = null
-                })
-                else db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {
-                    result.geoJSON = data.data[1]
-                })
+                if (data.type === 'delete') await db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = null})
+                else await db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = data.data[1]})
                 break
 
             case 'consumer':
-                db.consumer.put({
+                await db.consumer.put({
                     id: data.data[0],
                     nom: data.data[1],
                     prenom: data.data[2],
@@ -444,7 +438,7 @@ const updateIndexDB = async (data) => {
 
             case 'logs':
                 let log = await db.logs.where('id').equals(parseInt(data.data)).first()
-                db.logs_history.put({
+                await db.logs_history.put({
                     id: log.id,
                     time: log.time,
                     type: log.type,
@@ -454,19 +448,15 @@ const updateIndexDB = async (data) => {
                     action: data.action,
                     sync: 0
                 })
-                db.logs.where('id').equals(parseInt(data.data)).delete().then((delete_count) => {
-                    console.log(delete_count)
-                })
+                await db.logs.where('id').equals(parseInt(data.data)).delete()
                 break
 
             case 'manager':
                 if (data.type === 'delete') {
-                    db.manager.where('id').equals(data.data).delete().then((delete_count) => {
-                        console.log(delete_count)
-                    })
+                    await db.manager.where('id').equals(data.data).delete()
                     break
                 }
-                db.manager.put({
+                await db.manager.put({
                     id: data.data[0],
                     nom: data.data[1],
                     prenom: data.data[2],
@@ -482,24 +472,25 @@ const updateIndexDB = async (data) => {
             case 'payment':
                 if (data.type === 'delete') {
                     let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
-                    await db.payment.where('id').equals(parseInt(data.data)).delete().then((delete_count) => {
-                        console.log(delete_count)
-                    })
-                    db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
+                    await db.payment.where('id').equals(parseInt(data.data)).delete()
+                    await db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
                         result.argent_du += amount.value;
                         result.sync -= 1
                     })
                 } else {
                     if (data.type === 'edit') {
                         let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
-                        db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
+                        await db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
                             result.argent_du += (amount.value - data.data[2]);
                             result.sync -= 1
                         })
-                    } else db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
-                        result.argent_du -= data.data[2];
-                        result.sync -= 1
-                    })
+                    }
+                    else {
+                        await db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
+                            result.argent_du -= data.data[2];
+                            result.sync -= 1
+                        })
+                    }
 
                     await db.payment.put({
                         id: data.data[0],
@@ -513,7 +504,7 @@ const updateIndexDB = async (data) => {
                 break
 
             case 'ticket':
-                db.ticket.put({
+                await db.ticket.put({
                     id: data.data[0],
                     urgence: data.data[1],
                     emplacement: data.data[2],
@@ -526,7 +517,7 @@ const updateIndexDB = async (data) => {
                 break
 
             case 'zone':
-                db.zone.put({
+                await db.zone.put({
                     id: data.data[0],
                     name: data.data[1],
                     cout_fontaine: data.data[2],
@@ -557,7 +548,7 @@ const sendDataToDB = async(dataID, silent=false) => {
             let networkResponse = await fetch(element.url, element.init)
             if (networkResponse.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + 'data is synced')
-                db.update_queue.delete(element.id)
+                await db.update_queue.delete(element.id)
                 await updateIndexDB(await networkResponse.json())
                 channel.postMessage({
                     title: 'toPush',
@@ -567,7 +558,7 @@ const sendDataToDB = async(dataID, silent=false) => {
                     toPush: await db.update_queue.count()
                 })
             } else {
-                db.update_queue.update(element.id, {status: networkResponse.status}).then(update => {
+                await db.update_queue.update(element.id, {status: networkResponse.status}).then(update => {
                     console.log('[SW_PUSH_'+ update.id +']', networkResponse.statusText)
                 })
                 channel.postMessage({

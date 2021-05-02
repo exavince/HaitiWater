@@ -126,7 +126,11 @@ $( document ).ready(function() {
                 localStorage.setItem('dataToSend', 0)
                 localStorage.setItem('lastUpdate', null)
                 break
+            case 'reloadTable':
+                drawDataTable(event.data.table)
         }
+
+
     }
 });
 
