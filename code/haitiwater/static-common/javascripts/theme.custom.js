@@ -5,6 +5,7 @@ $( document ).ready(function() {
 
     channel.postMessage({title:'getUsername', username:localStorage.getItem('username')});
 
+    // Handle offline mode
     if (localStorage.getItem("offlineMode") === null) {
         localStorage.setItem("offlineMode", "false");
         setupOfflineMode(false);
@@ -12,12 +13,15 @@ $( document ).ready(function() {
     else if (localStorage.getItem("offlineMode") === "false") setupOfflineMode(false);
     else setupOfflineMode(true);
 
+    // Handle lastUpdate rendering
     if (localStorage.getItem("lastUpdate") !== null && localStorage.getItem("lastUpdate") !== 'null' && localStorage.getItem("lastUpdate") !== 'undefined') $('#last-update').html(localStorage.getItem("lastUpdate"));
     else $('#last-update').html("Pas encore de données");
 
+    // Handle notification rendering
     if (localStorage.getItem("dataToSend") === null) localStorage.setItem("dataToSend", "0");
     setupNotifications(parseInt(localStorage.getItem("dataToSend")));
 
+    // Handle menu rendering
     let localMenu = localStorage.getItem('isMenuOpen');
     let isMenuOpen = (localMenu === 'true' || localMenu === null);
     if(!isMenuOpen){
@@ -29,7 +33,9 @@ $( document ).ready(function() {
         isMenuOpen = !isMenuOpen;
         localStorage.setItem('isMenuOpen', isMenuOpen.toString());
     });
+    $('[data-toggle="tooltip"]').tooltip();
 
+    //Ask for updating all the DB
     $('#db-parent').on('click', () => {
         channel.postMessage({
             title:'updateDB',
@@ -37,6 +43,7 @@ $( document ).ready(function() {
         });
     })
 
+    //Ask for changing the utilisation mode
     $('#offline-parent').on('click', () => {
         if (localStorage.getItem("offlineMode") === "false") {
             localStorage.setItem("offlineMode", "true");
@@ -46,11 +53,9 @@ $( document ).ready(function() {
             localStorage.setItem("offlineMode", "false");
             setupOfflineMode(false);
         }
-
     });
 
-    $('[data-toggle="tooltip"]').tooltip();
-
+    //Listener for all the incoming message from SW
     channel.onmessage = event => {
         switch (event.data.title) {
             case 'updateInfos':

@@ -45,34 +45,38 @@ async function drawDataTable(tableName, consumerID){
     table.clear();
 
     if (localStorage.getItem("offlineMode") === "true") {
-        let data;
-        switch (tableName) {
-            case 'payment':
-                await drawDataTable('consumer');
-                data = await getPaymentData(consumerID);
-                break;
-            case 'consumer':
-                data = await getConsumerData();
-                break;
-            case 'zone':
-                data = await getZoneData();
-                break;
-            case 'ticket':
-                data = await getTicketData();
-                break;
-            case 'manager':
-                data = await getManagerData();
-                break;
-            case 'water_element':
-                data = await getWaterElementData();
-                break;
-            default:
-                data = null;
-                break;
+        try {
+            let data;
+            switch (tableName) {
+                case 'payment':
+                    await drawDataTable('consumer');
+                    data = await getPaymentData(consumerID);
+                    break;
+                case 'consumer':
+                    data = await getConsumerData();
+                    break;
+                case 'zone':
+                    data = await getZoneData();
+                    break;
+                case 'ticket':
+                    data = await getTicketData();
+                    break;
+                case 'manager':
+                    data = await getManagerData();
+                    break;
+                case 'water_element':
+                    data = await getWaterElementData();
+                    break;
+                default:
+                    data = null;
+                    break;
+            }
+            table.rows.add(data);
+            table.draw();
+            return;
+        } catch (err) {
+            console.log('[DRAW_DATA_TABLE]', err)
         }
-        table.rows.add(data);
-        table.draw();
-        return;
     }
 
     console.log("ajax");
@@ -267,11 +271,11 @@ function postNewRow(table, callback){
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         dismissModal();
-        //new PNotify({
-        //    title: 'Succès!',
-        //    text: "Votre demande d'ajout est bien enregitrée",
-        //    type: 'success'
-        //});
+
+        if (table === 'payment') {
+            let rowID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
+            indexDBModify('payment', rowID, true)
+        }
         new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
     }).catch(() => {
         fetch(postURL, myInit)
@@ -500,28 +504,35 @@ function setTableURL(table, optional){
     $('#datatable-'+table).DataTable().ajax.url(dataURL).load();
 }
 
-async function indexDBModify(table, rowID) {
+async function indexDBModify(table, rowID, isAdd = false) {
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
-    console.log("idbModify : " + table);
-    switch (table){
+    console.log("[IDB_MODIFY]", table);
+    switch (table) {
         case "payment":
-            let consumerID = undefined;
-            await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
-                data.sync += 1;
-                consumerID = data.user_id;
-            });
-            console.log(consumerID);
-            await db.table('consumer').where('id').equals(consumerID).modify(data => {
-                data.sync += 1;
-            });
+            if (isAdd) {
+                console.log('[IDB_MODIFY]', rowID)
+                await db.table('consumer').where('id').equals(parseInt(rowID)).modify(data => {
+                    data.sync += 1;
+                });
+            }
+            else {
+                let consumerID = undefined;
+                await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
+                    data.sync += 1;
+                    consumerID = data.user_id;
+                });
+                await db.table('consumer').where('id').equals(consumerID).modify(data => {
+                    data.sync += 1;
+                });
+            }
             break;
         case "manager":
             db.table(table).where('id').equals(rowID).modify(data => {
                 data.sync += 1;
             });
             break;
-        default: // consumer, water_elem, ticket
+        default:
             db.table(table).where('id').equals(parseInt(rowID)).modify(data => {
                 data.sync += 1;
             });

@@ -1,4 +1,4 @@
-importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js")
+importScripts("../static/javascripts/dexie.js")
 
 
 /*********************************************************************************
@@ -112,7 +112,7 @@ const getOldestDate = async () => {
 const outletHandler = async () => {
     let networkResponse = await fetch('../api/outlets/')
     let json = await networkResponse.json()
-    db.outlets.clear()
+    await db.outlets.clear()
     db.editable.put({table:'outlets', is_editable:false, last_sync: new Date()})
     for (let entry of json.data) {
         db.outlets.put({
@@ -125,7 +125,7 @@ const outletHandler = async () => {
 const waterElementDetailsHandler = async () => {
     let networkResponse = await fetch('../api/details/?table=water_element_all')
     let json = await networkResponse.json()
-    db.water_element_details.clear()
+    await db.water_element_details.clear()
     db.editable.put({table:'waterElementDetails', is_editable:true, last_sync: new Date()})
     for (let entry of json) {
         db.water_element_details.put({
@@ -147,8 +147,8 @@ const waterElementDetailsHandler = async () => {
 const logsHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=logs&indexDB=true')
     let json = await networkResponse.json()
-    db.logs.clear();
-    db.editable.put({table:'logs', is_editable:json.editable, last_sync: new Date()});
+    await db.logs.clear()
+    db.editable.put({table:'logs', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.logs.put({
             id: entry.id,
@@ -165,8 +165,8 @@ const logsHandler = async () => {
 const logsHistoryHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=logs_history&indexDB=true')
     let json = await networkResponse.json()
-    db.logs_history.clear();
-    db.editable.put({table:'logsHistory', is_editable:json.editable, last_sync: new Date()});
+    await db.logs_history.clear()
+    db.editable.put({table:'logsHistory', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.logs_history.put({
             id: entry.id,
@@ -184,7 +184,7 @@ const logsHistoryHandler = async () => {
 const consumerHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=consumer_full&indexDB=true')
     let json = await networkResponse.json()
-    db.consumer.clear()
+    await db.consumer.clear()
     db.editable.put({table:'consumer', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.consumer.put({
@@ -207,7 +207,7 @@ const consumerHandler = async () => {
 const paymentHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=all_payment&indexDB=true')
     let json = await networkResponse.json()
-    db.payment.clear()
+    await db.payment.clear()
     db.editable.put({table:'payment', is_editable:json.editable, last_sync: new Date()})
     for (let payment of json.data) {
         db.payment.put({
@@ -224,7 +224,7 @@ const paymentHandler = async () => {
 const zoneHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=zone&indexDB=true')
     let json = await networkResponse.json()
-    db.zone.clear()
+    await db.zone.clear()
     db.editable.put({table:'zone', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.zone.put({
@@ -243,7 +243,7 @@ const zoneHandler = async () => {
 const managerHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=manager&indexDB=true')
     let json = await networkResponse.json()
-    db.manager.clear()
+    await db.manager.clear()
     db.editable.put({table:'manager', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.manager.put({
@@ -263,7 +263,7 @@ const managerHandler = async () => {
 const ticketHandler = async () => {
     let networkResponse = await fetch('../api/table/?name=ticket&indexDB=true')
     let json = await networkResponse.json()
-    db.ticket.clear()
+    await db.ticket.clear()
     db.editable.put({table:'ticket', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.ticket.put({
@@ -282,7 +282,7 @@ const ticketHandler = async () => {
 const waterElement_handler = async () => {
     let networkResponse = await fetch('../api/table/?name=water_element&indexDB=true')
     let json = await networkResponse.json()
-    db.water_element.clear()
+    await db.water_element.clear()
     db.editable.put({table:'waterElement', is_editable:json.editable, last_sync: new Date()})
     for (let entry of json.data) {
         db.water_element.put({
@@ -319,9 +319,8 @@ const getDataFromDB = async (table) => {
                     logsHistoryHandler(),
                     waterElementDetailsHandler(),
                     outletHandler(),
-                ]).then(() => {
-                    setInfos('dbLoaded', true)
-                })
+                ])
+                setInfos('dbLoaded', true)
                 break
             case "logs":
                 await logsHandler()
@@ -355,7 +354,7 @@ const getDataFromDB = async (table) => {
             table,
             date: await getOldestDate()
         })
-        console.log('[SW_POPULATE_DB]', 'The table ' + table + ' is synced !')
+        console.log('[SW_POPULATE_DB]', table + ' table synced !')
     } catch (err) {
         isDbLoading = false
         channel.postMessage({
@@ -390,140 +389,166 @@ const emptyDB = async () => {
 }
 
 const updateIndexDB = async (data) => {
-    if(data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details'  && data.table !== 'payment') {
-        db.table(data.table ).where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
-        channel.postMessage({
-            title: 'reloadTable',
-            table:data.table
-        })
-        return
-    }
-    switch (data.table) {
-        case 'water_element':
-            db.water_element.put({
-                id: data.data[0],
-                type: data.data[1],
-                place: data.data[2],
-                users: data.data[3],
-                state: data.data[4],
-                m3: data.data[5],
-                gallons: data.data[6],
-                gestionnaire: data.data[7],
-                zone_up: data.data[8],
-                sync: 0
+    try {
+        if (data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details' && data.table !== 'payment') {
+            db.table(data.table).where('id').equals(parseInt(data.data)).delete().then((delete_count) => {
+                console.log(delete_count)
             })
-            break
-        case 'water_element_details':
-            if (data.type === 'delete') db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = null})
-            else db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = data.data[1]})
-            break
-        case 'consumer':
-            db.consumer.put({
-                id: data.data[0],
-                nom: data.data[1],
-                prenom: data.data[2],
-                genre: data.data[3],
-                adresse: data.data[4],
-                telephone: data.data[5],
-                membres: data.data[6],
-                sortie_eau: data.data[7],
-                argent_du: data.data[8],
-                zone: data.data[9],
-                sync: 0
+            channel.postMessage({
+                title: 'reloadTable',
+                table: data.table
             })
+            return
+        }
 
-            break
-        case 'logs':
-            let log = await db.logs.where('id').equals(parseInt(data.data)).first()
-
-            db.logs_history.put({
-                id: log.id,
-                time: log.time,
-                type: log.type,
-                user: log.user,
-                summary: log.summary,
-                details: log.details,
-                action: data.action,
-                sync: 0
-            })
-
-            db.logs.where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
-            break
-        case 'manager':
-            if (data.type === 'delete') {
-                db.manager.where('id').equals(data.data).delete().then((delete_count)=> {console.log(delete_count)})
-                break
-            }
-            db.manager.put({
-                id: data.data[0],
-                nom: data.data[1],
-                prenom: data.data[2],
-                telephone: data.data[3],
-                mail: data.data[4],
-                role: data.data[5],
-                zone: data.data[6],
-                unknown: data.data[7],
-                sync: 0
-            })
-            break
-        case 'payment':
-            if (data.type === 'delete') {
-                let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
-                await db.payment.where('id').equals(parseInt(data.data)).delete().then((delete_count)=> {console.log(delete_count)})
-                db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du += amount.value; result.sync -= 1})
-            }
-            else {
-                if (data.type === 'edit') {
-                    let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
-                    db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du += (amount.value-data.data[2]); result.sync -= 1})
-                }
-                else db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {result.argent_du -= data.data[2]})
-
-                await db.payment.put({
+        switch (data.table) {
+            case 'water_element':
+                db.water_element.put({
                     id: data.data[0],
-                    data: data.data[1],
-                    value: data.data[2],
-                    source: data.data[3],
-                    user_id: data.consumer,
+                    type: data.data[1],
+                    place: data.data[2],
+                    users: data.data[3],
+                    state: data.data[4],
+                    m3: data.data[5],
+                    gallons: data.data[6],
+                    gestionnaire: data.data[7],
+                    zone_up: data.data[8],
                     sync: 0
                 })
-            }
-            break
-        case 'ticket':
-            db.ticket.put({
-                id: data.data[0],
-                urgence: data.data[1],
-                emplacement: data.data[2],
-                type: data.data[3],
-                commentaire: data.data[4],
-                statut: data.data[5],
-                photo: data.data[6],
-                sync: 0
-            })
-            break
-        case 'zone':
-            db.zone.put({
-                id: data.data[0],
-                name: data.data[1],
-                cout_fontaine: data.data[2],
-                mois_fontaine: data.data[3],
-                cout_kiosque: data.data[4],
-                mois_kiosque: data.data[5],
-                cout_mensuel: data.data[6],
-                sync: 0
-            })
-            break
-        default:
-            break
+                break
+
+            case 'water_element_details':
+                if (data.type === 'delete') db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {
+                    result.geoJSON = null
+                })
+                else db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {
+                    result.geoJSON = data.data[1]
+                })
+                break
+
+            case 'consumer':
+                db.consumer.put({
+                    id: data.data[0],
+                    nom: data.data[1],
+                    prenom: data.data[2],
+                    genre: data.data[3],
+                    adresse: data.data[4],
+                    telephone: data.data[5],
+                    membres: data.data[6],
+                    sortie_eau: data.data[7],
+                    argent_du: data.data[8],
+                    zone: data.data[9],
+                    sync: 0
+                })
+                break
+
+            case 'logs':
+                let log = await db.logs.where('id').equals(parseInt(data.data)).first()
+                db.logs_history.put({
+                    id: log.id,
+                    time: log.time,
+                    type: log.type,
+                    user: log.user,
+                    summary: log.summary,
+                    details: log.details,
+                    action: data.action,
+                    sync: 0
+                })
+                db.logs.where('id').equals(parseInt(data.data)).delete().then((delete_count) => {
+                    console.log(delete_count)
+                })
+                break
+
+            case 'manager':
+                if (data.type === 'delete') {
+                    db.manager.where('id').equals(data.data).delete().then((delete_count) => {
+                        console.log(delete_count)
+                    })
+                    break
+                }
+                db.manager.put({
+                    id: data.data[0],
+                    nom: data.data[1],
+                    prenom: data.data[2],
+                    telephone: data.data[3],
+                    mail: data.data[4],
+                    role: data.data[5],
+                    zone: data.data[6],
+                    unknown: data.data[7],
+                    sync: 0
+                })
+                break
+
+            case 'payment':
+                if (data.type === 'delete') {
+                    let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
+                    await db.payment.where('id').equals(parseInt(data.data)).delete().then((delete_count) => {
+                        console.log(delete_count)
+                    })
+                    db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
+                        result.argent_du += amount.value;
+                        result.sync -= 1
+                    })
+                } else {
+                    if (data.type === 'edit') {
+                        let amount = await db.payment.where('id').equals(parseInt(data.data)).first()
+                        db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
+                            result.argent_du += (amount.value - data.data[2]);
+                            result.sync -= 1
+                        })
+                    } else db.consumer.where('id').equals(parseInt(data.consumer)).modify(result => {
+                        result.argent_du -= data.data[2];
+                        result.sync -= 1
+                    })
+
+                    await db.payment.put({
+                        id: data.data[0],
+                        data: data.data[1],
+                        value: data.data[2],
+                        source: data.data[3],
+                        user_id: data.consumer,
+                        sync: 0
+                    })
+                }
+                break
+
+            case 'ticket':
+                db.ticket.put({
+                    id: data.data[0],
+                    urgence: data.data[1],
+                    emplacement: data.data[2],
+                    type: data.data[3],
+                    commentaire: data.data[4],
+                    statut: data.data[5],
+                    photo: data.data[6],
+                    sync: 0
+                })
+                break
+
+            case 'zone':
+                db.zone.put({
+                    id: data.data[0],
+                    name: data.data[1],
+                    cout_fontaine: data.data[2],
+                    mois_fontaine: data.data[3],
+                    cout_kiosque: data.data[4],
+                    mois_kiosque: data.data[5],
+                    cout_mensuel: data.data[6],
+                    sync: 0
+                })
+                break
+        }
+        channel.postMessage({
+            title: 'reloadTable',
+            table: data.table
+        })
+    } catch (err) {
+        console.log('[SW_UPDATE_IDB]',err)
     }
-    channel.postMessage({
-        title: 'reloadTable',
-        table:data.table
-    })
 }
 
 const sendDataToDB = async(dataID, silent=false) => {
-    let tab = []
+    let tab
     if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray()
     else tab = await db.update_queue.toArray()
 
@@ -531,7 +556,7 @@ const sendDataToDB = async(dataID, silent=false) => {
         await Promise.all(tab.map(async element => {
             let networkResponse = await fetch(element.url, element.init)
             if (networkResponse.ok) {
-                console.log('[SW_SYNC]', 'The ' + element.id + ' is synced')
+                console.log('[SW_SYNC]', 'The ' + element.id + 'data is synced')
                 db.update_queue.delete(element.id)
                 await updateIndexDB(await networkResponse.json())
                 channel.postMessage({
@@ -675,39 +700,49 @@ const getInfos = async () => {
     }
 }
 
-const setInfos = (info, value) => {
-    switch (info) {
-        case 'username':
-            db.sessions.toCollection().modify(data => {data.username = value})
-            username = value;
-            break
-        case 'needDisconnect':
-            db.sessions.toCollection().modify(data => {data.needDisconnect = value})
-            needDisconnect = value;
-            break
-        case 'dbLoaded':
-            db.sessions.toCollection().modify(data => {data.dbLoaded = value})
-            dbLoaded = value
-            break
-        case 'cacheLoaded':
-            db.sessions.toCollection().modify(data => {data.cacheLoaded = value})
-            cacheLoaded = value
-            break
+const setInfos = async (info, value) => {
+    try {
+        switch (info) {
+            case 'username':
+                username = value;
+                db.sessions.toCollection().modify(data => {data.username = value})
+                break
+            case 'needDisconnect':
+                needDisconnect = value;
+                db.sessions.toCollection().modify(data => {data.needDisconnect = value})
+                break
+            case 'dbLoaded':
+                dbLoaded = value
+                db.sessions.toCollection().modify(data => {data.dbLoaded = value})
+                break
+            case 'cacheLoaded':
+                cacheLoaded = value
+                db.sessions.toCollection().modify(data => {data.cacheLoaded = value})
+                break
+        }
+    } catch (err) {
+        console.log('[SW_SET_INFOS]', err)
     }
 }
 
 const resetState = async () => {
-    channel.postMessage({
-        title: 'resetNavigation'
-    })
-    await cacheCleanedPromise()
-    await emptyDB()
-    synced = false
-    setInfos('username', null)
-    setInfos('needDisconnect', false)
-    setInfos('dbLoaded', false)
-    setInfos('cacheLoaded', false)
-    console.log('[SW_RESET_STATE]' ,"IndexDB session is reset")
+    try {
+        channel.postMessage({
+            title: 'resetNavigation'
+        })
+        await cacheCleanedPromise()
+        await emptyDB()
+        synced = false
+        await Promise.all([
+            setInfos('username', null),
+            setInfos('needDisconnect', false),
+            setInfos('dbLoaded', false),
+            setInfos('cacheLoaded', false)
+        ])
+        console.log('[SW_RESET_STATE]' ,"IndexDB session is reset")
+    } catch (err) {
+        console.log('[SW_RESET_STATE]', err)
+    }
 }
 
 const CacheFirst = event => {
@@ -843,7 +878,7 @@ channel.addEventListener('message', async event => {
             break
         case 'getUsername':
             if(username !== null && username !== event.data.username && username !== undefined) resetState()
-            else if (username === null) setInfos('username', event.data.username)
+            else if (username === null) await setInfos('username', event.data.username)
             break
         case 'acceptModification':
             await sendDataToDB(event.data.id)
