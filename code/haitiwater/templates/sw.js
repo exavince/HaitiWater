@@ -84,12 +84,11 @@ let needDisconnect = false
 db.version(dbVersion).stores({
     editable:'table,is_editable,unSync_add,last_sync',
     zone: 'id,name,cout_fontaine,mois_fontaine,cout_kiosque,mois_kiosque,cout_mensuel, sync',
-    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, sync',
+    consumer: 'id,nom,prenom,genre,adresse,telephone,membres,sortie_eau,argent_du,zone, validity, sync',
     ticket: 'id,urgence,emplacement,type,commentaire,statut,photo, sync',
     water_element: 'id,type,place,users,state,m3,gallons,gestionnaire,zone_up, sync',
     water_element_details: 'id,type,localization,manager,users,state,currentMonthCubic,averageMonthCubic,totalCubic,geoJSON, sync',
     manager: 'id,nom,prenom,telephone,mail,role,zone,unknown, sync',
-    consumer_details: 'consumer_id,amount_due,validity, sync',
     payment: 'id,data,value,source,user_id, sync',
     logs: 'id,time,type,user,summary,details, sync',
     logs_history: 'id,time,type,user,summary,details,action, sync',
@@ -200,7 +199,6 @@ const consumerHandler = () => {
             .then(result => {
                 db.consumer.clear()
                 db.editable.put({table:'consumer', is_editable:result.editable, last_sync: new Date()})
-                db.consumer_details.clear()
                 for (let entry of result.data) {
                     db.consumer.put({
                         id: entry.consumer[0],
@@ -213,12 +211,6 @@ const consumerHandler = () => {
                         sortie_eau: entry.consumer[7],
                         argent_du: entry.consumer[8],
                         zone: entry.consumer[9],
-                        sync: 0
-                    })
-
-                    db.consumer_details.put({
-                        consumer_id: entry.consumer[0],
-                        amount_due: entry.consumer[8],
                         validity: entry.validity,
                         sync: 0
                     })
@@ -586,6 +578,8 @@ const sendDataToDB = async(dataID, silent=false) => {
         channel.postMessage({
             title: 'toPush',
             silent,
+            data: dataID,
+            success: true,
             toPush: await db.update_queue.count()
         })
     }).catch(async err => {
@@ -593,6 +587,8 @@ const sendDataToDB = async(dataID, silent=false) => {
         channel.postMessage({
             title: 'toPush',
             silent,
+            dataID: dataID,
+            success: false,
             toPush: await db.update_queue.count()
         })
     })

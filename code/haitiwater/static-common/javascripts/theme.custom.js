@@ -107,20 +107,13 @@ $( document ).ready(function() {
             case 'toPush':
                 localStorage.setItem("dataToSend", event.data.toPush);
                 setupNotifications(event.data.toPush);
+                let success = event.data.success;
                 if (!event.data.silent) {
-                    if (event.data.toPush > 0) {
-                        new PNotify({
-                            title: 'Echec !',
-                            text: event.data.toPush + " modifications n'ont pas été envoyées.",
-                            type: 'error'
-                        });
-                    } else {
-                        new PNotify({
-                            title: 'Réussite !',
-                            text: 'Toutes vos modifications ont été envoyées.',
-                            type: 'success'
-                        });
-                    }
+                    new PNotify({
+                        title: success ? 'Réussite !':'Échec !',
+                        text: success ? "L'envoi a réussi !" : "L'envoi a échoué ! <br> Vous pouvez réessayer depuis la page - A synchroniser",
+                        type: success ? 'success' : 'error'
+                    });
                 }
                 break
             case 'resetNavigation':

@@ -10,13 +10,6 @@ $(document).ready(function() {
     })
 });
 
-function refreshPaymentData() {
-    channel.postMessage({
-        title:'updateDB',
-        db:'payment',
-        userID:user
-    });
-}
 
 /**
  * Attach the handlers for onclick navigation
@@ -66,9 +59,9 @@ async function consumerDetails(data){
 
     if (localStorage.getItem("offlineMode") === "true") {
         await getPaymentData(userID).then(result => {
-        $('#datatable-payment').DataTable().clear();
-        $('#datatable-payment').DataTable().rows.add(result).draw();
-    });
+            $('#datatable-payment').DataTable().clear();
+            $('#datatable-payment').DataTable().rows.add(result).draw();
+        });
     }
     else {
         setTableURL('payment', '&user=' + userID);
@@ -140,13 +133,13 @@ async function getConsumerDetailsData(userID) {
     }
     let dexie = await new Dexie('user_db');
     let db = await dexie.open();
-    let table = db.table('consumer_details');
+    let table = db.table('consumer');
     let result = [];
-    let users = await table.where("consumer_id").equals(userID);
+    let users = await table.where("id").equals(userID);
     await users.each(user => {
         result.push(
-        user.consumer_id,
-        user.amount_due,
+        user.id,
+        user.argent_du,
         user.validity,
         )
     });
