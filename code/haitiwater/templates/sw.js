@@ -529,24 +529,31 @@ const sendDataToDB = async(dataID, silent=false) => {
 
     try {
         await Promise.all(tab.map(async element => {
-            let networkResponse = fetch(element.url, element.init)
+            let networkResponse = await fetch(element.url, element.init)
             if (networkResponse.ok) {
                 console.log('[SW_SYNC]', 'The ' + element.id + ' is synced')
                 db.update_queue.delete(element.id)
                 await updateIndexDB(await networkResponse.json())
+                channel.postMessage({
+                    title: 'toPush',
+                    silent,
+                    data: dataID,
+                    success: true,
+                    toPush: await db.update_queue.count()
+                })
             } else {
                 db.update_queue.update(element.id, {status: networkResponse.status}).then(update => {
                     console.log('[SW_PUSH_'+ update.id +']', networkResponse.statusText)
                 })
+                channel.postMessage({
+                    title: 'toPush',
+                    silent,
+                    data: dataID,
+                    success: false,
+                    toPush: await db.update_queue.count()
+                })
             }
         }))
-        channel.postMessage({
-            title: 'toPush',
-            silent,
-            data: dataID,
-            success: true,
-            toPush: await db.update_queue.count()
-        })
     } catch (err) {
         console.log('[SW_PUSH]', err);
         channel.postMessage({
@@ -560,10 +567,16 @@ const sendDataToDB = async(dataID, silent=false) => {
 }
 
 const cancelModification = async (id) => {
-    let data = db.update_queue.where('id').equals(id).first()
+    let data = await db.update_queue.where('id').equals(id).first()
     let table = data.table
-    let elemId = data.elemId
-    let synced = db.table.where('id').equals(elemId).first().sync
+    let elemId = parseInt(data.elemId)
+
+    if (elemId === NaN) {
+
+    }
+    else {
+
+    }
     console.log(synced)
     db.table(table).update(elemId, {sync:synced})
     db.update_queue.where('id').equals(id).delete()
@@ -697,42 +710,42 @@ const resetState = async () => {
     console.log('[SW_RESET_STATE]' ,"IndexDB session is reset")
 }
 
-const CacheFirst = async event => {
-    let cacheResponse = await caches.match(event.request)
-    return cacheResponse || fetch(event.request).catch(() => caches.match('/offline/'))
+const CacheFirst = event => {
+    return caches.match(event.request)
+        .then(response => response || fetch(event.request).catch(() => caches.match('/offline/')))
 }
 
-const NetworkFirst = async (event, page) => {
-    try {
-        return fetch(event.request)
-    } catch (err) {
-        return caches.match(page)
-    }
+const NetworkFirst = (event, page) => {
+    return fetch(event.request)
+        .catch(() => caches.match(page))
 }
 
-const StaleWhileRevalidate = async event => {
-    let cache = await caches.open(userCache)
-    let response = await cache.match(event.request)
-    return response || fetch(event.request).then(networkResponse => {
-        cache.put(event.request, networkResponse.clone())
-        return networkResponse
-    })
+const StaleWhileRevalidate = event => {
+    return caches.open(userCache)
+        .then(cache => cache.match(event.request)
+            .then(response => response || fetch(event.request)
+                .then(networkResponse => {
+                    cache.put(event.request, networkResponse.clone())
+                    return networkResponse
+                })
+            )
+        )
 }
 
-const CacheOrFetchAndCache = async (event,cacheToUse) => {
-    let cacheResponse = await caches.match(event.request)
-    return cacheResponse || fetch(event.request)
-        .then(networkResponse => {
-            const clonedResponse = networkResponse.clone()
-            caches.open(cacheToUse).then(cache => {
-                cache.put(event.request, clonedResponse).catch(error => {
-                    console.error(error)
-                });
-            });
-            return networkResponse
-        }).catch(function (error) {
-            console.error(error)
-        })
+const CacheOrFetchAndCache = (event,cacheToUse) => {
+    return caches.match(event.request)
+        .then(cacheResponse =>
+            cacheResponse || fetch(event.request)
+                .then(networkResponse => {
+                    const clonedResponse = networkResponse.clone()
+                    caches.open(cacheToUse).then(cache => {
+                        cache.put(event.request, clonedResponse).catch(error => {
+                            console.error(error)
+                        });
+                    });
+                    return networkResponse
+                })
+        )
 }
 
 /*********************************************************************************
