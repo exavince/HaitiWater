@@ -580,22 +580,32 @@ const sendDataToDB = async(dataID, silent=false) => {
             toPush: await db.update_queue.count()
         })
     }
+    channel.postMessage({
+        title: 'reloadTable',
+        table: 'tosync'
+    })
 }
 
 const cancelModification = async (id) => {
     let data = await db.update_queue.where('id').equals(id).first()
     let table = data.table
-    let elemId = parseInt(data.elemId)
 
-    if (elemId === NaN) {
+    if (table === 'payment') {
+        let details = data.details
+        let consumerID = details.body.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "")
 
+        await db.consumer.where('id').equals(parseInt(consumerID)).modify(result => {result.sync -= 1;})
+        await db.update_queue.where('id').equals(id).delete()
     }
     else {
-
+        if (data.elemId === '?') await db.update_queue.where('id').equals(id).delete()
+        else {
+            let details = data.details
+            let dataID = details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id", "")
+            await db.table(table).where('id').equals(parseInt(dataID)).modify(result => {result.sync -= 1;})
+            db.update_queue.where('id').equals(id).delete()
+        }
     }
-    console.log(synced)
-    db.table(table).update(elemId, {sync:synced})
-    db.update_queue.where('id').equals(id).delete()
 }
 
 
