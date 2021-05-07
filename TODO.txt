@@ -1,0 +1,3 @@
+Maj des tables automatiques apres update de la table
+Demander comment on ajoute un paiement dû
+Changer dans le module historique le titre des tableaux
