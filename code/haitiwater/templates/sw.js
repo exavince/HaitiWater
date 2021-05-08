@@ -1,4 +1,4 @@
-importScripts("../static/javascripts/dexie.js")
+importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js")
 
 
 /*********************************************************************************
