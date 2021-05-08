@@ -42,7 +42,7 @@ function editElement(data){
 
 async function drawDataTable(tableName, consumerID){
     let table = $('#datatable-' + tableName).DataTable();
-    table.clear();
+    console.log('[DRAW_DATA_TABLE]', tableName)
 
     if (localStorage.getItem("offlineMode") === "true") {
         try {
@@ -67,15 +67,23 @@ async function drawDataTable(tableName, consumerID){
                 case 'water_element':
                     data = await getWaterElementData();
                     break;
+                case 'tosync':
+                    data = await getTosyncData();
+                    break;
+                case 'logs':
+                    data = await getLogsData();
+                    break;
                 default:
                     data = null;
-                    break;
+                    return
             }
+            table.clear();
             table.rows.add(data);
             table.draw();
             return;
         } catch (err) {
             console.log('[DRAW_DATA_TABLE]', err)
+            return;
         }
     }
 
