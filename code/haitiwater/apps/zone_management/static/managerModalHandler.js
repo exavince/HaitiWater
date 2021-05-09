@@ -13,15 +13,11 @@ $(document).ready(function() {
 });
 
 function postNewManager(){
-    postNewRow('manager', drawDataTableWaterElement)
+    postNewRow('manager')
 }
 
 function postEditManager(){
-    postEditRow('manager', drawDataTableWaterElement)
-}
-
-function drawDataTableWaterElement(){
-    drawDataTable('water_element');
+    postEditRow('manager')
 }
 
 function setupFountainOrZoneManagerDisplay(value, preSelection){

@@ -50,7 +50,7 @@ async function drawDataTable(tableName, consumerID){
             switch (tableName) {
                 case 'payment':
                     await drawDataTable('consumer');
-                    data = await getPaymentData(consumerID);
+                    data = await getPaymentData(parseInt(consumerID));
                     break;
                 case 'consumer':
                     data = await getConsumerData();
@@ -86,7 +86,13 @@ async function drawDataTable(tableName, consumerID){
             return;
         }
     }
-
+    if (tableName === 'tosync') {
+        let data = await getTosyncData();
+        table.clear();
+        table.rows.add(data);
+        table.draw();
+        return;
+    }
     console.log("ajax");
     table.ajax.reload();
     table.draw();

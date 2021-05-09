@@ -222,9 +222,3 @@ async function getZoneTableOfflineConfiguration(){
         }
     };
 }
-
-new BroadcastChannel('sw-messages').onmessage = event => {
-    if (event.data.title === 'reloadTable') {
-        drawDataTable('zone')
-    }
-}

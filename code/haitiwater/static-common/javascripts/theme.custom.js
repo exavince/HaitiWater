@@ -127,7 +127,9 @@ $( document ).ready(function() {
                 localStorage.setItem('lastUpdate', null)
                 break
             case 'reloadTable':
-                drawDataTable(event.data.table)
+                console.log('[THEME]', event.data.table)
+                if (event.data.consumerID) drawDataTable(event.data.table, event.data.consumerID)
+                else drawDataTable(event.data.table)
         }
 
 

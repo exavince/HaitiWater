@@ -531,7 +531,8 @@ const updateIndexDB = async (data) => {
         }
         channel.postMessage({
             title: 'reloadTable',
-            table: data.table
+            table: data.table,
+            consumerID: data.consumer || null
         })
     } catch (err) {
         console.log('[SW_UPDATE_IDB]',err)
@@ -600,12 +601,19 @@ const cancelModification = async (id) => {
     else {
         if (data.elemId === '?') await db.update_queue.where('id').equals(id).delete()
         else {
+            console.log(data.elemId)
             let details = data.details
-            let dataID = details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id", "")
+            let dataID = await details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "")
+            console.log(dataID)
             await db.table(table).where('id').equals(parseInt(dataID)).modify(result => {result.sync -= 1;})
             db.update_queue.where('id').equals(id).delete()
         }
     }
+
+    channel.postMessage({
+        title: 'reloadTable',
+        table: 'tosync'
+    })
 }
 
 
