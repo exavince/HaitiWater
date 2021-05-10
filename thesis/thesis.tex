@@ -137,7 +137,7 @@
 		\section{La gestion de l'eau en Haïti}
 			\label{sec:situation}
 			
-				Haïti est l'un des pays les plus pauvres au monde. Le pays est situé dans une zone géographique où les risques de catastrophes naturelles sont très élevés. Ces intempéries détruisent les infrastructures et empêchent le bon développement des réseaux de distribution d'eau. Il y a quelques années, en 2010, le pays a subit un énorme séisme qui a ravagé une bonne partie du territoire. Parmi tous les défis à relever vient celui de la gestion et de la distribution de l'eau potable sur le territoire, surtout dans les zones les plus rurales. Le climat de la région rendant excessivement difficile l'exploitation directe des cours d'eau, il faut beaucoup d'infrastructures afin de pouvoir assumer la distribution de l'eau potable à tous.
+				Haïti est l'un des pays les plus pauvres au monde. Le pays est situé dans une zone géographique où les risques de catastrophes naturelles sont très élevés. Ces intempéries détruisent les infrastructures et empêchent le bon développement des réseaux de distribution d'eau. Il y a quelques années, en 2010, le pays a subi un énorme séisme qui a ravagé une bonne partie du territoire. Parmi tous les défis à relever vient celui de la gestion et de la distribution de l'eau potable sur le territoire, surtout dans les zones les plus rurales. Le climat de la région rendant excessivement difficile l'exploitation directe des cours d'eau, il faut beaucoup d'infrastructures afin de pouvoir assumer la distribution de l'eau potable à tous.
 				
 				En raison de la grande pauvreté et de gros problèmes organisationnels qui règnent sur la plupart de l'île, il est très difficile de maintenir et de développer le réseau de distribution d'eau potable. Il y a un gros manque de collaboration entre les entités haïtiennes ou entre les villages dû en partie à la communication qui n'est pas du tout optimisée voir inexistante dans certains cas. Dans les zones les plus rurales de l'île, le taux de recouvrement des factures est excessivement faible, jusqu'à 11\%.
 				
@@ -162,8 +162,8 @@
 				
 			\subsection{Eléments de l'application}
 				\begin{description}
-					\item[Zone] Une zone représente une partie du territoire. Une zone peut être subdivisée en plusieurs sous-zone, la zone-parent reprendra alors toutes les données des zones enfants. Cela permet de séparé les responsabilités des différents territoires.
-					\item[Element du réseau] Ces éléments représentent les points physiques du réseau de distribution d'eau potable. Ces éléments sont au nombre de 6 : conduites, réservoirs, sources, fontaines, kiosques et prises individuelles. Tous ensembles ils forment le réseau de distribution au complet. 
+					\item[Zone] Une zone représente une partie du territoire. Une zone peut être subdivisée en plusieurs sous-zone, la zone-parent reprendra alors toutes les données des zones enfants. Cela permet de séparer les responsabilités des différents territoires.
+					\item[Elements du réseau] Ces éléments représentent les points physiques du réseau de distribution d'eau potable. Ces éléments sont au nombre de 6 : conduites, réservoirs, sources, fontaines, kiosques et prises individuelles. Tous ensembles ils forment le réseau de distribution au complet. 
 					\item[Consommateurs] Le consommateur est une personne qui va utiliser le réseau de distribution d'eau potable. Chaque consommateur se voit lors de son enregistrement attribué à un seul élément de sortie d'eau du réseau : fontaine, kiosque, prise individuelle. De cette façon, il est plus simple de gérer la facturation des consommateurs.
 				\end{description}
 				
@@ -176,10 +176,10 @@
 				
 				\begin{description}
 					\item[Gestionnaire de fontaine] Ce gestionnaire va gérer la distribution de l'eau aux différents consommateurs. Il devra gérer tous les éléments du réseau qui lui sont attribués.
-					\item[Gestionnaire de zone] Ce gestionnaire va avoir la responsabilité de gérer d'autres gestionnaires de zones et/ou des gestionnaires de fontaines. Sont travail est plus d'administrer et de surveiller les personnes qui sont en dessus de lui.			 
+					\item[Gestionnaire de zone] Ce gestionnaire va avoir la responsabilité de gérer d'autres gestionnaires de zones et/ou des gestionnaires de fontaines. Son travail est plus d'administrer et de surveiller les personnes qui sont en-dessous de lui.			 
 				\end{description}
 				
-				Ces deux gestionnaires vont avoir des privilèges différents et peuvent donc interagir différemment sur les données. Pour illustrer plus simplement cela, voici un tableau tel que présenté ici \cite{ref:haitiwater} où vous pourrez retrouver plus d'informations sur les rôles des différents gestionnaire. 
+				Ces deux gestionnaires vont avoir des privilèges différents et peuvent donc interagir différemment sur les données. Pour illustrer plus simplement cela, voici un tableau tel que présenté ici \cite{ref:haitiwater} où vous pourrez retrouver plus d'informations sur les rôles des différents gestionnaires. 
 				\begin{table}[H]
 					\centering
 					\small
@@ -219,7 +219,7 @@
 				\begin{description}
 				\item[Schéma] Un schéma contenant la répartition des consommateurs par genre ou le volume d'eau mensuel distribué dans chaque zone. Il peut sélectionner le schéma à afficher grâce à une liste déroulante.
 				\item[Résumé de zone] Un résumé de sa zone géographique contenant le nombre de consommateurs et de points d'eau présents ainsi que le volume d'eau distribué dans celle-ci.
-				\item[Elements du réseau] Un tableau interactif qui contient tous les différents éléments du réseau. Dans cette partie en fonction de ses privilèges, celui-ci peut supprimer, modifier ou ajouter des éléments du réseau. Il peut également trier ou faire des recherche dans ce tableau selon ses besoins.
+				\item[Elements du réseau] Un tableau interactif qui contient tous les différents éléments du réseau. Dans cette partie en fonction de ses privilèges, celui-ci peut supprimer, modifier ou ajouter des éléments du réseau. Il peut également trier ou faire des recherches dans ce tableau selon ses besoins.
 				\end{description}
 				
 				\begin{figure}[H]
@@ -233,7 +233,7 @@
 			\subsection{Carte}
 				Ce module comprend un tableau réduit des éléments du réseau ainsi qu'une carte interactive qui permet à l'utilisateur de voir où sont situés les différents éléments du réseau et de connaître ou d'encoder les coordonnées géographiques de ceux-ci. 
 				
-				Comme dans le module \ref{sec:reseau} "Réseau", il est également possible d'ajouter, modifier ou supprimer des éléments du réseau. De plus c'est ici que l'on peut ajouter des coordonnées géographiques à un élément du réseau. Soit en les entrants manuellement soit en utilisant la carte interactive.
+				Comme dans le module \ref{sec:reseau} "Réseau", il est également possible d'ajouter, modifier ou supprimer des éléments du réseau. De plus c'est ici que l'on peut ajouter des coordonnées géographiques à un élément du réseau. Soit en les entrant manuellement soit en utilisant la carte interactive.
 				\begin{figure}[H]
 					\centering
 					\includegraphics[width=1\textwidth]{images/map}
@@ -281,7 +281,7 @@
 			\subsection{Historique}
 				Ce module contient les actions ayant été effectuées par des gestionnaires de fontaines. Ces actions doivent être validées ou refusées par un gestionnaire plus haut placé. On peut y retrouver deux tableaux.
 				\begin{description}
-					\item[A valider] Le tableau du haut contient les éléments devant être validés. Ici si l'utilisateur a les privilèges requis, il peut choisir de confirmer ou non un action qui a été encodée.
+					\item[A valider] Le tableau du haut contient les éléments devant être validés. Ici si l'utilisateur a les privilèges requis, il peut choisir de confirmer ou non une action qui a été encodée.
 					\item[Historique] Le tableau du bas contient les éléments qui ont été validés ou refusés dans les 3 dernières semaines. Il s'agit simplement d'un historique récent.
 				\end{description}
 				\begin{figure}[H]
@@ -291,9 +291,9 @@
 				\end{figure}
 			
 			\subsection{Rapports}
-				Dans ce module, l'utilisateur peut signaler les différents problèmes qu'il rencontre avec les infrastructures de distribution d'eau. Une fois le problème signaler, celui-ci peut consulter ce qu'il a encodé dans le tableau juste en dessous et modifier ou supprimer son signalement. Si ses privilèges sont suffisamment élevés, il pourra également gérer les signalements des autres personnes.
+				Dans ce module, l'utilisateur peut signaler les différents problèmes qu'il rencontre avec les infrastructures de distribution d'eau. Une fois le problème signalé, celui-ci peut consulter ce qu'il a encodé dans le tableau juste en dessous et modifier ou supprimer son signalement. Si ses privilèges sont suffisamment élevés, il pourra également gérer les signalements des autres personnes.
 				
-				C'est également ici que l'utilisateur va pouvoir encoder les rapports mensuels. Si jamais la connexion internet n'est plus présente, il peut simplement enregistrer le formulaire avec les données qu'il a encodée afin de l'envoyer plus tard lorsque le réseau sera de nouveau accessible.
+				C'est également ici que l'utilisateur va pouvoir encoder les rapports mensuels. Si jamais la connexion internet n'est plus présente, il peut simplement enregistrer le formulaire avec les données qu'il a encodés afin de l'envoyer plus tard lorsque le réseau sera de nouveau accessible.
 				
 				\begin{figure}[H]
 					\centering
@@ -304,7 +304,7 @@
 			\subsection{Consommateurs}
 				Dans ce module, l'utilisateur retrouve 3 parties différentes :
 				\begin{description}
-					\item[Schéma] Le même choix de schéma que décris dans la section \ref{sec:reseau}.
+					\item[Schéma] Le même choix de schéma que décrit dans la section \ref{sec:reseau}.
 					\item[Résumé de zone] Un résumé de la situation de votre zone (nombre de foyers consommant de l'eau, nombre de consommateurs, nombre de foyers n'ayant pas payé leur facture).
 					\item[Consommateurs] Un tableau qui reprend tous les consommateurs auxquels l'utilisateur a accès. Celui-ci peut ajouter, modifier ou supprimer des consommateurs. Ou bien il peut également juste consulter tous les détails sur ceux-ci.
 				\end{description}
@@ -319,12 +319,12 @@
 				\begin{figure}[H]
 					\centering
 					\includegraphics[width=1\textwidth]{images/consumer_tab1}
-					\caption{Module consommateurs}
+					\caption{Tableau des consommateurs}
 				\end{figure}
 			
 \newpage
 			\subsection{Finances}
-				Dans ce module, l'utilisateur a accès à 4 tableaux différents qui lui permettent de gérer les finances de ses consommateurs. Celui-ci pourra modifier, supprimer ou ajouter des informations dans les différents tableaux en foncion de son niveau de privilèges.
+				Dans ce module, l'utilisateur a accès à 4 tableaux différents qui lui permettent de gérer les finances de ses consommateurs. Celui-ci pourra modifier, supprimer ou ajouter des informations dans les différents tableaux en fonction de son niveau de privilèges.
 				\begin{description}
 					\item[Zones] Un tableau contenant les différentes zones. Le fait de sélectionner une zone permet à l'utilisateur de filtrer les consommateurs en fonction de leur zone d'attribution.
 					\item[Consommateurs] Un tableau contenant les consommateurs auxquels l'utilisateur a accès. Le fait de sélectionner un consommateur permet de faire apparaître les deux tableaux suivants.
@@ -340,11 +340,11 @@
 				
 				
 		\section{Problèmes réseaux}
-			L'application HaïtiWater est une application web classique. Cela signifie que pour fonctionner, il faut qu'il y ait nécessairement une connexion à internet. Hors en Haïti, cette connexion n'est pas très stable en ville et celui-ci peut aller jusqu'à être inexistant lorsque vous vous aventurez dans les zones les plus rurales. 
+			L'application HaïtiWater est une application web classique. Cela signifie que pour fonctionner, il faut qu'il y ait nécessairement une connexion à internet. Or en Haïti, cette connexion n'est pas très stable en ville et celui-ci peut aller jusqu'à être inexistant lorsque vous vous aventurez dans les zones les plus rurales. 
 			
 			Ces problèmes de connexions font que l'application est difficilement utilisable sur le terrain en toute sérénité car on ne sait jamais quand le réseau va devenir capricieux. Pour pallier ce problème, il a été décidé de transformer l'application web existante pour que celle-ci puisse fonctionner même lorsque le réseau est absent.
 				
-			De part sa nature, une application web nécessite un connexion pour pouvoir fonctionner. Il a donc fallu étudier les différentes options qui pourraient permettre de faire fonctionner l'application hors-ligne. Parmis les ces options,  les deux qui ont été retenues étaient de soit créer une \textbf{application mobile} séparée de l'application web, soit de transformer l'application web existante en \textbf{Progressive Web App}. 
+			De par sa nature, une application web nécessite un connexion pour pouvoir fonctionner. Il a donc fallu étudier les différentes options qui pourraient permettre de faire fonctionner l'application hors-ligne. Parmis les ces options,  les deux qui ont été retenues étaient de soit créer une \textbf{application mobile} séparée de l'application web, soit de transformer l'application web existante en \textbf{Progressive Web App}. 
 				
 			L'avantage de créer une application dédiée aux mobiles est qu'il est très simple de gérer le fonctionnement hors-ligne de cette application. De plus on peut plus facilement utiliser les différentes capacités de l'appareil mobile comme la caméra, la localisation, ...
 			L'inconvénient de cette solution est qu'il fallait du coup générer une nouvelle application de A à Z. De plus cela implique qu'il y aura deux codes différents dans deux langages différents à devoir maintenir.
@@ -441,16 +441,16 @@
 			
 			
 			\paragraph*{Rédaction}
-			La rédaction du mémoire n'a commencé que lorsque la plupart des fonctionnalités étaient termininées. Cela a permis de lancer la validation au plus vite afin de pouvoir prendre en compte les différents feedbacks et d'ainsi pour les utiliser.
-			Durant la rédaction, les parties produites ont été relue par mes deux promoteurs séparéments afin d'améliorer celle-ci mais aussi par des relecteurs externes afin que le texte soit plus agréable à lire. 
+			La rédaction du mémoire n'a commencé que lorsque la plupart des fonctionnalités étaient terminées. Cela a permis de lancer la validation au plus vite afin de pouvoir prendre en compte les différents feedbacks et d'ainsi pour les utiliser.
+			Durant la rédaction, les parties produites ont été relue par mes deux promoteurs séparément afin d'améliorer celle-ci mais aussi par des relecteurs externes afin que le texte soit plus agréable à lire. 
 			
 			
 
 	\chapter{Analyse des besoins}
 		\label{sec:analyse_besoins}
 
-		% Phase essentiele blabla
-		% Retouver les schémas créé début d'année
+		C'est lors de ce cette phase que nous mes deux promoteurs, l'étudiante d'Haïti et moi-même avons choisi quelle technologie était la plus adaptée afin de faire évoluer l'application existante de la meilleure façon possible. C'est également à ce moment qu'on été déterminé toutes les fonctionnalités à implémenter et leur ordre de priorité.
+		Cette phase est la phase la plus importante car c'est ici que l'on 
 
 		\section{Besoins fonctionnels}
 
