@@ -62,7 +62,7 @@
 		
 		 afin de la faire évoluer vers une application web qui serait entièrement utilisable \textbf{hors-ligne}.
 		 
-		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par une brève introduction sur le contexte Haitien et sur les raisons pour lesquels l'évolution de cette application était nécessaire. Ensuite je présenterai le principe des progressive web app et pourquoi j'ai choisis d'utiliser cette technologie plûtot qu'une autre. Je présenterai ensuite la validation de l'application et les feedbacks que j'ai reçu des utilisateurs ainsi que les conséquence de cette validation sur l'application finale. Puis je conclurai par une liste des améliorations possibles.
+		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par une brève introduction sur le contexte Haitien et sur les raisons pour lesquels l'évolution de cette application était nécessaire. Ensuite je présenterai le principe des progressive web app et pourquoi j'ai choisis d'utiliser cette technologie plûtot qu'une autre. Je présenterai ensuite la validation de l'application et les feedback que j'ai reçu des utilisateurs ainsi que les conséquence de cette validation sur l'application finale. Puis je conclurai par une liste des améliorations possibles.
 
 		Tout le travail réalisé est disponible ici :
 
@@ -155,7 +155,7 @@
 				
 				\begin{figure}[H]
 					\centering
-					\includegraphics[width=0.5\textwidth]{images/Gantt}
+					\includegraphics[width=0.5\textwidth]{images/hierarchie}
 					\caption{Module consommateurs}
 				\end{figure}
 				
@@ -353,18 +353,25 @@
 			L'inconvénient de cette solution est que la gestion du mode hors-ligne est un peu plus complexe, on ne peut pas profiter des capacités de l'appareil mobile aussi bien qu'avec une application native et cette technologie étant assez récente, il n'y a pas énormément de ressource d'aide en ligne et tous les navigateurs ne prennent pas en charge toutes les fonctionnalités proposées.
 				
 			Au vu de la situation compliquée en Haïti et du temps qui sera alloué à ce mémoire, il a été décidé que la meilleure option était celle de la Progressive Web-App. La raison principale est qu'il aurait difficile une fois le mémoire terminé d'avoir deux codes sources différents à maintenir et à mettre à jour.
+			
+			
+			
+			
+%------------------------------------------------------------------------------------------
 
 	\chapter{Organisation}
-		
-
-		Étant le seul étudiant à réaliser ce mémoire, il n'a pas été nécessaire d'utiliser des outils de planification complets. Cette section contiendra surtout la planification des différentes tâches à accomplir permettant l'aboutissement de l'application ainsi que l'écriture de ce mémoire. Celles-ci ont été mises place grâce aux discussions avec mes deux promoteurs et une étudiante en informatique venue d'Haïti pour en apprendre plus sur l'application. 
+		Étant le seul étudiant à réaliser ce mémoire, il n'a pas été nécessaire d'utiliser des outils de planification complets. Cette section contiendra surtout la planification des différentes tâches à accomplir permettant l'aboutissement de l'application ainsi que l'écriture de ce mémoire. Celles-ci ont été mises en place grâce aux discussions avec mes deux promoteurs. 
 
 		\section{Approche de travail}
-			Comprendre les enjeux et les différentes problématiques a été la première tâche à accomplir. Il a fallut décider du type de technologie à utiliser afin d'apporter les fonctionnalités nécessaires au bon fonctionnement de l'application. 
+			La première étape du mémoire a été de bien mettre en avant les différentes fonctionnalités à implémenter afin d'ajouter de la plus value au projet existant. L'idée de base étant de rendre l'application fonctionnelle hors-connexion.	
 			
-			La meilleure option aurait été de pouvoir en discuter avec la plupart des acteurs en Haïti afin d'avoir le plus d'avis possible sur la question. Mais vu le temps que cela aurait pris cette option n'était pas du tout envisageable. Pour pallier à se problème, nous avons étudié la question avec mes deux promoteurs et Nahomie l'étudiante venue d'Haïti. Celle-ci à pu nous apporter son expertise afin de choisir l'option idéale.
+			Nous avons étudié la question avec mes deux promoteurs et Nahomie, l'étudiante venue d'Haïti. Celle-ci à pu nous apporter son expertise afin de séléctionner les fonctionnalités qui pourraient apporter une réelle valeur au projet et prioriser l'implémentation de celles-ci.
+		
+			%Comprendre les enjeux et les différentes problématiques a été la première tâche à accomplir. Il a fallut décider du type de technologie à utiliser afin d'apporter les fonctionnalités nécessaires au bon fonctionnement de l'application. 
 			
-			Une fois le choix technologique fait, nous avons effectuer la planification des tâches.
+			%La meilleure option aurait été de pouvoir en discuter avec la plupart des acteurs en Haïti afin d'avoir le plus d'avis possible sur la question. Mais vu le temps que cela aurait pris cette option n'était pas du tout envisageable. Pour pallier à se problème, nous avons étudié la question avec mes deux promoteurs et Nahomie l'étudiante venue d'Haïti. Celle-ci à pu nous apporter son expertise afin de choisir l'option idéale.
+			
+			%Une fois le choix technologique fait, nous avons effectuer la planification des tâches.
 		
 		
 
@@ -375,50 +382,47 @@
 				\label{sec:planification}
 				
 				\paragraph*{Mensuel}
-				Dans un premier temps, il a fallu réaliser un plan général de déroulement du mémoire. il a fallu mettre en avant les modules sur lesquels il fallait travailler en priorité et les différentes fonctionnalités à implémenter dans ceux-ci.   Nous avons essayer de déterminer certaine deadline afin de garantir la continuité de l'avancement du projet. Malgrès il était difficile de mettre des dates fixes car la technologie utilisée comporte encore peu de communauté et il est donc difficile de trouver des solutions "clé sur porte". 
-				La grande échéance posée était de pouvoir effectuer les tests de l'application avec des personnes réelles à partir de février afin d'avoir le temps de prendre compte les feedbacks pour améliorer l'application.
+				Dans un premier temps, il a fallu réaliser un plan général de déroulement du mémoire et mettre en avant les modules sur lesquels il fallait travailler en priorité et les différentes fonctionnalités à implémenter dans ceux-ci. Une grosse échéance était de pouvoir faire tester l'application par de vraie personne à partir de Février afin d'obtenir du feedback sur l'application.
+				
+				%Malgrè tout il était difficile de mettre des dates fixes car la technologie utilisée comporte encore peu de communauté et il est donc difficile de trouver des solutions "clé sur porte". 
+				%La grande échéance posée était de pouvoir effectuer les tests de l'application avec des personnes réelles à partir de février afin d'avoir le temps de prendre compte les feedback pour améliorer l'application.
 				
 				\paragraph*{Hebdomadaire} 
-				Une réunion était prévue toutes les semaines en alternance avec mes deux promoteurs. Ces réunions permettaient de leur montrer l'état d'avancement du développement et d'avoir un feedback extérieur sur celui-ci afin de pouvoir améliorer les fonctionnalités implémentées ou bien simplement de recadrer le travail sur ce qui était essentiel. 
-				Ces réunions ont toutes eu lieu en vocal vie l'application Teams. En effet en période de COVID, il était impossible de se voir régulièrement en présentiel.
+				Une réunion était prévue toutes les semaines en alternance avec mes deux promoteurs. Ces réunions permettaient de leur montrer l'état d'avancement du développement et d'avoir un feedback extérieur sur celui-ci. 
+				Ces réunions ont toutes eu lieu en vocal via l'application Teams. En effet en période de COVID, il était impossible de se voir régulièrement en présentiel.
 				
 				\paragraph*{Quotidien}
-				Etant donné que j'étais le seul à travailler sur le mémoire, un outil de suivi tel que Trello n'était pas nécessaire. Pour gérer l'organisation du travail une simple liste de tâche était maintenue. Cette liste était modifiée tous les quotidiennement en fonction de l'avancement des différentes tâches ou bien de l'ajout de nouvelles taches au fur et à mesure. Les tâches les plus importantes était maintenue en haut de la liste afin prioriser celle-ci. 
+				Etant donné que j'étais le seul à travailler sur le mémoire, un outil de suivi n'était pas nécessaire. Pour gérer l'organisation du travail une simple liste de tâches était maintenue. Cette liste était modifiée tous les jours en fonction de l'avancement de celles-ci. Les plus importantes étaient maintenues en haut de la liste afin de les prioriser. 
 				
 				Le plan n'a malheureusement pas pu être entièrement respecté pour différentes raisons:
 				\begin{itemize}
-					\item La technologie étant encore assez récente, les sources d'informations et d'aides sur le net sont encore peu présente. Du retard a du coup été pris lors du développement de certaines fonctionnalités qui étaient plus complexe à implémenter que prévu.
-					\item L'installation du serveur en Haïti a pris plus de temps que prévu et il a donc fallu repousser la validation avec de vrai personne. 
-					\item La période COVID-19 a également eu un impact négatif sur la vitesse d'avancement du projet. En effet la manque de stimulation et la solitude apportée par la période ont causé un gros manque de motivation à certain moment de l'année.
+					\item La technologie étant encore assez récente, les sources d'informations et d'aides sur le net sont encore peu présente. Du retard a donc été pris lors du développement de certaines fonctionnalités complexes.
+					\item L'installation du serveur en Haïti a pris plus de temps que prévu et il a donc fallu repousser la validation avec de vraies personnes. 
+					\item La période COVID-19 a apporté un manque de stimulation et de motivation qui a ralenti l'avancement du projet.
+				
 				\end{itemize}				
 				
-				Malgrès tout grâce à des semaines d'avancement très intense, il a été possible de pallier à tous ces problèmes et tout terminer tout ce qui était prévu à la base.
+				Malgrè le retard pris, il a tout de même été possible de terminer le projet dans les temps.
 				
-
-				%Planification des taches sur toutes l'année (reprendre planning développé pour le Q2)
+				
 		\section{Méthodologie}
-			Même en travaillant seul, il est important de mettre en place une bonne méthodologie de travail afin de garantir l'avancement régulier du projet. Une bonne méthodologie permettra de transformer efficacement les différents besoins en fonctionnalités implémentées. Cette méthode apportera également un bonne échéancier pour les différentes tâches à accomplir.
-
+			Même en travaillant seul, une bonne méthodologie de travail permet de garantir l'avancement régulier du projet. Elle permettra de transformer efficacement les différents besoins en fonctionnalités implémentées.
+			
 
 			\subsection*{Agile}
-				Pour le déroulement du mémoire, une méthodologie agile c'est mise en place d'elle même.
 				Le méthodologie agile permet une réponse au changement plus flexible. Plûtot que de planifier tout le projet directement, on développe par petit incrément que l'on termine termine à chaque itération. 
 				
-				Cette méthode a permis de faire évoluer le projet en fonction des différents feedbacks reçu par les promoteurs et par l'étudiante venue d'Haïti. Ce qui n'aurait pas été possible avec une approche waterfall beaucoup plus séquentielle.
+				Cette méthode a permis de faire évoluer le projet en fonction des différents feedback reçu par les promoteurs et par l'étudiante venue d'Haïti. Ce qui n'aurait pas été possible avec une approche waterfall beaucoup plus séquentielle.
 				
-			
-				\paragraph*{Feature Driven Development.} L'application a été développée avec la méthode de développement par les fonctionnalités. Dans cette méthode on se focalise surtout sur la création d'une liste de fonctionnalité à produire et sur la production dans l'application de celle-ci. Ici c'est le client qui définit dans quel ordre ces différentes fonctionnalités doivent être implémentées. Dans le cadre de ce mémoire, ce sont mes deux promoteurs qui ont fait office de client. Ce sont donc eux qui ont determinés les différentes tâches à accomplir et la priorité de ces différentes tâches. 
+				\paragraph*{Feature Driven Development.} L'application a été développée avec la méthode de développement par les fonctionnalités. Dans cette méthode on se focalise surtout sur la création d'une liste de fonctionnalités et sur leurs productions. Les différentes fonctionnalités ont été déterminées par mes deux promoteurs et l'étudiante de Haïti.
 				
-				\paragraph*{Itérations} Dans le cadre d'une méthodologie agile, les itérations sont de courtes durées. Dans le cadre de ce mémoire, les itérations duraient une semaine. Comme je voyais mes promoteurs en alternance, il arrivait que certaines itérations puissent durer deux semaines pour les plus grosses fonctionnalités à implémenter. Cela permettait d'avoir un feedback de la part des deux promoteurs.
-				Les avantages des itérations courtes sont que l'on peut détecter rapidement les défauts présent dans les fonctionnalités développées et cela permet de les corriger tout aussi rapidement. 
+				\paragraph*{Itérations} Dans le cadre d'une méthodologie agile, les itérations sont de courtes durées. Lors de ce mémoire, les itérations duraient deux semaines. Cela permettait d'avoir un feedback de la part des deux promoteurs que je voyaient en alternance une semaine sur deux.
+				Les avantages des itérations courtes sont que l'on peut détecter rapidement les défauts présents et de les corriger. 
 
-				%Dev par fonctionnalité
-				%Itération 
-				
 
 			\subsection*{Phases du mémoire}
-				Le développement des nouvelles fonctionnalités de l'application c'est fait de manière agile et est donc surtout composée de beaucoup de petites phases. Par contre, pour ce qui est du déroulement du mémoire en lui-même, il y a différentes grandes phases qui se sont dessinées.
-			Les raisons à cela sont que certaines phases n'étaient pas réalisable avant que d'autres ne soit complètement terminées ou presque. 
+				%Le développement des nouvelles fonctionnalités de l'application c'est fait de manière agile et est donc surtout composée de beaucoup de petites phases. Par contre, pour ce qui est du déroulement du mémoire en lui-même, il y a différentes grandes phases qui se sont dessinées.
+			%Les raisons à cela sont que certaines phases n'étaient pas réalisable avant que d'autres ne soit complètement terminées ou presque. 
 			
 			\begin{figure}[H]
 					\centering
@@ -427,114 +431,202 @@
 					\label{fig:Gantt}
 				\end{figure}
 				
-			\paragraph*{Analyse et architecture}
-			Sur le schéma \ref{fig:Gantt}, on peut voir qu'il y a d'abord une grosse phase d'analyse afin de déterminer les technologies qui seraient utilisées pour les différents fonctions à implémenter. C'est dans cette phase qu'il y a eu beaucoup de discussion avec l'étudiante venue d'Haïti. En effet, il fallait utiliser des technologies qui permettrait à l'application de continuer à évoluer plus tard lorsque celle-ci serait reprise par des acteurs Haïtiens.
-				C'est donc lors de cette phase qu'il a été décidé d'utiliser les services workers (PWA) plûtot que de créer une application mobile dédiée.
+			\paragraph*{Analyse et architecture.}
+			Sur le schéma \ref{fig:Gantt}, on peut voir qu'il y a d'abord une phase d'analyse afin de déterminer les technologies qui seraient utilisées pour les différentes fonctions à implémenter. C'est dans cette phase qu'il y a eu beaucoup de discussions avec l'étudiante venue d'Haïti.
+		
+			\paragraph*{Implémentation.} 
+			Cette phase compose la plus grosse partie du mémoire. C'est ici que toutes les décisions prises durant la phase d'analyse se sont mise en place. Cette phase se divise en plusieurs petites phases qui représentent les différentes fonctionnalités produites durant le mémoire. 
 			
-			C'est également lors de cette phase que l'on a créé un liste globale reprenant les différentes fonctionnalités principales à implémenter et leur ordre de priorité.
+			\paragraph*{Validation.}
+			La phase de validation n'intervient que tard dans le déroulement du mémoire. C'est simplement parce que la méconnaissance de la technologie à utiliser et le temps qu'a pris le déploiement de l'application sur les serveurs Haïtiens ont grandement retardé l'arrivée de cette phase.			
 			
-			\paragraph*{Implémentation} 
-			Cette phase compose la plus grosse partie du mémoire. C'est ici que toutes les décisions prises durant la phase d'analyse se sont mise en place. Cette phase se divise en plusieur petite phase qui représente les différentes fonctionnalités produite durant le mémoire. Ces grosses phases sont la gestion de l'affichage des pages hors-ligne qui c'est étendue sur pratiquement toute la phase d'implémention car celle-ci était en constante évolution, la mise en place de l'accès aux données hors-ligne, l'envoi de données en étant hors-ligne, la mise à jour automatique des données envoyées afin de rendre l'application plus intuitive et enfin le refractoring et le bug fix pour améliorer la qualité du code et le fonctionnement de l'application. 
-			
-			\paragraph*{Validation}
-			La phase de validation n'interviens que tard dans le déroulement du mémoire. C'est simplement parce que la méconnaissance de la technologie à utiliser et le temps qu'a prit le déploiement de l'application sur les serveurs Haïtiens ont grandement retardé l'arrivée de cette phase. Malgré tout j'ai quand même eu le temps nécessaire pour faire passer tous les tests de validation et prendre en compte les feedbacks afin d'améliorer la production qui avait été réalisée.			
-			
-			
-			\paragraph*{Rédaction}
-			La rédaction du mémoire n'a commencé que lorsque la plupart des fonctionnalités étaient terminées. Cela a permis de lancer la validation au plus vite afin de pouvoir prendre en compte les différents feedbacks et d'ainsi pour les utiliser.
-			Durant la rédaction, les parties produites ont été relue par mes deux promoteurs séparément afin d'améliorer celle-ci mais aussi par des relecteurs externes afin que le texte soit plus agréable à lire. 
+			\paragraph*{Rédaction.}
+			La rédaction du mémoire n'a commencé que lorsque la plupart des fonctionnalités étaient terminées afin de lancer la validation au plus vite. Durant la rédaction, les parties produites ont été relues par mes deux promoteurs séparément afin d'améliorer celle-ci mais aussi par des relecteurs externes afin que le texte soit plus agréable à lire. 
 			
 			
+			
+			
+			
+%---------------------------------------------------------------------------------------------
 
 	\chapter{Analyse des besoins}
 		\label{sec:analyse_besoins}
+		Cette phase est très importante. C'est lors de celle-ci que nous, mes deux promoteurs, l'étudiante d'Haïti et moi-même, avons choisi quelle technologie était la plus adaptée afin de faire évoluer l'application existante de la meilleure façon possible. C'est également ici qu'on été déterminé toutes les fonctionnalités à implémenter et leur ordre de priorité.
+		
+		J'ai avec l'aide de l'étudiante Haïtienne et les bons conseils de mes promoteurs, realiser une analyse de MoSCoW qui sera décrite dans la section \ref{sec:besoins_fonctionnels}. Cette méthode permet de prioriser les tâches d'un projet en fonction de leur criticité, c'est-à-dire du niveau d'impact de la tâche sur la réalisation du projet.
+		
+		Cette analyse de moscow est assez représentative de la direction que devait prendre le projet et représente bien les différentes tâches à accomplir. En accord avec cette analyse, toutes les taĉhes de type \textbf{M}, \textbf{S} et \textbf{C} ont été réalisée durant ce projet. Seule les tâches \textbf{W} n'ont pas été implémentées.
 
-		C'est lors de ce cette phase que nous mes deux promoteurs, l'étudiante d'Haïti et moi-même avons choisi quelle technologie était la plus adaptée afin de faire évoluer l'application existante de la meilleure façon possible. C'est également à ce moment qu'on été déterminé toutes les fonctionnalités à implémenter et leur ordre de priorité.
-		Cette phase est la phase la plus importante car c'est ici que l'on 
 
 		\section{Besoins fonctionnels}
-
+			\label{sec:besoins_fonctionnels}	
+				
+			\begin{figure}[H]
+				\centering
+				\includegraphics[width=1\textwidth]{images/moscow}
+				\caption{MoSCoW}
+			\end{figure}
 			
-			%éfinition
+			Les besoins fonctionnels répondent aux points précis à implémenter, ils représentent toutes les tâches à accomplir pour que le projet soit réussi.
 
-			\subsection*{Gestion des données}
+			Dans le tableau de MoSCoW, les lettres ont le signification suivante: 
+			\begin{description}
+				\item[M] signifie "Must have", le projet serait un échec si l'application ne possèdait pas cette fonctionnalité à la fin du développement.
+				\item[S] signifie "Should have", cette fonctionnalité doit être faite dans la mesure du possible. Ces tâches sont importantes mais pas vitales.
+				\item[C] signifie "Could have", cette fonctionnalité peut être faite si cela n'affecte pas les autres tâches importantes. Ce sont des tâches de confort qui peuvent être effectuées si vous avez suffisamment de temps et que les tâches des deux catégories précédentes ont été réalisées.
+				\item[W] signifie "Won't have but would like", ce qui ne sera pas fait cette fois, mais plus tard. Réaliser ces tâches est un luxe qu'on a théoriquement pas le temps de se payer.
+			\end{description}
+			
+			Lors de l'analyse des besoins, non avons bien entendu repris l'analyse faite ici \cite{ref:haitiwater}. Les 3 options proposées sont les suivantes. 
+			\begin{description}
+				\item[Simple formulaire.] Cette solution consiste a faire en sorte que l'on puisse enregistrer les différents formulaires lorsque le réseau n'est pas disponible à la manière de ce qui exite déjà dans l'application pour l'ajout d'un rapport mensuel. C'est la solution la plus simple car elle ne demande pas d'avoir les données de la base synchronisée localement. Pourtant cette solution n'a pas été retenue car celle-ci est trop simpliste et ne permet pas une utilisation suffisante en cas de perte de connexion.
+				\item[Accès statique.] Cette solution demande d'avoir une version simplifiée de la base de données en copie sur l'appareil de l'utilisateur mais sans la possibilité de modifier celle-ci. Cela permettrait aux utilisateurs de consulter les données hors-ligne mais pas d'en entrer de nouvelles. L'avantage de cette solution est que la synchronisation des tâbles est très simple et qu'il n'y a pas de problèmes d'inconsistances des données.
+				\item[Accès complet.] Cette solution permettrait aux utilisateurs de pouvoir consulter, ajouter, supprimer et modifier des données de la base de données. Ainsi même en cas de perte de réseau, l'utilisateur pourrait continuer à réaliser ses tâches sans le moindre soucis. Cette solution est la plus compliquée à mettre en place car elle demande de synchroniser les différentes versions des données. En effet si deux utilisateurs modifient en même temps les mêmes données en étant hors-ligne, il faudrait pouvoir déterminer quelle modification conserver sans créer d'inconsistances.  
+			\end{description}
+			
+			L'option qui a été choisie est celle de l'accès complet. C'est la seule solution qui permettrait vraiment à l'application d'être utilisée de manière intensive sur le terrain. C'est également l'option la plus intéressante à mettre en place du point de vue technique.
+			
+			
+			\subsection*{Affichage des pages}
+				Une partie importante des besoins est bien évidemment l'accès aux différentes pages de l'application lorsque la connexion internet n'est plus disponible. 
+				
+				C'était la partie prioritaire du projet car sans cette fonctionnalité, il aurait été impossible d'accèder aux différentes données. Les premières pages concernées par cette évolution ont été celles utiles aux gestionnaires de fontaines qui sont le plus souvent sur le terrain.
+				Les différents points du tableau de moscow concerné par cette partie sont :
+				\begin{itemize}
+					\item L'accès à l'application
+					\item Afficher les informations de l'utilisateur connecté
+					\item Visualiser le volume mensuel distribué par zone (schéma)
+					\item Répartir les consommateurs par genre (schéma)
+				\end{itemize}
+				
+				Comme on peut le voir les deux premiers points sont bien placés dans la catégorie "Must have". Les deux derniers sont dans le "Should have" car ils ne sont que des schémas et pas des pages à part entière.
+				
+			\subsection*{Accès aux données}
+				La deuxième partie importante des besoins fonctionnels est d'avoir accès aux données de la base de données même lorsque la connexion internet n'est pas disponible. En effet le simple accès aux pages hors ligne n'a que peu d'intérêt si l'on ne peut pas consulter de données sur ces pages.
+			Dans le tableau de moscow, cela est représenté les points suivants :
+				\begin{itemize}
+					\item Lister les éléments du réseau
+					\item Lister les consommateurs
+					\item Lister les paiements
+					\item Lister les tickets
+					\item Lister les zones
+					\item Lister les gestionnaires
+					\item Lister les logs
+				\end{itemize}
+				
+				Les quatres premiers points sont dans la catégorie "Must have" car ceux-ci représentent les données qui seront utilisées en permanence par les acteurs sur le terrain, dans notre cas les gestionnaires de fontaines. Ce sont donc les données qu'il faut avoir prioritairement dans l'application hors-ligne.
+				
+				Les trois derniers sont dans la catégorie "Should have" et "Could have" car ceux-ci sont surtout utile pour les gestionnaires de zones qui seront assez peu sur le terrain. Malgrè tout il reste intéressant de pouvoir accèder à ces données même lorsque le réseau internet n'est pas disponible dans le cas où un gestionnaire devrait se déplacer sur le terrain ou bien en cas de panne réseau.
+				
+				Un dernier point non listé est d'afficher les éléments du réseau de distribution d'eau sur une carte interactive même lorsque l'on a pas de connexion réseau. Ce point a été mis dans les "Could have" car l'usage de la carte en mode hors-ligne est une fonction qui prendrait beaucoup d'espace sur un appareil mobile et cette fonctionnalité n'est pas essentielle à un usage sur le terrain.
+
+			\subsection*{Modifications des données}
 				\label{sec:gest_donnee}
-
-
-
-			\subsection*{Affichage et accès}
-
-			
+				La dernière partie mais non la moindre consiste à gérer l'envoi des données lorsque la connexion au réseau n'est pas disponible. Cela permettrait aux utilisateurs de pouvoir complétement se passer de la solution crayon/papier.
+				Dans le tableau de moscow cette partie est représentée par les points suivant:
+				\begin{itemize}
+					\item Ajouter, supprimer ou éditer
+					\item Signaler un problème par le gestionnaire de fontaine
+					\item Faire un rapport mensuel
+				\end{itemize}
+				
+				La plupart des points sont situés dans la partie "Must have" car ces fonctionnalités sont essentielles au bon fonctionnement de l'application hors-ligne. Par contre la modification des éléments du réseau, des zones, des gestionnaires et des tickets sont dans les catégories "Should have" and "Could have" car ces données sont surtout utilisées par les gesionnaires de zones qui ne vont que peu sur le terrain et pas par les gestionnaires de fontaines.			
 
 		\section{Besoins non-fonctionnels}
-
-			%Définition
-
-			\subsection*{Sécurité des données}
-
-
+			Les besoins non-fonctionnels sont soit des besoins optionnels, soit des besoins liés à l'implémentation et à l'interopérabilité générale. En réalisant ces besoins non fonctionnels, on obtient un système fiable et qualitatif.
+					
 			\subsection*{Multi-plateforme}
+			\label{sec:multi}
+				Ce projet se déroule dans le cadre, et est la suite, d'un mémoire universitaire. La prochaine étape pour celui-ci une fois le mémoire terminé est qu'il soit déployé et maintenu par une équipe de développeur en Haïti. 
 				
-
+				Le problème est qu'on ne connait pas encore le temps et le budget qui seront alloués à la suite de ce projet. Par contre, ce que l'on sait, c'est qu'il faut que l'application puisse tourner sur un maximum d'appareils différents. Les choix technologiques qui seront décris dans le section \ref{sec:choix_tech} ont donc été pris en prenant en considération le fait que l'application doit pouvoir tourner sur tout type de configuration.
+				
 			\subsection*{Technologies simples et populaires}
-
-
-		\section{Structure modulaire}
-			\label{sec:modules}
-
-			%Expliquer que mon travail conserve la structure modulaire
-			%Fin du module offline
-			%Lien vers ancien mémoire
-			%Ajout du module "A modifier"
-
-			
-
+				Comme précisé précédemment, nous ne connaissons pas encore l'équipe de développeur qui va reprendre le projet. Il a donc fallu continuer à utiliser des technologies qui sont assez rapide à apprendre et accessible à tous. Cela afin de faciliter la maintenance et l'évolutivité de l'application lorsque celle-ci sera déployée en Haïti.	
+				
 		\section{Structure des données hors-ligne}
 			\label{sec:data}
+			Pour que l'utilisateur puisse accèder aux données en étant hors-ligne, il faut bien évidemment que celles-ci soient stockées sur l'appareil. Pour ce faire il a fallu trouver une solution qui prendrait peu de place sur l'appareil de l'utilisateur, qui permettrait un accès rapide en lecture et la possibilité de modifier ces données. Deux solutions ont alors été envisagées.
+			\begin{description}
+				\item[JSON] Stocker les réponses au format JSON telles qu'envoyées par le serveur dans la cache du navigateur. L'avantage de cette solution est qu'il est très rapide de récupérer les données à afficher sur la page lors du chargement de celle-ci car les données nécéssaires sont stockées telles quelles dans le navigateur, elle est également très facile à mettre en place. Si l'on avait utilisé l'accès statique aux données comme décrit dans la section \ref{sec:besoins_fonctionnels}, cette solution aurait été suffisante. Mais comme il faut pouvoir modifier les données, cette solution est suboptimal.
+				\item[DB] Utiliser un système de gestion des données intégré au navigateur. Cette option a pour avantage le fait d'avoir un vrai système de gestion de données. Une fois les données enregistrées dans le navigateur, il est très facile de faire des requêtes sur ces données ou bien d'ajouter en modifier certaines. Par contre l'inconvénient est que lors de la synchronisation des différentes tables dans le navigateur, l'appareil doit fournir un travail supplémentaire.
+			\end{description}
+				
+			La solution qui a été retenue est la deuxième option. C'est en effet elle qui permet le plus facilement de gérer l'accès complet à l'application en permettant de modifier, supprimer ou ajouter des données hors-ligne.
 
-			%Expliquer la différence entre données online/offline
-			%Introduire ma solution
 
+
+
+
+%------------------------------------------------------------------------------------------------------------
 	\chapter{Implémentation}
 
-		\section{Description de l'app de base}
-			%Expliquer l'implémentation de l'app existante
-				%Django
-				%PostGres
-				%...
+		\section{Application de base}
+			Ceci n'est qu'un résumé basique de l'application de base. Si vous désirez de plus ample informations sur les raisons des choix technologiques suivant et les détails de leur implémentation, vous pouvez consulter le document \cite{ref:haitiwater}.
+			
+			\subsection*{Back-end}
+				L'application HaïtiWater est une application web. C'est Python qui a été choisi pour le back-end car c'est un langage de programmation populaire et facile à apprendre. Il existe énormément de librairies logicielles et de documentations sur internet ce qui le rend plus adapté à la situation.
+			
+				Vu la taille du projet, un framework a du être utilisé. Le choix c'est porté sur Django principalement grâce à ces outils de gestion de base de données, particulièrement efficace pour les données géographiques.	
+			
+				Le SGBD utilisé pour l'application est PostGreSQL. Celui-ci a été choisi pour deux raisons:
+				\begin{itemize}
+					\item La première est que c'est le système recommandé par Django, c'est celui qui s'adapte le mieux au système de mapping objet-relationnel. Il effectue la connexion avec le serveur de base de données, et se charge d’y envoyer
+toutes les requêtes.
+
+					\item La deuxième est l'extension PostGIS de PostGreSQL permettant de traiter facilement les données géographiques.
+				\end{itemize}			
+				
+				L'application contient un module API qui permet de séparé les différents rôles du serveur. Cela facilite également la récupération des des données par les différentes bibliothèques du front-end.
+			
+						
+			\subsection*{Front-end}
+				Pour le front-end, aucun framework n'a été utilisé mais seulement la librairie bootstrap qui permet d'agencer l'interface graphique par blocs et de les personnalisés. La raison de son utilisation et qu'il s'agit d'une bibliothèque très connue et utilisée.
+				
+				Deux autres bibliothèques ont été utilisées afin de gérer l'affichage des données dans l'application. La première est Datatables, cette bilbiothèque permet l'affichage des données sous forme de table. La deuxième est Chart.JS, elle permet l'affichage des données sous forme de graphiques. Toutes les données sont récupérées via le module API qui a été créée pour l'occasion.
+				
+			\subsection*{Client}
+				Du coté du client, l'application utilise la mise en cache afin d'éviter les télechargements répétitifs des mêmes fichiers. Pour gérer cette mise en cache, on fait ici usage du Service Worker qui se place en middleware entre le client et le serveur afin d'intercepter les requètes afin de les mettre en cache.
+
 		
 		\section{Choix technologiques}
 			\label{sec:choix_tech}
+			Afin de pouvoir accèder et envoyer des données lorsque nous sommes hors-ligne, différentes options ont été envisagées.
+			\begin{description}
+				\item[Application android]
+				\item[React Native App]
+				\item[ervice worker]
+			\end{description}
 			
-			\subsection*{Progressive Web-App}
+			\subsection{Progressive Web-App}
 				%Expliquer les différentes types d'application hors-ligne étudiée
 				
-			\subsection{Stratégie de synchronisation des pages}			
+			\subsubsection*{Stratégie de synchronisation des pages}			
 			
-			\subsection{Stratégie de synchronisation de la DB}
-			
-			
-			\subsection{Gestion des changements d'utilisateurs}		
+			\subsubsection*{Stratégie de synchronisation de la DB}
 			
 			
-			\subsection{Sytème de notification}	
+			\subsubsection*{Gestion des changements d'utilisateurs}		
+			
+			
+			\subsubsection*{Sytème de notification}	
 						
 
-			\subsection*{Service-worker}
+			\subsubsection*{Service-worker}
 
 		
-			\subsection*{IndexedDB}
+			\subsection{IndexedDB}
 
 					
 
-			\subsection*{Dexie.js}
+			\subsection{Dexie.js}
 				
 
-			\subsection*{DataTables}
+			\subsection{DataTables}
 
 			
 
-			\subsection*{Chart.JS}
+			\subsection{Chart.JS}
 				
 				
 
