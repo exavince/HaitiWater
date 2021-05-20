@@ -25,7 +25,7 @@
 \BOOKMARK [0][-]{chapter.5}{Impl\351mentation}{}% 25
 \BOOKMARK [1][-]{section.5.1}{Application de base}{chapter.5}% 26
 \BOOKMARK [1][-]{section.5.2}{Choix technologiques}{chapter.5}% 27
-\BOOKMARK [2][-]{subsection.5.2.1}{Progressive Web-App}{section.5.2}% 28
+\BOOKMARK [2][-]{subsection.5.2.1}{Service worker}{section.5.2}% 28
 \BOOKMARK [2][-]{subsection.5.2.2}{IndexedDB}{section.5.2}% 29
 \BOOKMARK [2][-]{subsection.5.2.3}{Dexie.js}{section.5.2}% 30
 \BOOKMARK [2][-]{subsection.5.2.4}{DataTables}{section.5.2}% 31

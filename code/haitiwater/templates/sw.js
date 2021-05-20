@@ -810,8 +810,8 @@ self.addEventListener('fetch', async event => {
     const url = event.request.url
 
     if (!synced) await getInfos()
-    if (synced && !cacheLoaded && !isCacheLoading && !needDisconnect) getCache()
-    if (synced && !dbLoaded && !isDbLoading && !needDisconnect) getDataFromDB('all')
+    if (synced && !cacheLoaded && !isCacheLoading && !needDisconnect) event.waitUntil(getCache())
+    if (synced && !dbLoaded && !isDbLoading && !needDisconnect) event.waitUntil(getDataFromDB('all'))
 
     if (event.request.method === 'POST' || event.request.method === 'post') {
         event.respondWith(fetch(event.request))
@@ -874,7 +874,7 @@ channel.addEventListener('message', async event => {
             })
             break
         case 'updateDB':
-            if (!isDbLoading) getDataFromDB(event.data.db)
+            if (!isDbLoading) event.waitUntil(getDataFromDB(event.data.db))
             channel.postMessage({
                 title: 'updateStatus',
                 date: await getOldestDate(),
@@ -883,7 +883,7 @@ channel.addEventListener('message', async event => {
             })
             break
         case 'pushData':
-            sendDataToDB(event.data.id)
+            event.waitUntil(sendDataToDB(event.data.id))
             break
         case 'getUsername':
             if(username !== null && username !== event.data.username && username !== undefined) resetState()

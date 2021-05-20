@@ -592,13 +592,23 @@ toutes les requêtes.
 		\section{Choix technologiques}
 			\label{sec:choix_tech}
 			Afin de pouvoir accèder et envoyer des données lorsque nous sommes hors-ligne, différentes options ont été envisagées.
-			\begin{description}
-				\item[Application android]
-				\item[React Native App]
-				\item[ervice worker]
-			\end{description}
+			\subsubsection*{Application android}
+				C'est option qui est la plus facile à implémenter et pour gérer le fonctionnement hors-ligne de l'application est de créer une application Android à coté de la web-app. Cela aurait permis aux gestionnaires de fontaines d'accèder à une version limitée de l'application sur leur téléphone ou tablette quand ils sont sur le terrain.Cette solution est envisageable car le backend contient un module API qui permet de récupérer les données utiles.
 			
-			\subsection{Progressive Web-App}
+				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur IOS. De plus elle oblige à maintenir et à faire évoluer deux codes sources dans deux langages différents.
+			\subsubsection*{Xamarin}
+				Xamarin est une plateforme open source qui permet de créer des applications modernes et performantes pour android, iOS et Windows grace au .NET \cite{ref:xamarin}. Le gros avantage de cette solution est qu'il suffit d'utiliser la partie API existante du serveur pour pouvoir créer une application qui serait disponible sur tous types d'appareils.
+			
+				Le gros défault de Xamarin est qu'il faut un temps d'apprentissage avant utilisation. Cette technologie n'est que rarement connue et il sera donc plus difficile pour Haïti de faire maintenir et évoluer le projet.
+				
+			\subsubsection*{React native}
+				Cette technologie permet d'écrire des applications qui seront disponible à la fois pour Android et iOS. Il est même possible de dériver facilement du React native pour en faire une application web react. Cela permettrait de ne pas trop diversifier les codes sources et ainsi faciliter leur maintenance.
+				
+				La difficulté ici réside de nouveau dans le fait qu'encore peu de développeur connaisse REACT. Bien que cette solution commence à être plus utilisée elle reste plus complexe  à mettre en place.
+				
+			\subsubsection*{Progressive web-app}
+			
+			\subsection{Service worker}
 				%Expliquer les différentes types d'application hors-ligne étudiée
 				
 			\subsubsection*{Stratégie de synchronisation des pages}			
