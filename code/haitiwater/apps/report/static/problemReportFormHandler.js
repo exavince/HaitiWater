@@ -191,10 +191,10 @@ async function sendTicket(addOrEdit) {
         },
         body: body
     };
+    beforeModalRequest();
 
-    console.log('['+ addOrEdit +']', myInit);
-    await navigator.serviceWorker.ready.then(async swRegistration => {
-        beforeModalRequest();
+    try {
+        await navigator.serviceWorker.ready
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -218,52 +218,39 @@ async function sendTicket(addOrEdit) {
         });
 
         document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
-        dismissModal();
-        new PNotify({
-            title: 'Succès!',
-            text: "Opération bien enregistrée",
-            type: 'success'
-        });
-
-        indexDBModify('ticket', form["input-id"].value);
-        afterModalRequest();
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        beforeModalRequest();
-        fetch(postURL, myInit)
-            .then(response => {
-                if(response.ok) {
-                    document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
-                    dismissModal();
-                    new PNotify({
-                        title: 'Succès!',
-                        text: "Opération effectuée",
-                        type: 'success'
-                    });
-                    drawDataTable("ticket");
-                } else {
-                    document.getElementById("form-ticket-error").className = "alert alert-danger";
-                    document.getElementById("form-ticket-error-msg").innerHTML = err;
-                    afterModalRequest();
-                    new PNotify({
-                        title: 'Echec!',
-                        text: "Le serveur a refusé !",
-                        type: 'error'
-                    });
-                }
-                afterModalRequest();
-            })
-            .catch(err => {
+        if (addOrEdit !== 'add') indexedDBModify('ticket', form["input-id"].value);
+        postMessage({title:'pushData'});
+        console.log('[REPORT_sendTicket]', 'ticket sent');
+    } catch (e) {
+        console.error('[REPORT_sendTicket]', e);
+        try {
+            let response = await fetch(postURL, myInit)
+            if(response.ok) {
+                document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
+                dismissModal();
+                new PNotify({
+                    title: 'Succès!',
+                    text: "Opération effectuée",
+                    type: 'success'
+                });
+                console.error('[REPORT_sendTicket]', 'sent without SW');
+            } else {
                 document.getElementById("form-ticket-error").className = "alert alert-danger";
                 document.getElementById("form-ticket-error-msg").innerHTML = err;
-                afterModalRequest();
                 new PNotify({
                     title: 'Echec!',
-                    text: "Vous n'avez pas de réseau",
+                    text: "Le serveur a refusé !",
                     type: 'error'
                 });
-            })
-    });
+                console.error('[REPORT_sendTicket]', response.statusText);
+            }
+        } catch (e) {
+            console.error('[REPORT_sendTicket]', e);
+        }
+    }
+
+    dismissModal();
+    afterModalRequest();
     await drawDataTable('ticket');
 }
 

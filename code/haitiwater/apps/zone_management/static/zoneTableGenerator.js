@@ -2,16 +2,15 @@ async function drawZoneTable() {
     let config;
     if (localStorage.getItem("offlineMode") === "true") {
         config = await getZoneTableOfflineConfiguration();
+        addLastUpdateToTitle('zone');
     }
     else {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
         let dataURL = baseURL + "/api/table/?name=zone";
         config = getZoneTableConfiguration(dataURL);
-        console.log("Request data from: " + dataURL);
     }
 
     let table = $('#datatable-zone').DataTable(config);
-    addLastUpdateToTitle('zone')
 
     $('#datatable-zone tbody').on( 'click', 'tr td:not(:last-child)', function () {
         let tr = $(this).closest('tr');
@@ -43,14 +42,15 @@ async function drawZoneTable() {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
         if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
             removeElement("zone", data[0].innerText);
-        } else {}
-    } );
+        }
+    });
+
     $('#datatable-zone tbody').on( 'click', '.edit-row', function () {
         let data = table.row($(this).closest('tr')).data();
         setupModalZoneEdit(data);
-    } );
-    prettifyHeader('zone');
+    });
 
+    prettifyHeader('zone');
     return table;
 }
 
@@ -92,25 +92,30 @@ function filterWaterElementFromZone(zoneTable){
 }
 
 async function getZoneData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('zone');
-    let result = [];
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('zone');
+        let result = [];
 
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.name,
-            row.cout_fontaine,
-            row.mois_fontaine,
-            row.cout_kiosque,
-            row.mois_kiosque,
-            row.cout_mensuel,
-            row.sync
-        ]);
-    });
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.name,
+                row.cout_fontaine,
+                row.mois_fontaine,
+                row.cout_kiosque,
+                row.mois_kiosque,
+                row.cout_mensuel,
+                row.sync
+            ]);
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.error('[ZONE_getZoneData]', e);
+        throw e;
+    }
 }
 
 function getZoneTableConfiguration(dataURL){

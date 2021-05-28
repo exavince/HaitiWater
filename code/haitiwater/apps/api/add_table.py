@@ -353,6 +353,7 @@ def add_location_element(request, elem):
     json_object = {
         'data': [loc.elem.name, loc.json_representation],
         'type': 'add',
+        'id': loc.elem.id,
         'table': 'water_element_details'
     }
 

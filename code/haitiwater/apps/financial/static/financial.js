@@ -23,7 +23,6 @@ function attachHandlers(zoneTable, consumerTable){
     });
 
     $('#datatable-zone').first('tbody').on('click', 'tr td:not(:last-child)', function(){
-        let row = ($(this).closest('tr'));
         filterConsumersFromZone(zoneTable);
     });
 }
@@ -43,7 +42,6 @@ function filterConsumersFromZone(zoneTable){
     }
     let zoneName = data[1];
     consumerTable.search(zoneName).draw();
-
 }
 
 /**
@@ -51,17 +49,15 @@ function filterConsumersFromZone(zoneTable){
  * @param data the datatable row
  */
 async function consumerDetails(data){
-    user = data[0];
     let userID = data[0];
-    if (paymentTable === 'undefined') {
-        paymentTable = drawPaymentTable(null);
-    }
+    let offline = localStorage.getItem("offlineMode") === "true";
+    if (paymentTable === 'undefined') paymentTable = drawPaymentTable(null);
 
-    if (localStorage.getItem("offlineMode") === "true") {
-        await getPaymentData(userID).then(result => {
-            $('#datatable-payment').DataTable().clear();
-            $('#datatable-payment').DataTable().rows.add(result).draw();
-        });
+    if (offline) {
+        let result  = await getPaymentData(userID);
+        let table = $('#datatable-payment');
+        table.DataTable().clear();
+        table.DataTable().rows.add(result).draw();
     }
     else {
         setTableURL('payment', '&user=' + userID);
@@ -91,35 +87,32 @@ async function consumerDetails(data){
  * @return {object} the data
  */
 async function requestFinancialDetails(userID) {
-    if (localStorage.getItem("offlineMode") === "true") {
+    let offline = localStorage.getItem("offlineMode") === "true";
+    if (offline) {
         let financialDetails = await getConsumerDetailsData(userID);
         $('#consumer-details-amount-due').html('(HTG) ' + financialDetails[1]);
         $('#consumer-details-next-bill').html(financialDetails[2]);
     }
     else {
         let requestURL = "../api/details?table=payment&id=" + userID;
-        let xhttp = new XMLHttpRequest();
-
-        xhttp.onreadystatechange = function(){
-            if (this.readyState === 4) {
-                if (this.status === 200) {
-                    let financialDetails = JSON.parse(this.response);
-                    $('#consumer-details-amount-due').html('(HTG) ' + financialDetails.amount_due);
-                    $('#consumer-details-next-bill').html(financialDetails.validity);
-                }
-                else{
-                    console.error(this);
-                    new PNotify({
-                        title: 'Échec du téléchargement',
-                        text: "Impossible de récupérer les détails financiers de l'utilisateur.",
-                        type: 'warning'
-                    })
-                }
+        try {
+            let response = await fetch(requestURL);
+            if (response.ok) {
+                let financialDetails = await response.json()
+                $('#consumer-details-amount-due').html('(HTG) ' + financialDetails.amount_due);
+                $('#consumer-details-next-bill').html(financialDetails.validity);
             }
-        };
-
-        xhttp.open('GET', requestURL, true);
-        xhttp.send();
+            else {
+                console.error('[FINANCIAL_requestFinancialDetails]', response.statusText);
+                new PNotify({
+                    title: 'Échec du téléchargement',
+                    text: "Impossible de récupérer les détails financiers de l'utilisateur.",
+                    type: 'warning'
+                });
+            }
+        } catch (e) {
+            console.error('[FINANCIAL_requestFinancialDetails]', e);
+        }
     }
 }
 
@@ -128,21 +121,25 @@ function refreshFinancialDetails() {
 }
 
 async function getConsumerDetailsData(userID) {
-    if (userID === null) {
-        return [];
-    }
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('consumer');
-    let result = [];
-    let users = await table.where("id").equals(userID);
-    await users.each(user => {
-        result.push(
-        user.id,
-        user.argent_du,
-        user.validity,
-        )
-    });
+    try {
+        if (userID === null) return [];
 
-    return result;
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('consumer');
+        let result = [];
+        let users = await table.where("id").equals(userID);
+        await users.each(user => {
+            result.push(
+            user.id,
+            user.argent_du,
+            user.validity,
+            )
+        });
+
+        return result;
+    } catch (e) {
+        console.error('[FINANCIAL_getConsumerDetailsData]', e);
+        throw e;
+    }
 }

@@ -3,18 +3,16 @@ async function drawManagerTable() {
 
     if (localStorage.getItem("offlineMode") === "true") {
         config = await getManagerDatatableOfflineConfiguration();
+        addLastUpdateToTitle('manager');
     }
     else {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
         let dataURL = baseURL + "/api/table/?name=manager";
-        console.log("Request data from: " + dataURL);
         config = getManagerDatatableConfiguration(dataURL);
     }
 
-    $('#datatable-manager').DataTable(config);
-    addLastUpdateToTitle('manager')
+    let table = $('#datatable-manager').DataTable(config);
 
-    let table = $('#datatable-manager').DataTable();
     $('#datatable-manager tbody').on( 'click', 'tr td:not(:last-child)', function () {
         let row = $(this).closest('tr');
         if ( row.hasClass('selected') ) {
@@ -32,12 +30,13 @@ async function drawManagerTable() {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
         if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
             removeElement("manager", data[0].innerText);
-        } else {}
-    } );
+        }
+    });
+
     $('#datatable-manager tbody').on( 'click', '.edit-row', function () {
         let data = table.row($(this).closest('tr')).data();
         setupModalManagerEdit(data);
-    } );
+    });
 
     prettifyHeader('manager');
 }
@@ -63,25 +62,30 @@ function filterWaterElementFromManager(managerTable){
 }
 
 async function getManagerData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('manager');
-    let result = [];
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('manager');
+        let result = [];
 
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.nom,
-            row.prenom,
-            row.telephone,
-            row.mail,
-            row.zone,
-            row.unknown,
-            row.sync
-        ]);
-    });
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.nom,
+                row.prenom,
+                row.telephone,
+                row.mail,
+                row.zone,
+                row.unknown,
+                row.sync
+            ]);
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.error('[MANAGER_getManagerData]', e);
+        throw e;
+    }
 }
 
 function getManagerDatatableConfiguration(dataURL){

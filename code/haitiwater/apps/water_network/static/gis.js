@@ -45,13 +45,6 @@ $(document).ready(function() {
         //Populate map with known elements
         requestAllElementsPosition();
     });
-
-    new BroadcastChannel('sw-messages').onmessage = event => {
-        if (event.data.title === 'reloadTable') {
-            drawDataTable('water_element_details')
-            drawDataTable('water_element')
-        }
-    }
 });
 
 /**
@@ -71,25 +64,30 @@ function waterGISPopulate(elementPosition){
         drawElement.bindTooltip(tooltip, {
             sticky:true
         });
-        drawElement.on('click', function(e){
-            console.log(drawElement.id)
-            requestWaterElementDetails(drawElement.id);
+
+        drawElement.on('click', async e => {
+            await requestWaterElementDetails(drawElement.id);
         });
     }
 }
 
 async function getGisData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('water_element_details');
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('water_element_details');
 
-    let geoData = {}
+        let geoData = {};
 
-    await table.each(element => {
-        geoData[element.id.toString()] = [element.localization, element.geoJSON]
-    })
+        await table.each(element => {
+            geoData[element.id.toString()] = [element.localization, element.geoJSON];
+        });
 
-    return geoData
+        return geoData;
+    } catch (e) {
+        console.error('[GIS_getGisData]', e);
+        throw e;
+    }
 }
 
 
@@ -97,27 +95,26 @@ async function getGisData() {
  * Request all known element positions from the server
  * @return {[JSONArray]} [The positions as a list of GeoJSON]
  */
-function requestAllElementsPosition(){
+async function requestAllElementsPosition(){
     if (localStorage.getItem("offlineMode") === "true") {
-       getGisData().then(data => {
-           waterGISPopulate(data)
-       })
+        let data = await getGisData();
+        waterGISPopulate(data);
     }
     else {
-        let requestURL = "../api/gis?marker=all";
-        fetch(requestURL).then(networkResponse => networkResponse.json()
-            .then(result => {
-                waterGISPopulate(result)
-            })
-        ).catch(err => {
-            console.log(err);
+        try {
+            let requestURL = "../api/gis?marker=all";
+            let networkResponse = await fetch(requestURL)
+            let json = await networkResponse.json();
+            waterGISPopulate(json);
+        } catch (e) {
+            console.error('[GIS_requestAllElementsPosition]', e);
             new PNotify({
                 title: 'Erreur',
                 text: 'Les positions ne peuvent être téléchargées',
                 type: 'error'
             });
             waterGISPopulate(false);
-        })
+        }
     }
 }
 
@@ -217,35 +214,38 @@ function toggleDrawer(){
 }
 
 async function getWaterElementDetailsData(elementID) {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('water_element_details');
-    let result = await table.where('id').equals(parseInt(elementID)).first();
-    console.log(result);
-    return result;
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('water_element_details');
+        return await table.where('id').equals(parseInt(elementID)).first();
+    } catch (e) {
+        console.error('[GIS_getWaterElementDetailsData]', e);
+        throw e;
+    }
 }
 
 /**
  * Requests the details of an element to the server
  * @param  {int} elementID
  */
-function requestWaterElementDetails(elementID){
+async function requestWaterElementDetails(elementID){
     if (localStorage.getItem('offlineMode') === 'true') {
-        getWaterElementDetailsData(elementID).then(result => {
-            setupWaterElementDetails(result);
-        });
+        let result = await getWaterElementDetailsData(elementID);
+        setupWaterElementDetails(result);
     }
     else {
-        let requestURL = "../api/details?table=water_element&id="+elementID;
-        fetch(requestURL).then(networkResponse => networkResponse.json()
-            .then(result => {
-                setupWaterElementDetails(result)
-            })
-        ).catch(err => {
-            console.log(err)
+        try {
+            let requestURL = "../api/details?table=water_element&id=" + elementID;
+            let networkResponse = await fetch(requestURL);
+            let json = await networkResponse.json();
+            setupWaterElementDetails(json);
+        } catch (e) {
+            console.log('[GIS_getWaterElementDetails]', e);
             let msg = "Une erreur est survenue:<br>" + networkReponse.status + ": " + err;
             displayDetailTableError(msg);
-        })
+            throw e;
+        }
     }
 }
 
@@ -365,7 +365,7 @@ function drawHandler( e ){
  * Allow to create a point by its coordinates
  * @param e button click event
  */
-function editHandler( e ){
+async function editHandler( e ){
     let input = prompt('Entrez les coordonnées du point à ajouter:\n'
                         + 'Formats acceptés:\n'
                         + 'DMS (e.g.: 50°06\'41.5\"N 4°57\'46.2\"E)\n'
@@ -418,7 +418,7 @@ function editHandler( e ){
     let latlng = L.latLng(draw.geometry.coordinates[1], draw.geometry.coordinates[0]);
     gisMap.flyTo(latlng);
     marker.id = currentElementID;
-    sendDrawToServer(draw); //Default type is collection (feature array)
+    await sendDrawToServer(draw); //Default type is collection (feature array)
     readyMapDrawButtons(currentElementType, true);
     latLongDetail.html(coords.lat + "," + coords.lon);
 }
@@ -427,7 +427,7 @@ function editHandler( e ){
  * Save a draw on the layer and send it to server
  * @param  {L.Draw.CREATED} event
  */
-function saveDraw(event){
+async function saveDraw(event){
     // Save it on the map
     let layer = event.layer;
     layer.bindTooltip(currentElementType + " " + currentElementAddress, {
@@ -442,13 +442,13 @@ function saveDraw(event){
     }
 
     layer.id = currentElementID;
-    layer.on('click', function(e){
-        requestWaterElementDetails(layer.id);
+    layer.on('click', async function(e){
+        await requestWaterElementDetails(layer.id);
     });
     drawLayer.addLayer(layer);
 
     // Save it on the server
-    sendDrawToServer(layer.toGeoJSON());
+    await sendDrawToServer(layer.toGeoJSON());
     readyMapDrawButtons(currentElementType, true);
 }
 
@@ -456,7 +456,7 @@ function saveDraw(event){
  * Save a position on the server
  * @param  {GeoJSON} geoJSON of the object to save
  */
-function sendDrawToServer(geoJSON){
+async function sendDrawToServer(geoJSON){
     let requestURL = "../api/gis/?action=add&id=" + currentElementID;
     let myInit = {
         method: 'post',
@@ -467,7 +467,8 @@ function sendDrawToServer(geoJSON){
         body: JSON.stringify(geoJSON)
     };
 
-    navigator.serviceWorker.ready.then(async () => {
+    try {
+        await navigator.serviceWorker.ready;
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');
@@ -489,36 +490,31 @@ function sendDrawToServer(geoJSON){
             details:myInit
         });
 
-        new PNotify({
-            title: 'Succès!',
-            text: 'Votre demande de modification est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
-            type: 'success'
-        })
-
-        await indexDBModify('water_element_details', currentElementID);
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(postURL, myInit)
-            .then(response => {
-                if(response.ok) {
-                    new PNotify({
-                        title: 'Succès!',
-                        text: 'Élément ajouté avec succès',
-                        type: 'success'
-                    });
-                } else {
-                    let msg = "Une erreur est survenue:<br>" + response.status + ": " + response.statusText;
-                    errorDetailTable.html(msg);
-                }
-            })
-            .catch(err => {
-                let msg = "Une erreur est survenue:<br>" + response.status + ": " + err;
+        await indexedDBModify('water_element_details', currentElementID);
+        postMessage({title:'pushData'});
+    } catch (e) {
+        console.error('[GIS_sendDrawToServer]', e);
+        try {
+            let response = await fetch(requestURL, myInit);
+            if (response.ok) {
+                new PNotify({
+                    title: 'Succès!',
+                    text: 'Élément ajouté avec succès',
+                    type: 'success'
+                });
+            }
+            else {
+                let msg = "Une erreur est survenue:<br>" + response.status + ": " + response.statusText;
                 errorDetailTable.html(msg);
-            })
-    });
+                console.error('[GIS_sendDrawToServer]', networkResponse.statusText);
+            }
+        } catch (e) {
+            console.error('[GIS_sendDrawToServer]', e);
+        }
+    }
 }
 
-function removeHandler(e){
+async function removeHandler(e){
     let requestURL = "../api/gis/?action=remove&id=" + currentElementID;
     let myInit = {
         method: 'post',
@@ -527,7 +523,8 @@ function removeHandler(e){
         },
     };
 
-    navigator.serviceWorker.ready.then(async () => {
+    try {
+        await navigator.serviceWorker.ready;
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');
@@ -549,12 +546,6 @@ function removeHandler(e){
             details:myInit
         });
 
-        new PNotify({
-            title: 'Succès!',
-            text: 'Votre demande de suppression est bien enregitrée. Les changements seront validés une fois de retour en ligne.',
-            type: 'success'
-        })
-
         drawLayer.eachLayer(function (draw) {
             if (draw.id === currentElementID) {
                 drawLayer.removeLayer(draw);
@@ -563,41 +554,40 @@ function removeHandler(e){
         });
         readyMapDrawButtons(currentElementType, false);
 
-        await indexDBModify('water_element_details', currentElementID);
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(postURL, myInit)
-            .then(response => {
-                if(response.ok) {
-                    new PNotify({
-                        title: 'Succès!',
-                        text: 'Élément supprimé avec succès',
-                        type: 'success'
-                    });
-                    drawLayer.eachLayer(function (draw) {
-                        console.log(draw);
-                        if (draw.id === currentElementID) {
-                            drawLayer.removeLayer(draw);
-                            $('#element-details-lat-lon').html("N/A");
-                        }
-                    });
-                    readyMapDrawButtons(currentElementType, false);
-                } else {
-                    new PNotify({
+        await indexedDBModify('water_element_details', currentElementID);
+        postMessage({title:'pushData'});
+    } catch (e) {
+        console.error('[GIS_removeHandler]', e);
+        try {
+            let response = await fetch(postURL, myInit);
+            if(response.ok) {
+                new PNotify({
+                    title: 'Succès!',
+                    text: 'Élément supprimé avec succès',
+                    type: 'success'
+                });
+                drawLayer.eachLayer(function (draw) {
+                    console.log(draw);
+                    if (draw.id === currentElementID) {
+                        drawLayer.removeLayer(draw);
+                        $('#element-details-lat-lon').html("N/A");
+                    }
+                });
+                readyMapDrawButtons(currentElementType, false);
+                console.error('[GIS_removeHandler]', 'removed without SW');
+            } else {
+                new PNotify({
                     title: 'Erreur',
                     text: "L'élément ne peut être supprimé: " + response.statusText,
                     type: 'error'
                 });
-                }
-            })
-            .catch(err => {
-                new PNotify({
-                    title: 'Erreur',
-                    text: "L'élément ne peut être supprimé: " + err,
-                    type: 'error'
-                });
-            })
-    });
+                console.error('[GIS_removeHandler]', response.statusText);
+            }
+        } catch (e) {
+            console.error('[GIS_removeHandler]', e);
+            throw e;
+        }
+    }
 }
 
 function isMarker(type){

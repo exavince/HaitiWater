@@ -5,26 +5,23 @@
  */
 async function drawConsumerTable(fullView = true) {
     let config;
+    let offline = localStorage.getItem("offlineMode") === "true"
 
-    if (localStorage.getItem("offlineMode") === "true") {
+    if (offline) {
         config = await getConsumerDatatableOfflineConfiguration(fullView);
+        addLastUpdateToTitle('consumer');
     }
     else {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
         let dataURL = baseURL + "/api/table/?name=consumer";
         config = getConsumerDatatableConfiguration(dataURL, fullView)
-        console.log('[REQUEST DATA]', dataURL);
     }
 
     let datatable = $('#datatable-consumer');
-    datatable.DataTable(config);
-    let table = datatable.DataTable();
-    addLastUpdateToTitle('consumer');
+    let table = datatable.DataTable(config);
 
     datatable.find('tbody').on('click', 'tr', function () {
-        if ($(this).hasClass('selected')) {
-            $(this).removeClass('selected');
-        }
+        if ($(this).hasClass('selected')) $(this).removeClass('selected');
         else {
             table.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
@@ -33,9 +30,7 @@ async function drawConsumerTable(fullView = true) {
 
     datatable.find('tbody').on( 'click', '.remove-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
-        if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
-            removeElement("consumer", data[0].innerText);
-        } else {}
+        if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?'))  removeElement("consumer", data[0].innerText);
     });
 
     datatable.find('tbody').on( 'click', '.edit-row', function () {
@@ -44,33 +39,37 @@ async function drawConsumerTable(fullView = true) {
     } );
 
     prettifyHeader('consumer');
-
     return table;
 }
 
 async function getConsumerData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('consumer');
-    let result = [];
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('consumer');
+        let result = [];
 
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.nom,
-            row.prenom,
-            row.genre,
-            row.adresse,
-            row.telephone,
-            row.membres,
-            row.sortie_eau,
-            row.argent_du,
-            row.zone,
-            row.sync
-        ]);
-    });
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.nom,
+                row.prenom,
+                row.genre,
+                row.adresse,
+                row.telephone,
+                row.membres,
+                row.sortie_eau,
+                row.argent_du,
+                row.zone,
+                row.sync
+            ]);
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.error('[CONSUMER_getConsumerData]', e);
+        throw e;
+    }
 }
 
 function getConsumerDatatableConfiguration(dataURL, fullView){
@@ -186,7 +185,6 @@ async function getConsumerDatatableOfflineConfiguration(fullView){
                 $('td', row).eq(10).addClass('hidden');
             }
             if (data[10] > 0) {
-                console.log('The data: ', data[4]);
                 $(row).css('background-color', '#4B0082');
                 $(row).css('color', 'white');
             }

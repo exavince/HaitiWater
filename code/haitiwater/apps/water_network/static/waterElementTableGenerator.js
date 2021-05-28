@@ -1,7 +1,11 @@
+
 // TODO : offline month selection
-function setWaterDataTableURL(month){
+async function setWaterDataTableURL(month){
     if (localStorage.getItem("offlineMode") === "true") {
-        $('#datatable-water_element').DataTable().data(getWaterElementData());
+        let table = $('#datatable-water_element');
+        table.clear();
+        table.rows.add(await getWaterElementData(month));
+        table.draw();
     }
     else {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
@@ -12,45 +16,42 @@ function setWaterDataTableURL(month){
 
 async function drawWaterElementTable(withManagers, withActions, gis){
     let configuration;
+    let offline = localStorage.getItem("offlineMode") === "true";
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=water_element&month=none";
 
-    if (localStorage.getItem("offlineMode") === "true") {
+    if (offline) {
         if(gis) configuration = await getWaterDatatableGISOfflineConfiguration(withManagers, withActions);
         else configuration = await getWaterDatatableOfflineConfiguration(withManagers, withActions);
+        addLastUpdateToTitle('waterElement');
     }
     else {
-        console.log("[REQUEST_DATA]", dataURL);
         if(gis) configuration = getWaterDatatableGISConfiguration(dataURL, withManagers, withActions);
         else configuration = getWaterDatatableConfiguration(dataURL, withManagers, withActions);
     }
 
-    $('#datatable-water_element').DataTable(configuration);
-    let table = $('#datatable-water_element').DataTable();
-    addLastUpdateToTitle('waterElement')
+    let table = $('#datatable-water_element').DataTable(configuration);
+    let dataTable = $('#datatable-water_element tbody');
 
-    $('#datatable-water_element tbody').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-            $(this).removeClass('selected');
-        }
+    dataTable.on( 'click', 'tr', function () {
+        if ( $(this).hasClass('selected') ) $(this).removeClass('selected');
         else {
             table.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
         }
     });
 
-    $('#datatable-water_element tbody').on( 'click', '.remove-row', function () {
+    dataTable.on( 'click', '.remove-row', function () {
         let data = table.row($(this).closest('tr')).data();
-        if (confirm("Voulez-vous supprimer: " + data[1] + ' ' + data[2] + ' ?')){
-            removeElement("water_element", data[0]);
-        } else {}
-    } );
-    $('#datatable-water_element tbody').on( 'click', '.edit-row', function () {
+        if (confirm("Voulez-vous supprimer: " + data[1] + ' ' + data[2] + ' ?')) removeElement("water_element", data[0]);
+    });
+
+    dataTable.on( 'click', '.edit-row', function () {
         let data = table.row($(this).closest('tr')).data();
         editElement(data);
     });
 
-    await attachMonthSelectorHandler();
+    attachMonthSelectorHandler();
     prettifyHeader('water_element');
 }
 
@@ -136,27 +137,63 @@ function getWaterDatatableConfiguration(dataURL, withManagers, withActions){
 }
 
 async function getWaterElementData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('water_element');
-    let result = [];
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('water_element');
+        let result = [];
 
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.type,
-            row.place,
-            row.users,
-            row.state,
-            row.m3,
-            row.gallons,
-            row.gestionnaire,
-            row.zone_up,
-            row.sync
-        ]);
-    });
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.type,
+                row.place,
+                row.users,
+                row.state,
+                row.m3,
+                row.gallons,
+                row.gestionnaire,
+                row.zone_up,
+                row.sync
+            ]);
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.error('[WATER_NETWORK_getWaterElementData]', e);
+        throw e;
+    }
+
+}
+
+async function getWaterElementMonthData() {
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('water_element').where('');
+        let result = [];
+
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.type,
+                row.place,
+                row.users,
+                row.state,
+                row.m3,
+                row.gallons,
+                row.gestionnaire,
+                row.zone_up,
+                row.sync
+            ]);
+        });
+
+        return result;
+    } catch (e) {
+        console.error('[WATER_NETWORK_getWaterElementData]', e);
+        throw e;
+    }
+
 }
 
 async function getWaterDatatableOfflineConfiguration(withManagers, withActions){
@@ -421,8 +458,7 @@ function attachMonthSelectorHandler(){
         startView: "months",
         minViewMode: "months",
     });
-    button.on('changeDate', function (e) {
-        console.log("click");
+    button.on('changeDate', async function (e) {
         let month = e.format();
         if (month.length < 1) {
             // Month de-selected
@@ -433,7 +469,7 @@ function attachMonthSelectorHandler(){
         else {
             button[0].innerText = formatButton(month);
         }
-        setWaterDataTableURL(month);
+        await setWaterDataTableURL(month);
     });
 }
 

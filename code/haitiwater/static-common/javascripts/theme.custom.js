@@ -1,9 +1,9 @@
 'use strict';
 $( document ).ready(function() {
 
-    const channel = new BroadcastChannel('sw-messages');
+    postMessage({title:'getUsername', username:localStorage.getItem('username')});
+    const channel = new BroadcastChannel('sw-messages')
 
-    channel.postMessage({title:'getUsername', username:localStorage.getItem('username')});
 
     // Handle offline mode
     if (localStorage.getItem("offlineMode") === null) {
@@ -37,11 +37,11 @@ $( document ).ready(function() {
 
     //Ask for updating all the DB
     $('#db-parent').on('click', () => {
-        channel.postMessage({
-            title:'updateDB',
-            db:'all'
+        postMessage({
+            title: 'updateDB',
+            db: 'all'
         });
-    })
+    });
 
     //Ask for changing the utilisation mode
     $('#offline-parent').on('click', () => {
@@ -130,11 +130,16 @@ $( document ).ready(function() {
                 console.log('[THEME]', event.data.table)
                 if (event.data.consumerID) drawDataTable(event.data.table, event.data.consumerID)
                 else drawDataTable(event.data.table)
+                break
         }
-
-
     }
 });
+
+function postMessage(message) {
+    navigator.serviceWorker.ready.then( registration => {
+        registration.active.postMessage(message);
+    });
+}
 
 /**
  * Requests notification computings and modifies the counters to alert the user

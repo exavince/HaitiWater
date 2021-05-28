@@ -1,24 +1,25 @@
 $(document).ready(function() {
-    // Draw the water element table without the managers
     drawTosyncTable();
 });
 
-
-//Formatting function for row details
 function format (d) {
     return d.details
 }
 
 async function getTosyncData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('update_queue');
-    let result = [];
-    await table.each(data => {
-        result.push(formatRender(data));
-    });
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('update_queue');
+        let result = [];
+        await table.each(data => {
+            result.push(formatRender(data));
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.error('[UNSYNCHRONIZED]', e);
+    }
 }
 
 async function drawTosyncTable(){
@@ -52,39 +53,39 @@ async function drawTosyncTable(){
 }
 
 function revertModification(elementID){
-    new BroadcastChannel('sw-messages').postMessage({
+    postMessage({
         title:'revertModification',
         id:elementID
     })
 }
 
 function acceptModification(elementID){
-    new BroadcastChannel('sw-messages').postMessage({
+    postMessage({
         title:'acceptModification',
         id:elementID
     })
 }
 
 async function getTosyncTableConfiguration(){
-    let config = {
+    return {
         lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
         ],
         dom: 'Bfrtip',
         buttons: [
             'pageLength'
         ],
         "columns": [
-            { "data": "date" },
-            { "data": "table" },
-            { "data": "type" },
-            { "data": "elemId" },
-            { "data": "status" },
+            {"data": "date"},
+            {"data": "table"},
+            {"data": "type"},
+            {"data": "elemId"},
+            {"data": "status"},
             {
-                "className":      'actions',
-                "orderable":      false,
-                "data":           null,
+                "className": 'actions',
+                "orderable": false,
+                "data": null,
                 "defaultContent": getLogsActionButtonsHTML()
             }
         ],
@@ -95,18 +96,17 @@ async function getTosyncTableConfiguration(){
         "serverSide": false,
         "responsive": true,
         "autoWidth": true,
-        scrollX:        true,
+        scrollX: true,
         scrollCollapse: true,
-        paging:         true,
+        paging: true,
         pagingType: 'full_numbers',
-        fixedColumns:   {
+        fixedColumns: {
             leftColumns: 1,
             rightColumns: 1
         },
         "language": getDataTableFrenchTranslation(),
         "data": await getTosyncData()
     };
-    return config;
 }
 
 function getLogsActionButtonsHTML(){
@@ -115,8 +115,8 @@ function getLogsActionButtonsHTML(){
             '<a style="cursor:pointer;" class="revert-modification far fa-times-circle"></a></div>'
 }
 
-async function sendAllData() {
-    new BroadcastChannel("sw-message").postMessage({
+function sendAllData() {
+    postMessage({
         title:"pushData",
         id: null
     })

@@ -41,11 +41,18 @@ function editElement(data){
 }
 
 async function drawDataTable(tableName, consumerID){
-    let table = $('#datatable-' + tableName).DataTable();
-    console.log('[DRAW_DATA_TABLE]', tableName)
+    try {
+        let table = $('#datatable-' + tableName).DataTable();
 
-    if (localStorage.getItem("offlineMode") === "true") {
-        try {
+        if (tableName === 'tosync') {
+            let data = await getTosyncData();
+            table.clear();
+            table.rows.add(data);
+            table.draw();
+            return;
+        }
+
+        if (localStorage.getItem("offlineMode") === "true") {
             let data;
             switch (tableName) {
                 case 'payment':
@@ -80,22 +87,22 @@ async function drawDataTable(tableName, consumerID){
             table.clear();
             table.rows.add(data);
             table.draw();
-            return;
-        } catch (err) {
-            console.log('[DRAW_DATA_TABLE]', err)
-            return;
         }
+        else {
+            console.log("ajax");
+            table.ajax.reload();
+            table.draw();
+        }
+        console.log('[GTH_drawDataTable]', tableName + ' drawn')
+    } catch (e) {
+        console.error('[GTH_drawDataTable]', e)
     }
-    if (tableName === 'tosync') {
-        let data = await getTosyncData();
-        table.clear();
-        table.rows.add(data);
-        table.draw();
-        return;
-    }
-    console.log("ajax");
-    table.ajax.reload();
-    table.draw();
+}
+
+function postMessage(message) {
+    navigator.serviceWorker.ready.then( registration => {
+        registration.active.postMessage(message);
+    });
 }
 
 /**
@@ -116,10 +123,9 @@ async function removeElement(table, id, otherParameters) {
         },
         body: "table=" + table + "&id=" + id + otherParameters
     };
-    console.log('[DELETE]', myInit)
 
     try {
-        await navigator.serviceWorker.ready
+        await navigator.serviceWorker.ready;
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_queue = db.table('update_queue');
@@ -142,8 +148,9 @@ async function removeElement(table, id, otherParameters) {
             details:myInit
         });
 
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-        await indexDBModify(table, id);
+        postMessage({title:'pushData'});
+        await indexedDBModify(table, id);
+        console.log('[GTH_removeElement]', table + ' ' + id)
     } catch (e) {
         try {
             let networkResponse = fetch(postURL, myInit)
@@ -153,28 +160,28 @@ async function removeElement(table, id, otherParameters) {
                     text: 'Élément supprimé avec succès',
                     type: 'success'
                 });
+                console.error('[GTH_removeElement]', table + ' ' + id + ' removed without SW')
             }
             else {
-                console.log('[DELETE]', networkResponse.statusText);
                 new PNotify({
                     title: 'Échec!',
                     text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
+                console.error('[GTH_removeElement]', networkResponse.statusText)
             }
-        } catch (err) {
-            console.log('[DELETE]', err);
+        } catch (e) {
             new PNotify({
                 title: 'Échec!',
                 text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
+            console.error('[GTH_removeElement]', e)
         }
     }
 
     if (table === 'payment') {
         let consumerID = otherParameters.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
-        console.log("Consumer ID : " + consumerID);
         await drawDataTable(table, parseInt(consumerID));
     }
     else await drawDataTable(table);
@@ -222,7 +229,6 @@ function prettifyHeader(tableName){
 }
 
 function getRequest(table){
-    console.log('[TABLE]', table);
     switch(table){
         case 'manager':
             return validateManagerForm();
@@ -238,12 +244,13 @@ function getRequest(table){
 /**
  * Send a post request to server and handle it
  */
-async function postNewRow(table, callback){
+async function postNewRow(table){
     let request = getRequest(table);
     if(!request){
-        console.log('[ADD]', "invalid form");
+        console.error('[GTH_postNewRow]', "invalid form");
         return false;
     }
+
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/add/";
     let myInit = {
@@ -255,10 +262,9 @@ async function postNewRow(table, callback){
         body: request
     };
     beforeModalRequest();
-    console.log('[ADD]', myInit);
 
     try {
-        await navigator.serviceWorker.ready
+        await navigator.serviceWorker.ready;
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -284,12 +290,13 @@ async function postNewRow(table, callback){
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
         if (table === 'payment') {
             let rowID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
-            indexDBModify('payment', rowID, true)
+            indexedDBModify('payment', rowID, true)
         }
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+        postMessage({title:'pushData'});
+        console.log('[GTH_postNewRow]', table);
     } catch (e) {
         try {
-            let networkResponse = await fetch(postURL, myInit)
+            let networkResponse = await fetch(postURL, myInit);
             if(networkResponse.ok) {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
                 dismissModal();
@@ -298,6 +305,7 @@ async function postNewRow(table, callback){
                     text: 'Élément ajouté avec succès',
                     type: 'success'
                 });
+                console.error('[GTH_postNewRow]', table + ' Added without SW');
             }
             else {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
@@ -307,8 +315,9 @@ async function postNewRow(table, callback){
                     text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
+                console.error('[GTH_postNewRow]', networkResponse.statusText);
             }
-        } catch (err) {
+        } catch (e) {
             document.getElementById("form-" + table + "-error").className = "alert alert-danger";
             document.getElementById("form-" + table + "-error-msg").innerHTML = err;
             new PNotify({
@@ -316,6 +325,7 @@ async function postNewRow(table, callback){
                 text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
+            console.error('[GTH_postNewRow]', e);
         }
     }
 
@@ -326,9 +336,10 @@ async function postNewRow(table, callback){
 /**
  * Send a post request to server and handle it
  */
-async function postEditRow(table, callback){
+async function postEditRow(table){
     let request = getRequest(table);
-    if(!request) return false;
+    if(!request) return;
+
     let rowID = request.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "");
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?";
@@ -341,7 +352,6 @@ async function postEditRow(table, callback){
         body: request
     };
     beforeModalRequest();
-    console.log('[EDIT]', myInit);
 
     try {
         await navigator.serviceWorker.ready
@@ -367,13 +377,22 @@ async function postEditRow(table, callback){
         });
 
         document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-        indexDBModify(table, rowID);
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
+        indexedDBModify(table, rowID);
+        postMessage({title:'pushData'});
+        console.log('[GTH_postEditRow]', table + ' ' + rowID);
     } catch (e) {
         try {
             let networkResponse = await fetch(postURL,myInit)
-            if (!networkResponse.ok) {
-                console.log("POST error on new element");
+            if (networkResponse.ok) {
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+                new PNotify({
+                    title: 'Succès!',
+                    text: 'Élément édité avec succès',
+                    type: 'success'
+                });
+                console.error('[GTH_postEditRow]', table + ' ' + rowID + ' edited without SW');
+            }
+            else {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger";
                 document.getElementById("form-" + table + "-error-msg").innerHTML = await networkResponse.statusText;
                 new PNotify({
@@ -381,17 +400,9 @@ async function postEditRow(table, callback){
                     text: 'Veuillez vérifier votre connexion.',
                     type: 'error'
                 });
+                console.error('[GTH_postEditRow]', networkResponse.statusText);
             }
-            else {
-                document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                new PNotify({
-                    title: 'Succès!',
-                    text: 'Élément édité avec succès',
-                    type: 'success'
-                });
-            }
-        }  catch (err) {
-            console.log('[EDIT]',"POST error on new element");
+        }  catch (e) {
             document.getElementById("form-" + table + "-error").className = "alert alert-danger";
             document.getElementById("form-" + table + "-error-msg").innerHTML = err;
             new PNotify({
@@ -399,6 +410,7 @@ async function postEditRow(table, callback){
                 text: 'Veuillez vérifier votre connexion.',
                 type: 'error'
             });
+            console.error('[GTH_postEditRow]', e);
         }
     }
 
@@ -506,15 +518,14 @@ function setTableURL(table, optional){
     $('#datatable-'+table).DataTable().ajax.url(dataURL).load();
 }
 
-async function indexDBModify(table, rowID, isAdd = false) {
+async function indexedDBModify(table, rowID, isAdd = false) {
     try {
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
-        console.log("[IDB_MODIFY]", table);
+
         switch (table) {
             case "payment":
                 if (isAdd) {
-                    console.log('[IDB_MODIFY]', rowID)
                     await db.table('consumer').where('id').equals(parseInt(rowID)).modify(data => {
                         data.sync += 1;
                     });
@@ -540,17 +551,19 @@ async function indexDBModify(table, rowID, isAdd = false) {
                 });
                 break;
         }
+        console.log("[GTH_indexedDBModify]", table + ' ' + rowID + ' modified');
     } catch (e) {
-        consolo.log('[INDEX_DB_MODIFY]', e);
+        consolo.error('[GTH_indexedDBModify]', e);
+        throw e;
     }
 }
 
 async function reloadTable(table) {
-    new BroadcastChannel('sw-messages').postMessage({
+    postMessage({
         title:'updateDB',
         db:table
     })
-    console.log('[RELOAD_TABLE]',table)
+    console.log('[GTH_reloadTable]', table)
 }
 
 async function addLastUpdateToTitle(tableName) {
@@ -572,6 +585,6 @@ async function addLastUpdateToTitle(tableName) {
             }
         })
     } catch (e) {
-        console.log('[LAST_UPDATE_TITLE]', e);
+        console.error('[GTH_addLastUpdateToTitle]', e);
     }
 }

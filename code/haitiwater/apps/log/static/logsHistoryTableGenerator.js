@@ -1,25 +1,23 @@
 $(document).ready(function() {
-    // Draw the water element table without the managers
     drawLogsHistoryTable();
 });
 
-
 //Formatting function for row details
-function format ( d ) {
-    // d is the original data object for the row
+function format(d) {
     return d.details;
 }
 
 async function drawLogsHistoryTable() {
     let config;
+    let offline = localStorage.getItem("offlineMode") === "true";
 
-    if (localStorage.getItem("offlineMode") === "true") {
+    if (offline) {
         config = await getLogsHistoryTableOfflineConfiguration();
+        addLastUpdateToTitle('logsHistory');
     }
     else {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
         let dataURL = baseURL + "/api/table/?name=logs_history";
-        console.log("[REQUEST DATA]" ,dataURL);
         config = getLogsHistoryTableConfiguration(dataURL);
     }
 
@@ -30,29 +28,32 @@ async function drawLogsHistoryTable() {
         var row = table.row(tr);
 
         if (row.child.isShown()) {
-            // This row is already open - close it
             row.child.hide();
             tr.removeClass('shown');
         }
         else {
-            // Open this row
             row.child( format(row.data()) ).show();
             tr.addClass('shown');
         }
     });
+
     prettifyHeader('logs-history');
 }
 
 async function getLogsHistoryData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('logs_history');
-    let result = [];
-    await table.each(log => {
-        result.push(log);
-    });
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('logs_history');
+        let result = [];
+        await table.each(log => {
+            result.push(log);
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.error('[LOGS_getLogsHistoryData]', e);
+    }
 }
 
 async function getLogsHistoryTableOfflineConfiguration(){

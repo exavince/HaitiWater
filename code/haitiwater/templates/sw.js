@@ -70,6 +70,7 @@ const db = new Dexie("user_db")
 
 let synced = false
 let isDbLoading = false
+let isSending = false
 let dbLoaded = false
 let isCacheLoading = false
 let cacheLoaded = false
@@ -99,6 +100,7 @@ db.version(dbVersion).stores({
 
 const getOldestDate = async () => {
     if (!dbLoaded) return null
+
     let tab = await db.editable.toArray()
     let date = new Date()
     for (let entry of tab) {
@@ -106,201 +108,273 @@ const getOldestDate = async () => {
             date = entry.last_sync
         }
     }
+
     return date
 }
 
 const outletHandler = async () => {
-    let networkResponse = await fetch('../api/outlets/')
-    let json = await networkResponse.json()
-    await db.outlets.clear()
-    db.editable.put({table:'outlets', is_editable:false, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.outlets.put({
-            id:entry[0],
-            name:entry[1],
-        })
+    try {
+        let networkResponse = await fetch('../api/outlets/')
+        let json = await networkResponse.json()
+        await db.outlets.clear()
+        db.editable.put({table:'outlets', is_editable:false, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.outlets.put({
+                id:entry[0],
+                name:entry[1],
+            })
+        }
+        console.log('[SW_outletHandler]', 'outlets synced')
+    } catch (e) {
+        console.error('[SW_outletHandler]', e)
+        throw e
     }
 }
 
 const waterElementDetailsHandler = async () => {
-    let networkResponse = await fetch('../api/details/?table=water_element_all')
-    let json = await networkResponse.json()
-    await db.water_element_details.clear()
-    db.editable.put({table:'waterElementDetails', is_editable:true, last_sync: new Date()})
-    for (let entry of json) {
-        db.water_element_details.put({
-            id: entry.id,
-            type: entry.type,
-            localization: entry.localization,
-            manager: entry.manager,
-            users: entry.users,
-            state: entry.state,
-            currentMonthCubic: entry.currentMonthCubic,
-            averageMonthCubic: entry.averageMonthCubic,
-            totalCubic: entry.totalCubic,
-            geoJSON: entry.geoJSON,
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/details/?table=water_element_all')
+        let json = await networkResponse.json()
+        await db.water_element_details.clear()
+        db.editable.put({table:'waterElementDetails', is_editable:true, last_sync: new Date()})
+        for (let entry of json) {
+            db.water_element_details.put({
+                id: entry.id,
+                type: entry.type,
+                localization: entry.localization,
+                manager: entry.manager,
+                users: entry.users,
+                state: entry.state,
+                currentMonthCubic: entry.currentMonthCubic,
+                averageMonthCubic: entry.averageMonthCubic,
+                totalCubic: entry.totalCubic,
+                geoJSON: entry.geoJSON,
+                sync: 0
+            })
+        }
+        console.log('[SW_waterElementDetailsHandler]', 'water-elements details synced')
+    } catch (e) {
+        console.error('[SW_waterElementDetailsHandler]', e)
+        throw e
     }
+
 }
 
 const logsHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=logs&indexDB=true')
-    let json = await networkResponse.json()
-    await db.logs.clear()
-    db.editable.put({table:'logs', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.logs.put({
-            id: entry.id,
-            time: entry.time,
-            type: entry.type,
-            user: entry.user,
-            summary: entry.summary,
-            details: entry.details,
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=logs&indexDB=true')
+        let json = await networkResponse.json()
+        await db.logs.clear()
+        db.editable.put({table:'logs', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.logs.put({
+                id: entry.id,
+                time: entry.time,
+                type: entry.type,
+                user: entry.user,
+                summary: entry.summary,
+                details: entry.details,
+                sync: 0
+            })
+        }
+        console.log('[SW_logsHandler]', 'logs synced')
+    } catch (e) {
+        console.error('[SW_logsHandler]', e)
+        throw e
     }
+
 }
 
 const logsHistoryHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=logs_history&indexDB=true')
-    let json = await networkResponse.json()
-    await db.logs_history.clear()
-    db.editable.put({table:'logsHistory', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.logs_history.put({
-            id: entry.id,
-            time: entry.time,
-            type: entry.type,
-            user: entry.user,
-            summary: entry.summary,
-            details: entry.details,
-            action: entry.action,
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=logs_history&indexDB=true')
+        let json = await networkResponse.json()
+        await db.logs_history.clear()
+        db.editable.put({table:'logsHistory', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.logs_history.put({
+                id: entry.id,
+                time: entry.time,
+                type: entry.type,
+                user: entry.user,
+                summary: entry.summary,
+                details: entry.details,
+                action: entry.action,
+                sync: 0
+            })
+        }
+        console.log('[SW_logsHistoryHandler]', 'logs history synced')
+    } catch (e) {
+        console.error('[SW_logsHistoryHandler]', e)
+        throw e
     }
 }
 
 const consumerHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=consumer_full&indexDB=true')
-    let json = await networkResponse.json()
-    await db.consumer.clear()
-    db.editable.put({table:'consumer', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.consumer.put({
-            id: entry.consumer[0],
-            nom: entry.consumer[1],
-            prenom: entry.consumer[2],
-            genre: entry.consumer[3],
-            adresse: entry.consumer[4],
-            telephone: entry.consumer[5],
-            membres: entry.consumer[6],
-            sortie_eau: entry.consumer[7],
-            argent_du: entry.consumer[8],
-            zone: entry.consumer[9],
-            validity: entry.validity,
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=consumer_full&indexDB=true')
+        let json = await networkResponse.json()
+        await db.consumer.clear()
+        db.editable.put({table:'consumer', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.consumer.put({
+                id: entry.consumer[0],
+                nom: entry.consumer[1],
+                prenom: entry.consumer[2],
+                genre: entry.consumer[3],
+                adresse: entry.consumer[4],
+                telephone: entry.consumer[5],
+                membres: entry.consumer[6],
+                sortie_eau: entry.consumer[7],
+                argent_du: entry.consumer[8],
+                zone: entry.consumer[9],
+                validity: entry.validity,
+                sync: 0
+            })
+        }
+        console.log('[SW_consumerHandler]', 'consumers synced')
+    } catch (e) {
+        console.error('[SW_consumerHandler]', e)
+        throw e
     }
 }
 
 const paymentHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=all_payment&indexDB=true')
-    let json = await networkResponse.json()
-    await db.payment.clear()
-    db.editable.put({table:'payment', is_editable:json.editable, last_sync: new Date()})
-    for (let payment of json.data) {
-        db.payment.put({
-            id: payment.payments[0],
-            data: payment.payments[1],
-            value: payment.payments[2],
-            source: payment.payments[3],
-            user_id: payment.consumer_id,
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=all_payment&indexDB=true')
+        let json = await networkResponse.json()
+        await db.payment.clear()
+        db.editable.put({table:'payment', is_editable:json.editable, last_sync: new Date()})
+        for (let payment of json.data) {
+            db.payment.put({
+                id: payment.payments[0],
+                data: payment.payments[1],
+                value: payment.payments[2],
+                source: payment.payments[3],
+                user_id: payment.consumer_id,
+                sync: 0
+            })
+        }
+        console.log('[SW_paymentHandler]', 'payments synced' )
+    } catch (e) {
+        console.error('[SW_paymentHandler]', e)
+        throw e
     }
+
 }
 
 const zoneHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=zone&indexDB=true')
-    let json = await networkResponse.json()
-    await db.zone.clear()
-    db.editable.put({table:'zone', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.zone.put({
-            id: entry[0],
-            name: entry[1],
-            cout_fontaine: entry[2],
-            mois_fontaine: entry[3],
-            cout_kiosque: entry[4],
-            mois_kiosque: entry[5],
-            cout_mensuel: entry[6],
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=zone&indexDB=true')
+        let json = await networkResponse.json()
+        await db.zone.clear()
+        db.editable.put({table:'zone', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.zone.put({
+                id: entry[0],
+                name: entry[1],
+                cout_fontaine: entry[2],
+                mois_fontaine: entry[3],
+                cout_kiosque: entry[4],
+                mois_kiosque: entry[5],
+                cout_mensuel: entry[6],
+                sync: 0
+            })
+        }
+        console.log('[SW_zoneHandler]', 'zones synced')
+    } catch (e) {
+        console.error('[SW_zoneHandler]', e)
+        throw e
     }
+
 }
 
 const managerHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=manager&indexDB=true')
-    let json = await networkResponse.json()
-    await db.manager.clear()
-    db.editable.put({table:'manager', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.manager.put({
-            id: entry[0],
-            nom: entry[1],
-            prenom: entry[2],
-            telephone: entry[3],
-            mail: entry[4],
-            role: entry[5],
-            zone: entry[6],
-            unknown: entry[7],
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=manager&indexDB=true')
+        let json = await networkResponse.json()
+        await db.manager.clear()
+        db.editable.put({table:'manager', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.manager.put({
+                id: entry[0],
+                nom: entry[1],
+                prenom: entry[2],
+                telephone: entry[3],
+                mail: entry[4],
+                role: entry[5],
+                zone: entry[6],
+                unknown: entry[7],
+                sync: 0
+            })
+        }
+        console.log('[SW_managerHandler]', 'managers synced')
+    } catch (e) {
+        console.error('[SW_managerHandler]', e)
+        throw e
     }
 }
 
 const ticketHandler = async () => {
-    let networkResponse = await fetch('../api/table/?name=ticket&indexDB=true')
-    let json = await networkResponse.json()
-    await db.ticket.clear()
-    db.editable.put({table:'ticket', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.ticket.put({
-            id: entry[0],
-            urgence: entry[1],
-            emplacement: entry[2],
-            type: entry[3],
-            commentaire: entry[4],
-            statut: entry[5],
-            photo: entry[6],
-            sync: 0
-        })
+    try {
+        let networkResponse = await fetch('../api/table/?name=ticket&indexDB=true')
+        let json = await networkResponse.json()
+        await db.ticket.clear()
+        db.editable.put({table:'ticket', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.ticket.put({
+                id: entry[0],
+                urgence: entry[1],
+                emplacement: entry[2],
+                type: entry[3],
+                commentaire: entry[4],
+                statut: entry[5],
+                photo: entry[6],
+                sync: 0
+            })
+        }
+        console.log('[SW_ticketHandler]', 'tickets synced')
+    } catch (e) {
+        console.error('[SW_ticketHandler]', e)
+        throw e
     }
 }
 
-const waterElement_handler = async () => {
-    let networkResponse = await fetch('../api/table/?name=water_element&indexDB=true')
-    let json = await networkResponse.json()
-    await db.water_element.clear()
-    db.editable.put({table:'waterElement', is_editable:json.editable, last_sync: new Date()})
-    for (let entry of json.data) {
-        db.water_element.put({
-            id: entry[0],
-            type: entry[1],
-            place: entry[2],
-            users: entry[3],
-            state: entry[4],
-            m3: entry[5],
-            gallons: entry[6],
-            gestionnaire: entry[7],
-            zone_up: entry[8],
-            sync: 0
-        })
+const waterElementHandler = async () => {
+    try {
+        let networkResponse = await fetch('../api/table/?name=water_element&indexDB=true')
+        let json = await networkResponse.json()
+        await db.water_element.clear()
+        db.editable.put({table:'waterElement', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.water_element.put({
+                id: entry[0],
+                type: entry[1],
+                place: entry[2],
+                users: entry[3],
+                state: entry[4],
+                m3: entry[5],
+                gallons: entry[6],
+                gestionnaire: entry[7],
+                zone_up: entry[8],
+                sync: 0
+            })
+        }
+        console.log('[SW_waterElementHandler]', 'water-elements synced')
+    } catch (e) {
+        console.error('[SW_waterElementHandler]', e)
+        throw e
     }
 }
 
 const getDataFromDB = async (table) => {
+    channel.postMessage({
+        title: 'updateStatus',
+        date: await getOldestDate(),
+        table: table,
+        status: 'loading'
+    })
+
     if (isDbLoading) return
 
     isDbLoading = true
@@ -309,16 +383,16 @@ const getDataFromDB = async (table) => {
         switch (table) {
             case "all":
                 await Promise.all([
-                    consumerHandler(),
                     zoneHandler(),
-                    managerHandler(),
-                    ticketHandler(),
-                    waterElement_handler(),
-                    paymentHandler(),
-                    logsHandler(),
-                    logsHistoryHandler(),
+                    waterElementHandler(),
                     waterElementDetailsHandler(),
                     outletHandler(),
+                    managerHandler(),
+                    ticketHandler(),
+                    consumerHandler(),
+                    paymentHandler(),
+                    logsHandler(),
+                    logsHistoryHandler()
                 ])
                 setInfos('dbLoaded', true)
                 break
@@ -344,26 +418,27 @@ const getDataFromDB = async (table) => {
                 await ticketHandler()
                 break
             case "waterElement":
-                await waterElement_handler()
+                await waterElementHandler()
                 break
         }
-        isDbLoading = false
         channel.postMessage({
             title: 'updateStatus',
             status: 'loaded',
             table,
             date: await getOldestDate()
         })
-        console.log('[SW_POPULATE_DB]', table + ' table synced !')
-    } catch (err) {
-        isDbLoading = false
+        console.log('[SW_getDataFromDB]', 'Data synced')
+    } catch (e) {
         channel.postMessage({
             title: 'updateStatus',
             status: 'failed',
             table,
             date: await getOldestDate()
         })
-        console.log('[SW_POPULATE_DB]', err)
+        console.error('[SW_getDataFromDB]', e)
+        throw e
+    } finally {
+        isDbLoading = false
     }
 }
 
@@ -382,13 +457,14 @@ const emptyDB = async () => {
             db.outlets.clear(),
         ])
         setInfos('dbLoaded', false)
-        console.log('[SW_EMPTY_DB]', 'IndexDB is cleared !')
-    } catch (err) {
-        console.log('[SW_EMPTY_DB]', err)
+        console.log('[SW_EMPTY_DB]', 'IndexedDB is cleared')
+    } catch (e) {
+        console.error('[SW_EMPTY_DB]', e)
+        throw e
     }
 }
 
-const updateIndexDB = async (data) => {
+const updateIndexedDB = async (data) => {
     try {
         if (data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details' && data.table !== 'payment') {
             await db.table(data.table).where('id').equals(parseInt(data.data)).delete()
@@ -416,8 +492,9 @@ const updateIndexDB = async (data) => {
                 break
 
             case 'water_element_details':
+                console.log('WATERFUCKER')
                 if (data.type === 'delete') await db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = null})
-                else await db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = data.data[1]})
+                else await db.water_element_details.where('id').equals(parseInt(data.id)).modify(result => {result.geoJSON = data.data[1]})
                 break
 
             case 'consumer':
@@ -445,7 +522,7 @@ const updateIndexDB = async (data) => {
                     user: log.user,
                     summary: log.summary,
                     details: log.details,
-                    action: data.action,
+                    action: (data.action === 'accept') ? "Validé" : "Refusé",
                     sync: 0
                 })
                 await db.logs.where('id').equals(parseInt(data.data)).delete()
@@ -534,12 +611,17 @@ const updateIndexDB = async (data) => {
             table: data.table,
             consumerID: data.consumer || null
         })
-    } catch (err) {
-        console.log('[SW_UPDATE_IDB]',err)
+        console.log('[SW_updateIndexedDB]', 'update done')
+    } catch (e) {
+        console.error('[SW_updateIndexedDB]',e)
+        throw e
     }
 }
 
 const sendDataToDB = async(dataID, silent=false) => {
+    if (isSending) return
+    isSending = true
+
     let tab
     if(dataID !== null) tab = await db.update_queue.where('id').equals(dataID).toArray()
     else tab = await db.update_queue.toArray()
@@ -548,9 +630,8 @@ const sendDataToDB = async(dataID, silent=false) => {
         await Promise.all(tab.map(async element => {
             let networkResponse = await fetch(element.url, element.init)
             if (networkResponse.ok) {
-                console.log('[SW_SYNC]', 'The ' + element.id + 'data is synced')
                 await db.update_queue.delete(element.id)
-                await updateIndexDB(await networkResponse.json())
+                if (element.table !== 'MonthlyReport') await updateIndexedDB(await networkResponse.json())
                 channel.postMessage({
                     title: 'toPush',
                     silent,
@@ -571,8 +652,8 @@ const sendDataToDB = async(dataID, silent=false) => {
                 })
             }
         }))
-    } catch (err) {
-        console.log('[SW_PUSH]', err);
+        console.log('[SW_sendDataToDB]', 'data sent')
+    } catch (e) {
         channel.postMessage({
             title: 'toPush',
             silent,
@@ -580,40 +661,51 @@ const sendDataToDB = async(dataID, silent=false) => {
             success: false,
             toPush: await db.update_queue.count()
         })
+        console.error('[SW_sendDataToDB]', e);
+        throw e
+    } finally {
+        isSending = false
+        channel.postMessage({
+            title: 'reloadTable',
+            table: 'tosync'
+        })
     }
-    channel.postMessage({
-        title: 'reloadTable',
-        table: 'tosync'
-    })
 }
 
 const cancelModification = async (id) => {
-    let data = await db.update_queue.where('id').equals(id).first()
-    let table = data.table
+    try {
+        let data = await db.update_queue.where('id').equals(id).first()
+        let table = data.table
 
-    if (table === 'payment') {
-        let details = data.details
-        let consumerID = details.body.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "")
-
-        await db.consumer.where('id').equals(parseInt(consumerID)).modify(result => {result.sync -= 1;})
-        await db.update_queue.where('id').equals(id).delete()
-    }
-    else {
-        if (data.elemId === '?') await db.update_queue.where('id').equals(id).delete()
-        else {
-            console.log(data.elemId)
+        if (table === 'payment') {
             let details = data.details
-            let dataID = await details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "")
-            console.log(dataID)
-            await db.table(table).where('id').equals(parseInt(dataID)).modify(result => {result.sync -= 1;})
-            db.update_queue.where('id').equals(id).delete()
-        }
-    }
+            let consumerID = details.body.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "")
 
-    channel.postMessage({
-        title: 'reloadTable',
-        table: 'tosync'
-    })
+            await db.consumer.where('id').equals(parseInt(consumerID)).modify(result => {result.sync -= 1;})
+            await db.update_queue.where('id').equals(id).delete()
+        }
+        else {
+            if (data.elemId === '?') await db.update_queue.where('id').equals(id).delete()
+            else {
+                console.log(data.elemId)
+                let details = data.details
+                let dataID = await details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "")
+                console.log(dataID)
+                await db.table(table).where('id').equals(parseInt(dataID)).modify(result => {result.sync -= 1;})
+                db.update_queue.where('id').equals(id).delete()
+            }
+        }
+
+        channel.postMessage({
+            title: 'reloadTable',
+            table: 'tosync'
+        })
+
+        console.log('[SW_cancelModification]', 'modification canceled')
+    } catch (e) {
+        console.error('[SW_cancelModification]', e)
+        throw e
+    }
 }
 
 
@@ -624,20 +716,23 @@ const addCache = async (cache, tab) => {
     try {
         let files = await caches.open(cache)
         await files.addAll(tab)
-    } catch (err) {
-        console.error('[SW_CACHEADD]', err)
+    } catch (e) {
+        console.error('[SW_addCache]', e)
+        throw e
     }
 }
 
-const cacheCleanedPromise = async () => {
+const cacheClean = async () => {
     try {
         let keys = await caches.keys()
         keys.forEach(key => {
             if (key !== cacheVersion) caches.delete(key)
         })
         setInfos('cacheLoaded', false)
-    } catch (err) {
-        console.log('[SW_CACHE_CLEAN]', err)
+        console.log('[SW_cacheClean]', 'cache cleaned')
+    } catch (e) {
+        console.error('[SW_cacheClean]', e)
+        throw e
     }
 }
 
@@ -660,18 +755,18 @@ const getCache = async () => {
             addCache(cacheVersion, staticFiles),
         ])
         setInfos('cacheLoaded', true)
+        console.log('[SW_getCache]', 'Cache is loaded !')
+    } catch (e) {
+        console.error('[SW_getCache]', e)
+        throw e
+    } finally {
         isCacheLoading = false
-        console.log('[SW_GET_CACHE]', 'Cache is loaded !')
-    } catch (err) {
-        isCacheLoading = false
-        console.log('[SW_GET_CACHE]', err)
     }
 }
 
 const getInfos = async () => {
     try {
         let data = await db.sessions.toCollection().first()
-        console.log(data)
 
         username = data.username
         needDisconnect = data.needDisconnect
@@ -684,14 +779,8 @@ const getInfos = async () => {
             date: await getOldestDate()
         })
 
-        if (!cacheLoaded && !needDisconnect) getCache()
-        if (!dbLoaded && !needDisconnect) getDataFromDB('all')
-
-        synced = true
-        console.log('[SW_GET_INFOS]', 'Old service worker state has been charged !')
-        return data
-    } catch (err) {
-        console.log('[SW_GET_INFOS]', 'New sessions !')
+        console.log('[SW_getInfos]', 'Old service worker state has been loaded')
+    } catch (e) {
         db.sessions.add({
             id: 1,
             username: null,
@@ -699,13 +788,14 @@ const getInfos = async () => {
             dbLoaded: false,
             cacheLoaded: false
         })
-        synced = true
         channel.postMessage({
             title: 'updateInfos',
             toPush: await db.update_queue.count(),
             date: await getOldestDate()
         })
-        await Promise.all([getCache(), getDataFromDB('all')])
+        console.log('[SW_getInfos]', 'New session has been created')
+    } finally {
+        synced = true
     }
 }
 
@@ -729,8 +819,9 @@ const setInfos = async (info, value) => {
                 db.sessions.toCollection().modify(data => {data.cacheLoaded = value})
                 break
         }
-    } catch (err) {
-        console.log('[SW_SET_INFOS]', err)
+    } catch (e) {
+        console.error('[SW_setInfos]', e)
+        throw e
     }
 }
 
@@ -739,18 +830,19 @@ const resetState = async () => {
         channel.postMessage({
             title: 'resetNavigation'
         })
-        await cacheCleanedPromise()
+        await cacheClean()
         await emptyDB()
-        synced = false
         await Promise.all([
             setInfos('username', null),
             setInfos('needDisconnect', false),
             setInfos('dbLoaded', false),
             setInfos('cacheLoaded', false)
         ])
-        console.log('[SW_RESET_STATE]' ,"IndexDB session is reset")
-    } catch (err) {
-        console.log('[SW_RESET_STATE]', err)
+        synced = false
+        console.log('[SW_resetState]' ,"Session has been reset")
+    } catch (e) {
+        console.error('[SW_resetState]', e)
+        throw e
     }
 }
 
@@ -795,14 +887,16 @@ const CacheOrFetchAndCache = (event,cacheToUse) => {
 /*********************************************************************************
  * Event listener
  *********************************************************************************/
-self.addEventListener('install', event => {
-    event.waitUntil(cacheCleanedPromise())
+self.addEventListener('install',  async event => {
+    event.waitUntil(await cacheClean())
 })
 
 
-self.addEventListener('activate', async () => {
+self.addEventListener('activate', async event => {
     console.log('SW_ACTIVATE')
     await getInfos()
+    if (!cacheLoaded && !needDisconnect) getCache()
+    if (!dbLoaded && !needDisconnect) event.waitUntil(getDataFromDB('all'))
 })
 
 
@@ -814,14 +908,16 @@ self.addEventListener('fetch', async event => {
     if (synced && !dbLoaded && !isDbLoading && !needDisconnect) event.waitUntil(getDataFromDB('all'))
 
     if (event.request.method === 'POST' || event.request.method === 'post') {
-        event.respondWith(fetch(event.request))
+        let networkResponse = event.waitUntil(await fetch(event.request))
+        event.respondWith(networkResponse)
+
     } 
     else if (url.includes('.js') || url.includes('.css') || url.includes('.woff')) {
         event.respondWith(CacheOrFetchAndCache(event, cacheVersion))
     } 
     else if (url.includes('/logout')) {
         try {
-            await Promise.all([cacheCleanedPromise(), emptyDB(), resetState()])
+            await Promise.all([cacheClean(), emptyDB(), resetState()])
             let networkResponse = fetch(event.request)
             setInfos('needDisconnect', false)
             event.respondWith(networkResponse)
@@ -840,13 +936,15 @@ self.addEventListener('fetch', async event => {
         }
     } 
     else if (url.includes('/api/graph')){
-        event.respondWith(NetworkFirst(event, event.request.url))
+        let networkResponse = event.waitUntil(await NetworkFirst(event, event.request.url))
+        event.respondWith(networkResponse)
     } 
     else if (url.includes('/api/table') || url.includes('.png')) {
         try {
-            event.respondWith(await fetch(event.request))
+            let networkResponse = event.waitUntil(await fetch(event.request))
+            event.respondWith(networkResponse)
         } catch (e) {
-            console.error('cannot reach the dataTable online')
+
         }
     }
     else if (url.includes('/login')) {
@@ -861,7 +959,7 @@ self.addEventListener('fetch', async event => {
 })
 
 
-channel.addEventListener('message', async event => {
+self.addEventListener('message', async event => {
     switch (event.data.title) {
         case 'getInfos':
             if (username === null || username === undefined) {
@@ -874,13 +972,7 @@ channel.addEventListener('message', async event => {
             })
             break
         case 'updateDB':
-            if (!isDbLoading) event.waitUntil(getDataFromDB(event.data.db))
-            channel.postMessage({
-                title: 'updateStatus',
-                date: await getOldestDate(),
-                table: event.data.db,
-                status: 'loading'
-            })
+            event.waitUntil(getDataFromDB(event.data.db))
             break
         case 'pushData':
             event.waitUntil(sendDataToDB(event.data.id))
@@ -890,10 +982,10 @@ channel.addEventListener('message', async event => {
             else if (username === null) await setInfos('username', event.data.username)
             break
         case 'acceptModification':
-            await sendDataToDB(event.data.id)
+            await event.waitUntil(sendDataToDB(event.data.id))
             break
         case 'revertModification':
-            await cancelModification(event.data.id)
+            await event.waitUntil(cancelModification(event.data.id))
             break
     }
 })

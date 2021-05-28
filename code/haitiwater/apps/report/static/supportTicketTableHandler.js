@@ -2,52 +2,58 @@ async function drawTicketTable(){
     let config;
 
     if (localStorage.getItem("offlineMode") === "true") {
-        $('#flavoured-part').css('background-color', '#8B0000');
         config = await getTicketDatatableOfflineConfiguration();
+        addLastUpdateToTitle('ticket');
     }
     else {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
         let dataURL = baseURL + "/api/table/?name=ticket";
-        console.log("[REQUEST DATA]" ,dataURL);
         config = getTicketDatatableConfiguration(dataURL);
     }
 
     $('#datatable-ticket').DataTable(config);
-    addLastUpdateToTitle('ticket')
+    let table = $('#datatable-ticket tbody')
 
-    $('#datatable-ticket tbody').on( 'click', '.remove-row', function () {
+    table.on( 'click', '.remove-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
         if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
             removeElement("ticket", data[0].innerText);
-        } else {}
-    } );
-    $('#datatable-ticket tbody').on( 'click', '.edit-row', function () {
+        }
+    });
+
+    table.on( 'click', '.edit-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
         editElement(data);
-    } );
+    });
+
     prettifyHeader('ticket');
 }
 
 async function getTicketData() {
-    let dexie = await new Dexie('user_db');
-    let db = await dexie.open();
-    let table = db.table('ticket');
-    let result = [];
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('ticket');
+        let result = [];
 
-    await table.each(row => {
-        result.push([
-            row.id,
-            row.urgence,
-            row.emplacement,
-            row.type,
-            row.commentaire,
-            row.statut,
-            row.photo,
-            row.sync
-        ]);
-    });
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.urgence,
+                row.emplacement,
+                row.type,
+                row.commentaire,
+                row.statut,
+                row.photo,
+                row.sync
+            ]);
+        });
 
-    return result;
+        return result;
+    } catch (e) {
+        console.log('[REPORT_getTicketData]', e);
+        throw e;
+    }
 }
 
 function getTicketDatatableConfiguration(dataURL){

@@ -119,6 +119,7 @@ def gis_infos(request):
 
             json_object = {
                 'data': elem_id,
+                'table': 'water_element_details',
                 'type': 'delete'
             }
             return HttpResponse(json.dumps(json_object), status=200)

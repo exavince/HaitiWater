@@ -1,9 +1,5 @@
-var monthlyReport = {
-	// Complete on validation
-};
-
+var monthlyReport = {}; // Complete on validation
 const CUBICMETER_GALLON_RATIO = 264.172;
-
 
 $(document).ready(function() {
 
@@ -44,10 +40,10 @@ $(document).ready(function() {
 	let $wizardMonthlyReportfinish = wizardReport.find('ul.pager li.finish');
 	let $wizardMonthlyReportSave = wizardReport.find('ul.pager li.save');
 
-	$wizardMonthlyReportfinish.on('click', function( ev ) {
+	$wizardMonthlyReportfinish.on('click', async function( ev ) {
 		ev.preventDefault();
 		var validated = validate();
-		if ( validated ) {
+		if (validated) {
 			beforeModalRequest();
 			let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 			let postURL = baseURL + "/api/report/";
@@ -60,8 +56,8 @@ $(document).ready(function() {
 				body: JSON.stringify(monthlyReport)
 			};
 
-			console.log('[ADD]', myInit);
-			navigator.serviceWorker.ready.then(async swRegistration => {
+			try {
+				await navigator.serviceWorker.ready
 				let dexie = await new Dexie('user_db');
 				let db = await dexie.open();
 				let db_table = db.table('update_queue');
@@ -84,18 +80,16 @@ $(document).ready(function() {
 					details:myInit
 				});
 
-				//new PNotify({
-				//	title: 'Succès!',
-				//	text: 'Le rapport mensuel a bien été enregistré!',
-				//	type: 'success'
-				//});
 				localStorage.removeItem("monthlyReport");
 				drawDataTable('report');
 				dismissModal();
 				afterModalRequest();
-				new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-			}).catch(() => {
-				fetch(postURL, myInit).then(response => {
+				postMessage({title:'pushData'});
+				console.log('[REPORT_ready]', 'Monthly report')
+			} catch (e) {
+				console.error('[REPORT_ready]', e);
+				try {
+					let response = await fetch(postURL, myInit)
 					if(response.ok) {
 						new PNotify({
 							title: 'Succès!',
@@ -115,18 +109,12 @@ $(document).ready(function() {
 						$('#form-monthly-report-error-msg').html(response.statusText);
 						$('#form-monthly-report-error').removeClass('hidden');
 						afterModalRequest();
+						console.error('[REPORT_ready]', response.statusText)
 					}
-				}).catch(err => {
-					new PNotify({
-						title: 'Échec!',
-						text: "Le rapport mensuel n'a pas pu être envoyé",
-						type: 'error'
-					});
-					$('#form-monthly-report-error-msg').html(err);
-					$('#form-monthly-report-error').removeClass('hidden');
-					afterModalRequest();
-				})
-			});
+				} catch (e) {
+					console.error('[REPORT_ready]', e);
+				}
+			}
 		}
 		else {
 			return false;

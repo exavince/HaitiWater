@@ -9,11 +9,10 @@ $(document).ready(function() {
 /**
  * Try to send the current report, with validation first
  */
-function postReportEdit(){
+async function postReportEdit() {
     let report = getEditedData();
-    if(!validateReport(report)) {
-        return;
-    }
+    if(!validateReport(report)) return;
+
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?table=report";
@@ -26,8 +25,8 @@ function postReportEdit(){
         body: JSON.stringify(monthlyReport)
     };
 
-    console.log('[EDIT]', myInit);
-    navigator.serviceWorker.ready.then(async swRegistration => {
+    try {
+        await navigator.serviceWorker.ready
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -50,15 +49,13 @@ function postReportEdit(){
             details:myInit
         });
 
-        //new PNotify({
-        //    title: 'Succès!',
-        //    text: 'Le rapport mensuel a été édité !',
-        //    type: 'success'
-        //});
         dismissModal();
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(postURL, myInit).then(response => {
+        postMessage({title:'pushData'});
+        console.log('[REPORT_postReportEdit]', postURL)
+    } catch (e) {
+        console.error('[REPORT_postReportEdit]', e);
+        try {
+            let response = await fetch(postURL, myInit);
             if(response.ok) {
                 new PNotify({
                     title: 'Succès!',
@@ -66,6 +63,7 @@ function postReportEdit(){
                     type: 'success'
                 });
                 dismissModal();
+                console.error('[REPORT_postReportEdit]', 'report sent without SW');
             } else {
                 new PNotify({
                     title: 'Échec!',
@@ -74,17 +72,12 @@ function postReportEdit(){
                 });
                 formErrorMsg.html(response.statusText);
                 formError.removeClass('hidden');
+                console.error('[REPORT_postReportEdit]', response.statusText);
             }
-        }).catch(err => {
-            new PNotify({
-                title: 'Échec!',
-                text: "Le rapport mensuel n'a pas pu être édité",
-                type: 'error'
-            });
-            formErrorMsg.html(err);
-            formError.removeClass('hidden');
-        })
-    });
+        } catch (e) {
+            console.error('[REPORT_postReportEdit]', e);
+        }
+    }
 }
 
 /**
@@ -115,13 +108,11 @@ function validateReport(data){
 }
 
 function getEditedData(){
-
-    let report =
-        {
-            id: $('#monthly-edit-id').val(),
-            date: $('#monthly-edit-date').html(),
-            details: [],
-        };
+    let report = {
+        id: $('#monthly-edit-id').val(),
+        date: $('#monthly-edit-date').html(),
+        details: [],
+    };
 
     let sections = $('.water-outlet');
     sections.each(function(){

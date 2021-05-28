@@ -1,56 +1,52 @@
 $(document).ready(function() {
-    // Draw the water element table without the managers
     drawLogTable();
 });
 
-
-//Formatting function for row details
-function format ( d ) {
-    // d is the original data object for the row
+function format(d) {
     return d.details;
 }
 
 async function drawLogTable() {
     let config;
-    if (localStorage.getItem("offlineMode") === "true") {
+    let offline = localStorage.getItem("offlineMode") === "true";
+
+    if (offline) {
         config = await getLogsTableOfflineConfiguration();
+        addLastUpdateToTitle('logs');
     }
     else  {
         let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
         let dataURL = baseURL + "/api/table/?name=logs";
-        console.log("[REQUEST DATA]" ,dataURL);
         config = getLogsTableConfiguration(dataURL);
     }
 
     let table = $('#datatable-logs').DataTable(config);
-    addLastUpdateToTitle('logs')
-    addLastUpdateToTitle('logsHistory')
+    let logsTable = $('#datatable-logs tbody');
 
-
-    $('#datatable-logs tbody').on( 'click', 'tr td:not(:last-child)', function () {
+    logsTable.on( 'click', 'tr td:not(:last-child)', function () {
         var tr = $(this).closest('tr');
         var row = table.row(tr);
 
         if (row.child.isShown()) {
-            // This row is already open - close it
             row.child.hide();
             tr.removeClass('shown');
         }
         else {
-            // Open this row
             row.child( format(row.data()) ).show();
             tr.addClass('shown');
         }
     });
 
-    $('#datatable-logs tbody').on( 'click', '.revert-modification', function () {
+    logsTable.on( 'click', '.revert-modification', function () {
         let data = table.row($(this).closest('tr')).data();
         revertModification(data.id);
-    } );
-    $('#datatable-logs tbody').on( 'click', '.accept-modification', function () {
+    });
+
+    logsTable.on( 'click', '.accept-modification', function () {
         let data = table.row($(this).closest('tr')).data();
         acceptModification(data.id);
-    } );
+    });
+
     prettifyHeader('logs');
 }
 
@@ -74,7 +70,8 @@ async function requestHandler(url, elementID, type){
         body:'',
     };
 
-    await navigator.serviceWorker.ready.then(async () => {
+    try {
+        await navigator.serviceWorker.ready;
         let dexie = await new Dexie('user_db');
         let db = await dexie.open();
         let db_table = db.table('update_queue');
@@ -95,31 +92,36 @@ async function requestHandler(url, elementID, type){
             status:"En attente",
             details:myInit
         });
-        //new PNotify({
-        //    title: 'Réussite!',
-        //    text: "Demande enregistrée",
-        //    type: 'success'
-        //});
 
-        indexDBModify('logs', elementID);
-        new BroadcastChannel('sw-messages').postMessage({title:'pushData'});
-    }).catch(() => {
-        fetch(url, myInit).then(() => {
-            new PNotify({
-                title: 'Réussite!',
-                text: "Modification acceptée",
-                type: 'success'
-            });
-        }).catch(err => {
-            console.error(this);
-            new PNotify({
-                title: 'Échec!',
-                text: "Opération impossible: " + err,
-                type: 'error'
-            });
-        })
-    });
-    await drawDataTable(table);
+        indexedDBModify('logs', elementID);
+        postMessage({title:'pushData'});
+        console.log('[LOGS_requestHandler]', type + ' ' + elementID);
+    } catch (e) {
+        console.error('[LOGS_requestHandler]', e);
+        try {
+            let networkResponse = await fetch(url, myInit);
+            if (networkResponse.ok) {
+                new PNotify({
+                    title: 'Succès!',
+                    text: 'Élément supprimé avec succès',
+                    type: 'success'
+                });
+                console.error('[LOGS_requestHandler]', type + ' ' + elementID + ' without SW');
+            } else {
+                new PNotify({
+                    title: 'Échec!',
+                    text: 'Veuillez vérifier votre connexion.',
+                    type: 'error'
+                });
+                console.error('[LOGS_requestHandler]', networkResponse.statusText);
+            }
+        } catch (e) {
+            console.error('[LOGS_requestHandler]', e);
+        }
+    }
+
+    await drawDataTable('logs');
+    await drawDataTable('logs_history');
 }
 
 async function getLogsData() {
@@ -233,4 +235,10 @@ function getLogsActionButtonsHTML(){
     return '<div class="center"><a style="cursor:pointer;" class="accept-modification fas fa-check-square"></a>' +
             '&nbsp&nbsp&nbsp&nbsp' + // Non-breaking spaces to avoid clicking on the wrong icon
             '<a style="cursor:pointer;" class="revert-modification far fa-times-circle"></a></div>'
+}
+
+function postMessage(message) {
+    navigator.serviceWorker.ready.then( registration => {
+        registration.active.postMessage(message);
+    });
 }
