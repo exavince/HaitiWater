@@ -26,7 +26,7 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{graphicx}
-%\usepackage[toc]{multitoc}
+\usepackage[toc]{multitoc}
 %Vérifier la table des matière (une colonne)
 
 \usepackage{amssymb}% http://ctan.org/pkg/amssymb
@@ -577,63 +577,60 @@
 	\chapter{Implémentation}
 
 		\section{Application de base}
-			Ceci n'est qu'un résumé basique de l'application de base. Si vous désirez de plus ample informations sur les raisons des choix technologiques suivant et les détails de leur implémentation, vous pouvez consulter le document \cite{ref:haitiwater}.
+			Ici je vais présenter un résumé de l'application HaïtiWater de base. Si vous désirez de plus ample informations sur les raisons des choix technologiques suivant et les détails de leur implémentation, vous pouvez consulter le document \cite{ref:haitiwater}.
 			
-			\subsection*{Back-end}
-				L'application HaïtiWater est une application web. C'est Python qui a été choisi pour le back-end car c'est un langage de programmation populaire et facile à apprendre. Il existe énormément de librairies logicielles et de documentations sur internet ce qui le rend plus adapté à la situation. Vu la taille du projet, un framework a du être utilisé. Le choix c'est porté sur Django principalement grâce à ces outils de gestion de base de données, particulièrement efficace pour les données géographiques.	
+			\subsection*{Backend}
+				L'application HaïtiWater est une application web propulser par le langage python. C'est ce langage qui a été choisi pour le backend car c'est un langage de programmation populaire et facile à apprendre. Il existe énormément de librairies logicielles et de documentations sur internet ce qui le rend plus adapté à la situation. Vu la taille du projet, un framework a du être utilisé. Le choix c'est porté sur Django principalement pour ces outils de gestion de base de données, particulièrement efficace pour les données géographiques.	
 			
 				Le SGBD utilisé pour l'application est PostGreSQL. Celui-ci a été choisi pour deux raisons :
 				\begin{itemize}
-					\item La première est que c'est le système recommandé par Django, c'est celui qui s'adapte le mieux au système de mapping objet-relationnel. Il effectue la connexion avec le serveur de base de données, et se charge d’y envoyer
-toutes les requêtes.
-					\item La deuxième est l'extension PostGIS de PostGreSQL permettant de traiter facilement les données géographiques.
+					\item D'abord parce que c'est le système qui est recommandé par Django car c'est celui qui s'adapte le mieux à l'Object relational mapping. C'est Django qui va se charger d'effectuer la connexion avec la base de données et qui va se charger d'y envoyer toutes les requêtes.
+					\item Ensuite parce qu'il existe l'extension PostGIS de PostGreSQL permettant de traiter facilement les données géographiques.
 				\end{itemize}			
 				
-				L'application contient un module API qui permet de séparé les différents rôles du serveur. Cela facilite également la récupération des des données par les différentes bibliothèques du front-end.
-			
+				Le serveur possède un module API qui permet de séparé les différents rôles de celui-ci. Cela facilite également la récupération des données par les différentes bibliothèques du front-end.
 						
-			\subsection*{Front-end}
-				Pour le front-end, aucun framework n'a été utilisé mais seulement la librairie bootstrap qui permet d'agencer l'interface graphique par blocs et de les personnalisés. La raison de son utilisation et qu'il s'agit d'une bibliothèque très connue et utilisée.
+			\subsection*{Frontend}
+				Pour le front-end, aucun framework n'a été utilisé mais seulement la librairie bootstrap qui permet d'agencer l'interface graphique par blocs et de les personnalisés. La raison de son utilisation et qu'il s'agit d'une bibliothèque très connue et utilisée et donc facile à apprendre.
 				
-				Deux autres bibliothèques ont été utilisées afin de gérer l'affichage des données dans l'application. La première est Datatables, cette bilbiothèque permet l'affichage des données sous forme de table. La deuxième est Chart.JS, elle permet l'affichage des données sous forme de graphiques. Toutes les données sont récupérées via le module API qui a été créée pour l'occasion.
+				Deux autres bibliothèques ont été utilisées afin de gérer l'affichage des données dans l'application. La première est "datatable.js", cette bilbiothèque permet l'affichage des données sous forme de table. La deuxième est Chart.JS, elle permet l'affichage des données sous forme de graphiques. Toutes les données sont récupérées via l'API qui a été créé pour l'occasion.
 				
 			\subsection*{Client}
-				Du coté du client, l'application utilise la mise en cache afin d'éviter les télechargements répétitifs des mêmes fichiers. Pour gérer cette mise en cache, on fait ici usage du Service Worker qui se place en middleware entre le client et le serveur afin d'intercepter les requètes afin de les mettre en cache.
+				Du coté du client, l'application utilise la mise en cache afin d'éviter les télechargements répétitifs des mêmes fichiers. Pour gérer cette mise en cache, on fait ici usage du Service Worker qui se place en middleware entre le client et le serveur afin d'intercepter les requètes pour les mettre en cache.
 
 		
 		\section{Choix technologiques}
 			\label{sec:choix_tech}
-			Afin de pouvoir accèder et envoyer des données lorsque nous sommes hors-ligne, différentes options ont été envisagées.
-			\subsection*{Application android}
-				C'est option qui est la plus facile à implémenter et pour gérer le fonctionnement hors-ligne de l'application est de créer une application Android à coté de la web-app. Cela aurait permis aux gestionnaires de fontaines d'accèder à une version limitée de l'application sur leur téléphone ou tablette quand ils sont sur le terrain.Cette solution est envisageable car le backend contient un module API qui permet de récupérer les données utiles.
+			Une étude a été faite pour savoir qu'elle était l'option la plus adaptée pour l'application puisse être accessible lorsque l'utilisateur n'a plus de connexion au réseau internet. Plusieurs options ont alors été envisagées.
 			
-				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur IOS. De plus elle oblige à maintenir et à faire évoluer deux codes sources dans deux langages différents.
+			\subsection*{Application android}
+				Cette option est la plus facile à implémenter et pour gérer le fonctionnement hors-ligne de l'application. On aurait dans ce cas une application android qui cohabiterait avec l'application web existante. Cela aurait permis aux gestionnaires de fontaines d'accèder à une version limitée de l'application sur leur téléphone ou tablette quand ils sont sur le terrain.
+			
+				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur iOS. De plus elle oblige à maintenir et à faire évoluer deux codes sources dans deux langages différents ce qui demanderait plus de temps ou deux team de développement.
+				
 			\subsection*{Xamarin}
 				Xamarin est une plateforme open source qui permet de créer des applications modernes et performantes pour android, iOS et Windows grace au .NET \cite{ref:xamarin}. Le gros avantage de cette solution est qu'il suffit d'utiliser la partie API existante du serveur pour pouvoir créer une application qui serait disponible sur tous types d'appareils.
 			
-				Le gros défault de Xamarin est qu'il faut un temps d'apprentissage avant utilisation. Cette technologie n'est que rarement connue et il sera donc plus difficile pour Haïti de faire maintenir et évoluer le projet.
+				Le gros défault de Xamarin est qu'il faut un temps d'apprentissage avant utilisation. Cette technologie n'est pas ultra répandue et il sera donc plus difficile pour Haïti de faire maintenir et évoluer le projet. De plus la méconnaissance totale de Xamarin où moment du choix à fait que cette solution n'était pas viable.
 				
-			\subsection*{React native}
-				Cette technologie permet d'écrire des applications qui seront disponible à la fois pour Android et iOS. Il est même possible de dériver facilement du React native pour en faire une application web react. Cela permettrait de ne pas trop diversifier les codes sources et ainsi faciliter leur maintenance.
+			\subsection*{React-native}
+				Cette technologie permet d'écrire des applications qui seront disponible à la fois pour Android et iOS. Il est même possible de dériver facilement du React-native pour en faire une application web react. Cela permettrait de ne pas trop diversifier les codes sources et ainsi faciliter leur maintenance.
 				
-				La difficulté ici réside de nouveau dans le fait qu'encore peu de développeur connaisse REACT. Bien que cette solution commence à être plus utilisée elle reste plus complexe  à mettre en place.
+				La difficulté ici réside de nouveau dans le fait qu'encore peu de développeur connaisse REACT. Bien que cette solution commence à être de plus en plus utilisée elle reste plus complexe à maintenir. Et même si on peut relativement facilement transformer React en React-native, il faudra tout de même maintenir deux codes sources différents à l'avenir.
 				
 			\subsection*{Progressive web-app}
-				Les Progressive web-app sont basiquement de simple application web utilisant les nouvelles capacités des navigateurs modernes. Grâce aus service workers et à l'app minifest, cette application web devient fiable mais sans réseau et installable. Une fois installée, une progressive web-app peut tourner en full screen comme une application native.	
-				Jusqu'à récemment, seul les applications spécific à une plateforme pouvait utiliser ce genre de fonctionnalité. 
+				Les Progressive web-app sont basiquement de simple application web utilisant les nouvelles capacités des navigateurs modernes. Grâce aux service workers et à l'app minifest, une application web devient fiable même sans réseau et "installable" sur un appareil mobile. Une fois installée, une progressive web-app peut tourner en full screen pour donner l'illusion qu'il s'agit d'une application native. Jusqu'à récemment, seules les applications spécifiques à une plateforme pouvait utiliser ce genre de fonctionnalité. 
 				
 				C'est cette solution qui a été choisie pour faire évoluer le projet. Les raisons de ce choix sont que :
 				\begin{itemize}
 					\item Il n'est pas nécessaire de devoir maintenir deux codes sources différents contrairement aux autres solutions citées précedemment.
 					\item On peut entièrement réutiliser le code de l'application de base et l'améliorer.
-					\item L'usage de service worker permet de diminuer la charge du serveur et d'améliorer l'expérience utilisateur.
+					\item L'usage de service worker permet de diminuer la charge du serveur et d'améliorer l'expérience utilisateur sans que celui-ci ne doivent se soucier d'installer ou de mettre à jour l'application puisqu'il suffit de se connecter une fois à l'application pour que celle-ci s'installe automatquement.
 				\end{itemize}
 				
 				
 		\section{Client}
-			Toute cette partie décrira la fonctionnement du service workers. Un service worker joue le rôle de serveur proxy entre une application web et le navigateur. C'est lui qui va permettre une utilisation de l'application déconnectée du réseau. Il va intercepter toutes les requêtes réseau et va effectuer différentes actions en fonction de la requête interceptée. 
-			
-			C'est via ce service worker que l'on accède aux nouvelles APIs. Si vous désirez plus d'informations sur les services workers je vous invite à aller visiter cette page \cite{ref:sw}
+			Toute cette partie décrira la fonctionnement du service worker. Un service worker joue le rôle de serveur proxy entre une application web et le navigateur. C'est lui qui va permettre une utilisation de l'application déconnectée du réseau. Il va intercepter toutes les requêtes faites par le navigateur et va effectuer différentes actions en fonction de la requête interceptée. C'est via ce service worker que l'on accède aux nouvelles APIs des navigateurs \cite{ref:sw}.
 			
 			
 			\subsection{Stratégie de synchronisation des pages}			
@@ -642,13 +639,13 @@ toutes les requêtes.
 				\subsubsection*{Fichiers statiques}  
 					Les feuilles de styles et les fichiers javascripts ne sont synchronisés qu'une seule fois lors de l'installation du service worker. Ceux-ci seront mis à jour à chaque fois que le service worker est remplacé dans le navigateur. Cela se produit lorsqu'une nouvelle version de celui-ci est disponible. 
 					
-					Si l'on veut forcer la récupération de nouveau fichier, il suffit de changer la variable "cacheVersion" dans ce service worker. 
+					Si les développeurs veulent forcer la récupération de nouveaux fichiers, il leur suffit de changer la variable "cacheVersion" dans le code du service worker. Si jamais certains fichiers de styles ou certains fichier n'ont pas pu être télécharger lors de l'installation, ceux-ci seront automatique mis en cache lorsque le navigateur de l'utilisateur les téléchargera pour afficher les pages demandées.
 					
 					
 				\subsubsection*{Pages personnalisées}				
-				 	Toutes ces pages contiennent pas de contenu qui changent dynamiquement. Les données affichées sur ces pages ne changent que très rarement voir pas du tout. C'est la raison pour laquelle on va utiliser le mode de synchronisation "Stale While Revalidate". 
+				 	Toutes ces pages ne contiennent pas de contenu qui changent dynamiquement. Par contre, elles contiennent du contenu "personnalisé" en fonction de l'utilisateur qui est connecté à l'application (son nom, sa zone, les résumés de sa zone, ...). Comme le côté personnalisé de ces pages est créé par Django, il faut pouvoir mettre à jour ces pages régulièrement au cas où les données à afficher sur celles-ci auraient changés. 
 				 	
-				 	Le principe est qu'à chaque fois qu'une requête va être faite pour récupérer ces pages, le service worker va répondre avec les pages qui sont dans le cache et il va ensuite essayer de télécharger la page pour mettre à jour celle-ci dans le cache. Ces pages sont mises en cache lorsque l'utilisateur se connecte pour la première fois à l'application et elles sont supprimées lorsque celui-ci se déconnecte. La raison est que celles-ci affichent des informations personnalisées en fonction de l'utilisateur qui est connecté. Les pages concernées par ce mode de synchronisation sont les suivantes :
+				 	C'est la raison pour laquelle on va utiliser le mode de synchronisation "Stale While Revalidate". Le principe est qu'à chaque fois qu'une requête va être faite pour récupérer ces pages, le service worker va répondre avec les pages qui sont dans le cache et il va ensuite essayer de télécharger la page mise à jour sur le serveur pour mettre à jour celle-ci dans le cache. Ces pages sont mises en cache lorsque l'utilisateur se connecte pour la première fois à l'application et elles sont supprimées lorsque celui-ci se déconnecte. Les pages concernées par ce mode de synchronisation sont les suivantes :
 				 	\begin{itemize}
 				 		\item /accueil
 				 		\item /offline
@@ -661,9 +658,7 @@ toutes les requêtes.
 				\subsubsection*{Pages fixes} 
 					Ces pages ne contiennent aucun élément personnalisé en fontion de l'utilisateur ou aucun élément qui doit être mis à jour. Le côté dynamique de ces pages est entièrement géré par les bibliothèques datatable.js et graph.js qui vont récupérer les données à afficher directement via l'API du serveur.
 				
-					Toutes ces pages sont également chargées lorsque l'utilisateur se connecte pour la première et elles se suppriment également lorsque celui-ci se déconnecte. La suppression n'est de ces pages lorsque l'utilisateur se déconnecte n'est pas réellement nécessaire. Mais pour une raison de sécurité ces pages sont tout même supprimées à la déconnexion.
-					
-					Les pages concernées par ce type de synchronisation sont les suivantes:
+					Toutes ces pages sont également chargées lorsque l'utilisateur se connecte pour la première fois et elles se suppriment également lorsque celui-ci se déconnecte. La suppression de ces pages lorsque l'utilisateur se déconnecte n'est pas réellement nécessaire. Mais pour une raison de sécurité ces pages sont tout même supprimées à la déconnexion. Les pages concernées par ce type de synchronisation sont les suivantes:
 					\begin{itemize}
 						\item /carte
 						\item /gestion
@@ -674,72 +669,122 @@ toutes les requêtes.
 				
 					
 			\subsection{Stratégie de synchronisation de la DB}
-				Pour gérer l'accès aux données hors-ligne, j'ai utilisé l'API de bas niveau indexedDB.Il s'agit d'un syntème de gestion de bases de données orientée objet basée sur javascript, on y stocke des objets qui sont indexés avec une clef. 
+				Pour gérer l'accès aux données hors-ligne, j'ai utilisé l'API de bas niveau indexedDB. Il s'agit d'un système de gestion de bases de données orientée objet basé sur javascript, on y stocke des objets qui sont indexés avec une clé. 
 				
-				Les opérations effectuées par indexedDB sont réalisées de manière asynchrone et transactionnelles. Cela permet de ne pas bloquer le fonctionnement de l'application lorsque des données sont en cours de chargement \cite{ref:indexedDB}. Pour faciliter l'usage d'indexedDB qui n'est pas très user friendly, j'ai utilisé la bibliothèque "Dexie.js" \cite{ref:dexie}. Celle-ci offre des fonctionnalités qui permettent de palier à 3 problèmes : 
+				Les opérations effectuées par indexedDB sont réalisées de manière asynchrone et transactionnelle. Cela permet de ne pas bloquer le fonctionnement de l'application lorsque des données sont en cours de chargement \cite{ref:indexedDB}. Pour faciliter l'usage d'indexedDB qui n'est pas forcément simple à prendre en main, j'ai utilisé la bibliothèque "Dexie.js" \cite{ref:dexie}. Celle-ci offre des fonctionnalités qui facilitent le développement : 
 				\begin{itemize}
-					\item La gestion d'erreur ambivalente d'indexedDB
-					\item La faiblesse des requêtes
-					\item La complexité du code
+					\item Une meilleure gestion des erreurs
+					\item Une meilleure gestion des requêtes
+					\item Un code simplifié et plus court
 				\end{itemize}					
 				
 				\subsubsection*{Récupération des données}
-					Lors du premier chargement de l'application, le service worker va envoyer des requètes à l'API du serveur afin de récupérer toutes les données nécessaires à l'affichage des différentes tables. Toutes ces requètes sont faites de manière asynchrone à l'aide de l'API "fecth". Au delà de la première synchronisation automatique , l'utilisateur peut décider lui-même via l'interface de mettre à jour toutes les tables ou bien juste certaines d'entre elles en fonction de ses besoins.
+					Lors du premier chargement de l'application, le service worker va envoyer des requètes à l'API du serveur afin de récupérer toutes les données nécessaires à l'affichage des différentes tables. Toutes ces requètes sont faites de manière asynchrone afin de ne pas bloquer l'application. Au delà de la première synchronisation automatique , l'utilisateur peut décider lui-même via l'interface de mettre à jour toutes les tables ou bien juste certaines d'entre elles en fonction de ses besoins.
 				
-					Pour éviter d'avoir un dédoublement des données tout en conservant le principe de la base de données non-relationnelles. Les données qui sont liés et qui doivent s'afficher dans la même table sont toutes regroupées dans la même collection afin de conserver une grande vitesse de lecture des données, ce afin de ne pas ralentir le fonctionnement de l'application.
+					Pour éviter d'avoir un dédoublement des données tout en conservant le principe de la base de données non-relationnelles. Les données qui sont liés et qui doivent s'afficher dans la même table sont toutes regroupées dans la même collection afin de conserver une grande vitesse de lecture des données et ne pas ralentir le fonctionnement de l'application.
 							
 					Pour accèlérer le processus, toutes les requêtes pour récupérer les données sont envoyées simultanéments. Ainsi dès qu'une réponse est reçue, le service worker peut commencer à ajouter les données dans l'indexedDB à l'aide de la bibliohtèque "dexie.js" \cite{ref:dexie}. Pour ce faire, le service worker parcours simplement tout le fichier JSON reçu de l'API et ajoute toutes les données présentent dans la collection adéquate.
 				
 				\subsubsection*{Envoie des données}
-					Pour gérer l'envoi des données, la première solution envisagée a été d'utiliser la nouvelle API "background sync". Quand le service worker detecte qu'une requète réseau à échouer, il peut l'enregistrer comme un évennement sync qui sera délivré une fois que le navigateur à récupérer le réseau. 
+					Pour gérer l'envoi des données, la première solution envisagée a été d'utiliser la nouvelle API "background-sync". Quand le service worker detecte qu'une requète réseau à échoué, il peut l'enregistrer comme un évennement sync qui sera délivré une fois que le navigateur à récupérer le réseau. 
 					
-					L'avantage de cette solution est que le service worker peut envoyer les données même si la page a été fermée ce qui rend cette solution très efficace. Malheureusement cette API n'est pour l'instant prise en charge que par certain navigateur sur PC et Android mais n'est pas du tout prise en charge par iOS. Il a donc été décidé de laisser cette solution de côté.
+					L'avantage de cette solution est que le service worker peut envoyer les données même si la page a été fermée ce qui permet d'éviter que les données restent indéfinniment non envoyées. Malheureusement cette API n'est pour l'instant prise en charge que par certain navigateur sur PC et Android mais n'est pas du tout prise en charge par iOS. Il a donc été décidé de laisser cette solution de côté.
 					
-					Du coup pour pallier à ce problème, j'ai implémenté une solution qui serait compatible avec tous les navigateurs. Lorsque l'utilisateur essaie d'ajouter, modifier ou supprimer des données, celles-ci sont dans un premier temps stockée dans l'indexedDB avant d'être envoyée. Cela permet en cas de perte de connexion au réseau internet, de ne pas perdre les données que l'on vient d'encoder. Une fois enregistrée dans l'indexedDB, le service worker va automiquement essayer d'envoyer les données une première fois. En cas de réussite, les données sont supprimées de l'indexedDB et en d'échec d'envoi, les données restent stockées afin de pouvoir les envoyées plus tard.
+					Du coup pour pallier à ce problème, j'ai implémenté une solution qui serait compatible avec tous les navigateurs. Lorsque l'utilisateur essaie d'ajouter, modifier ou supprimer des données, celles-ci sont dans un premier temps stockées dans l'indexedDB avant d'être envoyée. Cela permet en cas de perte de connexion au réseau internet, de ne pas perdre les données que l'utilisateur vient d'encoder. Une fois enregistrées dans l'indexedDB, le service worker va automiquement essayer d'envoyer les données une première fois. En cas de réussite, les données sont supprimées de l'indexedDB et en cas d'échec d'envoi, les données restent stockées afin de pouvoir être envoyées plus tard. A chaque fois que l'utilisateur tentera de récupérer des données  sur le serveur, le service worker va d'abord essayer d'envoyer toutes les données en attente avant de récupérer les données du serveur. Cela permet d'éviter d'avoir des données non envoyées qui restent  en attente.
+					
+					Si l'envoi des données réussis, le serveur répond avec les nouvelles données mise à jour. Lorsque le service worker reçoit cette réponse, il va mettre à jour les données qui sont dans le navigateur afin que l'utilisateur puisse voir directement les changements qui ont été éffectués même s'il utilise le mode hors-ligne de l'application.
 			
 			\subsection{Gestion des changements d'utilisateurs}		
-				Afin de conserver une sécurité maximale, à chaque déconnexion d'un utilisateur, toutes les données et les fichiers (hors fichiers statiques) supprimer du navigateur. Il aurait été possible de ne pas supprimer ces données et de gérer des fonctionnalités multi-utilisateurs mais cela aurait impliqué de demander à l'utilisateur d'effectuer des démarches supplémenataires pour supprimer ces données. 
+				Afin de conserver une sécurité maximale, à chaque déconnexion d'un utilisateur, toutes les données et les fichiers (hors fichiers statiques) sont supprimés du navigateur. Il aurait été possible de ne pas supprimer ces données et de gérer des fonctionnalités multi-utilisateurs mais cela aurait impliqué de demander à l'utilisateur d'effectuer des démarches supplémenataires pour supprimer ces données. 
 			
 				De plus à l'heure actuelle chaque utilisateur possède son propre appareil et il n'est donc pas nécessaire de gérer le multi-utilisateur au détriment de la sécurité.
 				
 			\subsection{Sytème de notification}
-				Le système de notification, comme indiqué dans le tableau \ref{fig:moscow}, ne faisait pas partie des fonctionnalités à implémenter. Toutefois, un petit système de notification local a tout de même été mis en place pour notifier l'utilisateur lorsqu'il y a des données qui sont en attente d'envoi dans le navigateur. Cela afin que ces données ne restent pas en attente indéfinniment.
+				Le système de notification, comme indiqué dans le tableau \ref{fig:moscow}, ne faisait pas partie des fonctionnalités à implémenter pour l'instant. Toutefois, un petit système de notification local a tout de même été mis en place pour notifier l'utilisateur lorsqu'il y a des données qui sont en attente d'envoi dans le navigateur. Cela afin que ces données ne restent pas en attente indéfinniment.
 		
 		
 		\section{Interface utilisateur}
 			L'interface utilisateur existante a du subir quelques modifications afin de pouvoir accueillir le mode hors-ligne. Le nouvelle application permet en effet deux modes différents d'utilisations.
 			
 			\subsection{Changement de mode}
-				Afin de passer d'un mode d'utilisation à l'autre un boutton de mode à été ajouté en haut de l'interface. A coté de celui-ci a également été ajouté un boutton permettant de synchroniser les données présentent dans le navigateur et à coté de celui-ci est indiqué la date et l'heure des données les plus anciennes présentent dans le navigateur.
-				%Ajouter une image des nouveaux bouttons de l'interface.
+				Afin de passer d'un mode d'utilisation à l'autre un boutton de mode à été ajouté en haut de l'interface à coté de la cloche de notification. Quand ce boutton affiche un rond vert, cela signifie que l'on se trouve dans le mode online de l'application. Lorsque le rond est noir alors ça signifie que l'application est en mode offline.
+				
+				 A coté de ce boutton de changement de mode a été ajouté un boutton permettant de mettre à jour toutes les données présentent dans le navigateur. Cela afin de ne pas obliger l'utilisateur à mettre à jour toutes les tables une par une. Juste à droite de ce boutton, on peut lire la date et l'heure des données les plus anciennes présentent dans le navigateur. Si il n'y pas de données chargées, par example quand on lance l'application pour la première fois, alors on pourra lire la phrase "Pas encore de données". Cela permet à l'utilisateur de savoir à quel point les données du navigateur sont à jour ou non.
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=0.5\textwidth]{images/buttons}
+					\label{fig:buttons}
+				\end{figure}
 			
-			\subsection{Mode online}
+			\subsubsection*{Mode online}
+				Il s'agit du mode par défaut lorsque l'on se connecte pour la première fois à l'application. Ce mode est le mode par défaut car il faut du temps aux données pour se charger dans le navigateur et ainsi l'utilisateur peut déjà utiliser l'application en attendant. Dans ce mode les différentes pages vont aller récupérer les données à afficher directement dans la base de données grâce à l'API et pas dans l'indexedDB du navigateur. 
+				
+				Ce mode est très utile lorsque l'on a besoin d'avoir les dernières données disponible et que le réseau le permet. Si vous désirez plus d'information sur ce mode de fonctionnement vous pouvez consulter le mémoire de la première version de l'application \cite{ref:haitiwater}.
 			
-				Un mode online qui permet d'accèder aux données directement depuis le serveur. Ici la bibliothèque datatable.js va envoyer une requete à l'API du serveur afin de récupérer les données présentent sur celui-ci. Si vous désirez plus d'information sur ce mode de fonctionnement vous pouvez consulter le mémoire de la première version de l'application \cite{ref:haitiwater}.
+			\subsubsection*{Mode offline}
 			
-			\subsection{Mode offline}
+				Ce mode permet d'afficher les données qui sont présentent dans localement dans l'indexedDB du navigateur. C'est dans ce mode que l'utilisateur pourra utiliser l'application lorsque la connexion au réseau internet n'est pas disponible. Lorsque l'on passe dans ce mode, la couleur du bandeau de l'application change pour passer du bleu au rouge et ce afin d'indiquer qu'on est bien dans le mode hors-ligne, voir \ref{fig:mode}, et que les données ne sont pas récupérées directement sur le serveur.
+								
+				\begin{figure}[H]
+					\caption{Mode}
+					\label{fig:mode}
+					\centering
+					\begin{subfigure}[b]{0.3\textwidth}
+  						\includegraphics[width=1\linewidth]{images/consumer_blue}
+  						\caption{Online}
+					\end{subfigure}%
+					\begin{subfigure}[b]{0.333\textwidth}
+  						\includegraphics[width=1\linewidth]{images/consumer_red}
+  						\caption{Offline}
+					\end{subfigure}
+					\label{fig:test}
+				\end{figure}
 			
-				Un mode offline qui permet d'afficher les données présentent dans l'indexedDB du navigateur. C'est grâce à ce mode que l'utilisateur pourra accéder aux données lorsque la connexion au réseau n'est pas disponible. Lorsque l'on passe dans ce mode, la couleur du bandeau passe au rouge afin d'indiquer qu'on ne travaille plus directement avec le serveur mais bien avec une copie locale des données. De plus à coté du titre de chaque table est indiqué la date et l'heure de la dernière synchronisation de cette table avec le serveur.
-			
-				Dans ce mode, lorsque des modifications ou des suppressions de données n'ont pas pu être envoyées, les données concernées apparaitrons en mauve dans le tableau pour que l'utilisateur sache que des modifications sont en attente sur celles-ci. Une fois que les données ont pu être envoyées et que le serveur à répondu un status 200, les données hors-ligne que nous avons modifiées sont mise à jour localement pour refléter les changements fait sur le serveur et ces données n'apparaissent du coup plus en mauve.
+				Dans ce mode, lorsque du travail sur des de données n'a pas pu être envoyée, les données concernées apparaitrons en mauve dans le tableau pour que l'utilisateur sache que des modifications sont en attente sur celles-ci. Une fois que les données ont pu être envoyées et que le serveur à répondu un status 200, les données hors-ligne que nous avons modifiées sont mise à jour localement pour refléter les changements faits sur le serveur et ces données n'apparaissent du coup plus en mauve dans les tables, voir \ref{fig:purple}. 
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\textwidth]{images/purple}
+					\caption{Donnée pas synchronisée}
+					\label{fig:purple}
+				\end{figure}
 							
 			\subsection{Module à synchroniser}
-				Il s'agit d'un nouveau module qui a été ajouté pour les besoins du mode hors-ligne. Dans ce module, l'utilisateur pourra retrouver un tableau qui contient toutes les données qui n'ont pas étés envoyées vers le serveur. Dans ce tableau, il peut retrouver différentes informations :
-				\begin{itemize}
-					\item La date et l'heure de la première tentavite d'envoi
-					\item Toutes les informations sur les données a envoyé
-					\item Le status de l'envoi (pas de connexion, erreur serveur, ...)
-				\end{itemize}
+				Il s'agit d'un nouveau module qui a été ajouté pour les besoins du mode hors-ligne. Dans ce module, l'utilisateur pourra retrouver un tableau qui contient toutes les données qui n'ont pas étés envoyées vers le serveur. Dans ce tableau, il peut retrouver différentes informations, voir \ref{fig:tosync}.
 				
-				L'utilisateur peut choisir de supprimer des données du tableau, auquel cas il ne pourra plus essayer de les envoyer. Ou bien il peut choisir d'essayer d'envoyer une donnée en particulier ou toutes en même temps.
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\textwidth]{images/tosync}
+					\caption{Module à synchroniser}
+					\label{fig:tosync}
+				\end{figure}
+							
+				L'utilisateur peut choisir de supprimer des données du tableau, auquel cas il ne pourra plus essayer de les envoyer car celle-ci seront supprimées de l'indexedDB. Ou bien il peut choisir d'essayer d'envoyer une donnée en particulier ou toutes en même temps avec le boutton prévu dans cette optique dans l'entête du tableau.
 			
 		
 		\section{Serveur}
 		\label{sec:serveur}
+			Dans cette partie je vais décrire le fonctionnement du serveur. Je ferai d'abord un petit résumé sur le fonctionnement de base du serveur et ensuite j'expliquerai les changements que j'ai apporté au serveur afin de récupérer les données nécessaires à l'affichage hors-ligne.
+			
 			\subsection*{Requêtes}
-			\subsection*{Détails des requêtes API}
-				\label{sec:api}
+				\begin{description}
+					\item[Fichiers statiques.] Le serveur répond a ces requêtes en envoyant tous les fichiers CSS et Javascripts.
+					\item[Documents.] Le serveur renvoie les pages HTML à afficher à l'utilisateur. Ce sont les documents qui vont importer les fichiers statiques.
+					\item[Données.] Le serveur renvoie toutes les données demandées. Pour ce faire, on utilise l'Object-relational mapping. Django se charge d'effectuer la connexion avec la base de données et de lui renvoyer toutes les requêtes. Cela permet d'intéragir avec les données sans avoir à toucher au SQL.
+				\end{description}
 
+				Les fichiers statiques et les documents permettent au navigateur d'afficher toute l'interface graphique. Chaque module du serveur permet de déservir une page de l'application. Ces pages peuvent avoir des éléments personnalisés en fonction de l'utilisateur connecté. Les données elles sont téléchargées après le chargement de la page. Toutes ces données sont récupérées via le module API du serveur. Cela permet de mieux gérer la séparation des rôles. 		
+				
+				Le fonctionnement global du serveur n'a pas été modifié car ce n'est pas sur cette partie que portait ce mémoire.
+				
+			\subsection*{API}
+				\label{sec:api}
+				Le module API a subit quelques modifications afin que le service worker puisse télécharger toutes les données dont il a besoin lorsque la connexion au réseau n'est pas disponible. La version de base du serveur ne permettait que de télécharger une partie des données, celle à afficher directement par la page. Par exemple, lorsque l'application doit afficher la page consommateur, l'API ne répond que les 10 éléments doivent être afficher sur la page et une nouvelle requête est nécessaire à chaque fois que l'on veut voir des données différentes (la page 2 du tableau par exemple).
+				
+				Pour résoudre ce problème, j'ai implémenté des fonctions supplémentaires qui permettent de récupérer en une seule requête toutes les données nécessaires à l'affichage d'une table. Cela permet au service worker de récupérer toutes les données dont-il a besoin afin de les sauvegarder dans l'indexedDB lors de l'installation de celui-ci. Bien sûre ces nouvelles fonctionnalités demandent tout de même d'être connecté avec un compte utilisateur valide pour pouvoir récupérer les données.
+				
+				De plus afin d'aider le mode offline à être plus précis dans l'affichage des données, lorsque qu'une demande d'ajout, de modification ou de suppression de données, le serveur ne vas pas juste répondre avec un status 200 mais il va également renvoyer la donnée modifiée sous forme de json afin que le service worker puisse mettre à jour directement les données localement.
 			
 
 	\chapter{Validation}
@@ -789,10 +834,8 @@ toutes les requêtes.
 		\section{Métriques}
 		
 
-	\chapter{Bibliographie}
-
-		\bibliographystyle{plain}
-		\bibliography{bibliography.bib}
+	\bibliographystyle{plain}
+	\bibliography{bibliography.bib}
 		
 
 	

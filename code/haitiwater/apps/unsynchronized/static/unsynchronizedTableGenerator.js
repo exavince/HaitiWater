@@ -53,6 +53,11 @@ async function drawTosyncTable(){
 }
 
 function revertModification(elementID){
+    new PNotify({
+        title: 'Veuillez patienter',
+        text: "Vos données sont en cours d'envoi !",
+        type: 'info'
+    });
     postMessage({
         title:'revertModification',
         id:elementID
@@ -60,6 +65,11 @@ function revertModification(elementID){
 }
 
 function acceptModification(elementID){
+    new PNotify({
+        title: 'Veuillez patienter',
+        text: "Vos données sont en cours d'envoi !",
+        type: 'info'
+    });
     postMessage({
         title:'acceptModification',
         id:elementID
@@ -116,6 +126,12 @@ function getLogsActionButtonsHTML(){
 }
 
 function sendAllData() {
+    new PNotify({
+        title: 'Veuillez patienter',
+        text: "Vos données sont en cours d'envoi !",
+        type: 'info'
+    });
+
     postMessage({
         title:"pushData",
         id: null

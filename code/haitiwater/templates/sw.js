@@ -379,6 +379,8 @@ const getDataFromDB = async (table) => {
 
     isDbLoading = true
     try {
+        let isConnected = await fetch("../api/check-authentication")
+        if (!isConnected.ok) throw 'You are not connected'
         await sendDataToDB(null, true)
         switch (table) {
             case "all":
@@ -748,6 +750,8 @@ const getCache = async () => {
     isCacheLoading = true
 
     try {
+        let isConnected = await fetch("../api/check-authentication")
+        if (!isConnected.ok) throw 'You are not connected'
         await Promise.all([
             addCache(cacheVersion, ['/offline/']),
             addCache(userCache, revalidatePages),
