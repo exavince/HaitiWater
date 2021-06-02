@@ -19,6 +19,7 @@ async function getTosyncData() {
         return result;
     } catch (e) {
         console.error('[UNSYNCHRONIZED]', e);
+        throw e;
     }
 }
 
@@ -200,14 +201,20 @@ function formatRender(data) {
             data.table = 'Rapport mensuel'
             json = JSON.parse(body)
             let details = json.details[0]
-            data.details = "ID élement réseau : " + json.selectedOutlets + "<br>" +
-                "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>") +
-                "Jours de fonctionnement : " + json.inputDays + "<br>" +
-                "Heures de fonctionnement : " + json.inputHours + "<br>" +
-                "Mois : " + json.month + "<br>" +
-                "M³ : " + details.cubic + "<br>" +
-                "Prix M³ : " + details.perCubic + "€" + "<br>" +
-                "Total : " + details.bill + "€"
+            if (json.isActive) {
+                data.details = "ID élement réseau : " + json.selectedOutlets + "<br>" +
+                    "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>") +
+                    "Jours de fonctionnement : " + json.inputDays + "<br>" +
+                    "Heures de fonctionnement : " + json.inputHours + "<br>" +
+                    "Mois : " + json.month + "<br>" +
+                    "M³ : " + details.cubic + "<br>" +
+                    "Prix M³ : " + details.perCubic + "€" + "<br>" +
+                    "Total : " + details.bill + "€"
+            }
+            else {
+                data.details = "ID élement réseau : " + json.selectedOutlets + "<br>" +
+                    "Status : " + (json.isActive ? "Actif" + "<br>" : "Inactif" + "<br>")
+            }
             break
         case 'IssueTable':
             data.table = 'Ticket'

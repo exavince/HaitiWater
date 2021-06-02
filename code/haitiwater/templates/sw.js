@@ -678,6 +678,9 @@ const cancelModification = async (id) => {
     try {
         let data = await db.update_queue.where('id').equals(id).first()
         let table = data.table
+        if (table === "Logs") table = 'logs'
+        if (table === "Carte") table = 'water_element_details'
+        if (table === "IssueTable ") table = 'ticket'
 
         if (table === 'payment') {
             let details = data.details
@@ -691,7 +694,8 @@ const cancelModification = async (id) => {
             else {
                 console.log(data.elemId)
                 let details = data.details
-                let dataID = await details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "")
+                //let dataID = await details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "")
+                let dataID = data.elemId
                 console.log(dataID)
                 await db.table(table).where('id').equals(parseInt(dataID)).modify(result => {result.sync -= 1;})
                 db.update_queue.where('id').equals(id).delete()
