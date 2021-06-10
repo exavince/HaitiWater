@@ -239,6 +239,35 @@ const consumerHandler = async () => {
     }
 }
 
+const invoiceHandler = async () => {
+    try {
+        let networkResponse = await fetch('../api/table/?name=consumer_full&indexDB=true')
+        let json = await networkResponse.json()
+        await db.consumer.clear()
+        db.editable.put({table:'consumer', is_editable:json.editable, last_sync: new Date()})
+        for (let entry of json.data) {
+            db.consumer.put({
+                id: entry.consumer[0],
+                nom: entry.consumer[1],
+                prenom: entry.consumer[2],
+                genre: entry.consumer[3],
+                adresse: entry.consumer[4],
+                telephone: entry.consumer[5],
+                membres: entry.consumer[6],
+                sortie_eau: entry.consumer[7],
+                argent_du: entry.consumer[8],
+                zone: entry.consumer[9],
+                validity: entry.validity,
+                sync: 0
+            })
+        }
+        console.log('[SW_consumerHandler]', 'consumers synced')
+    } catch (e) {
+        console.error('[SW_consumerHandler]', e)
+        throw e
+    }
+}
+
 const paymentHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=all_payment&indexDB=true')
@@ -494,7 +523,6 @@ const updateIndexedDB = async (data) => {
                 break
 
             case 'water_element_details':
-                console.log('WATERFUCKER')
                 if (data.type === 'delete') await db.water_element_details.where('id').equals(parseInt(data.data)).modify(result => {result.geoJSON = null})
                 else await db.water_element_details.where('id').equals(parseInt(data.id)).modify(result => {result.geoJSON = data.data[1]})
                 break
@@ -692,9 +720,6 @@ const cancelModification = async (id) => {
         else {
             if (data.elemId === '?') await db.update_queue.where('id').equals(id).delete()
             else {
-                console.log(data.elemId)
-                let details = data.details
-                //let dataID = await details.body.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "")
                 let dataID = data.elemId
                 console.log(dataID)
                 await db.table(table).where('id').equals(parseInt(dataID)).modify(result => {result.sync -= 1;})

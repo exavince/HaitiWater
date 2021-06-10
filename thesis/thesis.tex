@@ -40,6 +40,9 @@
 \usepackage[style=long,nonumberlist,toc,xindy,acronym,nomain]{glossaries}
 %Vé
 \makenoidxglossaries
+	\newacronym{pwa}{PWA}{Progressive Web App}
+	\newacronym{sem}{SGBD}{Systeme de Gestion de Base de Données}
+	\newglossaryentry{full_stack}{name={full-stack},  description={Développement à la fois sur le fontend et le backend}} 
 
 \begin{document}
 
@@ -55,81 +58,85 @@
 	
 		%Objectif, solution, évaluation
 	
-		Ce travail de fin d'études a été réalisé dans le cadre de mon Master en Sciences Informatiques à l'École Polytechnique de Louvain-la-neuve durant l'année académique 2020-2021.
+		Ce travail de fin d'études a été réalisé dans le cadre de mon Master en Sciences Informatiques à l'École Polytechnique de Louvain durant l'année académique 2020-2021 en partenariat avec l'ONG Protos.
 		
-		Dans ce mémoire je vais présenter mon travail qui consistait à reprendre l'application HaïtiWater développée précedemment par Adrien Hallet, Céline Deknop et Sebastien Strebelle qui a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Le but étant de faire évoluer cette application pour que celle-ci soie entièrement
-		
-		
-		 afin de la faire évoluer vers une application web qui serait entièrement utilisable \textbf{hors-ligne}.
-		 
-		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par une brève introduction sur le contexte Haitien et sur les raisons pour lesquels l'évolution de cette application était nécessaire. Ensuite je présenterai le principe des progressive web app et pourquoi j'ai choisis d'utiliser cette technologie plûtot qu'une autre. Je présenterai ensuite la validation de l'application et les feedback que j'ai reçu des utilisateurs ainsi que les conséquence de cette validation sur l'application finale. Puis je conclurai par une liste des améliorations possibles.
+		Dans ce mémoire, je vais vous présenter mon travail qui consistait à reprendre l'application HaïtiWater développée précedemment par Adrien Hallet, Céline Deknop et Sébastien Strebelle qui a pour nom "La gestion du réseau de distribution d'eau potable en Haïti" \cite{ref:haitiwater}. Le but de ce travail est de transformer cette web-application pour qu'elle soit entièrement utilisable \textbf{lorsque la connexon au serveur n'est pas disponible}.
+	
+		Cette application a pour but "La gestion du réseau de distribution d'eau potable en Haïti". Je commencerai par une brève introduction sur le contexte Haitien et sur les raisons pour lesquelles l'évolution de cette application était nécessaire. Ensuite je présenterai le principe des \gls{pwa} et pourquoi j'ai choisis d'utiliser cette technologie plûtot qu'une autre. Je présenterai par après la validation de l'application et les feedback que j'ai reçu des utilisateurs. Puis je concluerai par une liste des améliorations possibles pour le futur développement de l'application.
 
-		Tout le travail réalisé est disponible ici :
+		Tout le code source de l'application est disponible à cette adresse : \url{https://github.com/exavince/HaitiWater}
 
-\begin{itemize}
-	\item Github : \url{https://github.com/exavince/HaitiWater}
-	\item Par l'UCL : \url{https://haitiwater.sipr.ucl.ac.be}
-	\item En Haïti : \url{unknown}
-\end{itemize}		
-
-		Si vous désirez tester l'application, il suffit de vous rendre sur un des liens cité précédemment et de vous connecter à l'aide de l'utilisateur qui vous sera communiqué si vous en faite la demande. Ces données ne seront pas révélées ici car les données ne peuvent pas être modifiées aléatoirement. 
+		Si vous désirez tester l'application, il suffit de demander un login à une des personnes ayant travaillé sur l'application et de vous rendre sur le lien suivant \url{https://haitiwater.sipr.ucl.ac.be} afin de vous connecter à l'application.
 		
 
 	\chapter*{Remerciements}
 	\addcontentsline{toc}{chapter}{Remerciements}
+		Dans le cadre de ce mémoire, j'ai été aidé par différentes personnes sans lesquelles la réalisation de celui-ci n'aurait pas été possible. Je souhaite donc prendre ces quelques lignes pour les remercier.
+		
+		Merci aux professeurs Kim Mens et Sandra Soares-Frazão pour leur aide, leur soutient et les conseils indispensables qu'ils m'ont apportés tout au long de ce travail.
+		
+		Merci à l'ONG Protos qui a amené ce projet.
+		
+		Merci à Celine Deknop et Sebastien Sterbelle pour l'aide et les conseils qu'ils m'ont apportés à différent moment de ce projet.
+		
+		Merci à Nahomie pour l'aide apportée au début du projet afin de bien mettre en évidence les besoins de l'application.
+		
+		Merci à tous les utilisateurs qui ont pris du temps pour tester l'application et me donner leur feedback sur celle-ci.
+		
+		Merci à mes parents et à mes amis qui m'ont soutenu et m'ont motivé tout au long de ce mémoire.
 
 		
 
-	%\printnoidxglossary[title=Glossaire, toctitle=Glossaire]
-	%\glsaddall
+	\printnoidxglossary[title=Glossaire, toctitle=Glossaire]
+	\glsaddall
 
 	\chapter{Introduction}
 
 		
 		\subsection*{Contexte}
 		
-			Ce mémoire appartient à un projet de développement financé par ARES-CCD avec quelques partenaires tels que Protos\footnote{\href{https://www.protos.ngo/fr/}{www.protos.ngo}}, l'UCL et l'UEH. 
+			Ce mémoire appartient à un projet de développement financé par ARES-CCD avec quelques partenaires tels que Protos, l'UCL et l'UEH. L'objectif du ce projet est de réaliser un système logiciel pilote pour la gestion de la distribution d'eau potable en zone rurale. C'est pour cette raison que l'ONG Protos est active en Haïti depuis plusieurs années.
 			
-			Protos est une ONG qui vise à améliorer l'accès à l'eau potable dans plusieurs pays du monde afin de les aider à se développer. 
+			Protos est une ONG qui a pour but d'améliorer l'accès à l'eau potable dans plusieurs pays du monde afin de les aider à se développer. Suite à de nombreuses crises politiques et catastrophes naturelles qui ont détruit beaucoup d'infrastructures locales, l'accès à l'eau potable est devenu difficile en Haïti. De plus, des incertitudes politiques entravent la reconstruction de ces installations et les populations ne sont pas toujours aidées par les services publiques pour assurer la distribution de l'eau. 
 			
-			Suite à de nombreuses crises politiques et catastrophes naturelles qui ont détruit beaucoup d'infrastructures locales, l'accès à l'eau potables est devenu difficile en Haïti. De plus, des incertitudes politiques entravent la reconstruction de ces installations et les populations ne sont pas toujours aidées par les services publics pour assurer la distribution de l'eau. 
-			
-			Il y a quelques années Protos est entré en contact avec l'UCL afin de réaliser un système logiciel pilote pour la gestion de la distribution d'eau potable en zone rurale. C'est pour cette raison que l'ONG Protos est active dans le pays depuis quelques années et à permis aux anciens mémorants de créer l'application HaïtiWater.
-			
-			 En effet, aucune gestion centralisée organisée par l'état n'existe pour ces zones, éloignées des grandes agglomérations. Des réseaux existent, constitués de points de prélèvement d'eau, de conduites de distribution d'eau et de fontaines situées dans les villages, mais la gestion publique de ceux-ci n'est pas opérationnelle. 
+			 En effet, aucune gestion centralisée et organisée par l'état n'existe pour les zones rurales éloignées des grandes agglomérations. Des réseaux existent, constitués de points de prélèvement d'eau, de conduites de distribution d'eau et de fontaines situées dans les villages, mais la gestion publique de ceux-ci n'est pas opérationnelle. 
 
-			L'application créée précédemment propose un appui à ces organismes locaux afin de mieux organiser cette distribution. 
-			%Explication de l'application des différents modules existants
+			L'application \cite{ref:haitiwater} créée précédemment propose un appui à ces organismes locaux afin de mieux organiser cette distribution. 
 
 			
 
 		\subsection*{Problématiques}
-		
-			Actuellement l'application HaïtiWater est prévue pour fonctionner uniquement lorsque le réseau est stable et fonctionnel. Malheureusement en Haïti le réseau est assez instable et par endroit ce réseau n'est même pas disponible. La suite du développement de l'application va donc devoir porter sur le fonctionnement hors-ligne de celle-ci. 
+			Actuellement, HaïtiWater est une web-application prévue pour fonctionner uniquement lorsque le réseau est stable et fonctionnel. Malheureusement en Haïti la connexion au réseau internet est assez instable et par endroit ce réseau n'est pas disponible du tout. Il faut donc trouver une solution pour que cette application puisse être utilisable et fiable dans les conditions du contexte Haïtien. 
 
-			% Expliquer pourquoi l'application a besoin d'évoluer 
 
 		\subsection*{Motivation}
-
-			%Explqiuer pourquoi avoir choisis ce mémoire
+			J'ai réalisé ce travail dans le cadre de mon Master en Sciences Informatiques. L'objectif de celui-ci est de mettre en application les différentes compétences acquisent durant mes années d'étude sur un projet de grande envergure.
 			
+			Au delà de mettre mes compétences en pratique, ce travail va me permettre d'acquérir de l'expérience dans le développement d'applications et surtout dans l'utilisation des nouvelles technologies du web. Il va me permettre d'apprendre à me lancer dans un gros projet pré-existant, de me familiariser avec un environment logiciel déja existant et d'y apporter ma touche personnelle.	
+			
+			Le plus motivant dans l'évolution de cette application étant de savoir qu'il s'agit d'un projet réel avec de vrais acteurs qui vont utiliser cette application sur le terrain une fois que celle-ci sera terminée.
 
 		\subsection*{Objectifs}
+			L'objectif de ce mémoire est de proposer une nouvelle version de l'application HaïtiWater afin que celle-ci soie plus adaptée à un usage sur le terrain. Normalement cette nouvelle version devrait être déployée en Haïti cette année et ce sont les acteurs locaux qui devraient reprendre la maintenance et l'évolution de celle-ci.
+			
+			Un autre objectif est de délivrer une application propre et stable qui donnera envie aux utilisateurs de l'employer sur le terrain à la place de leurs outils actuels.
 
-			%Expliquer le but final du mémoire au niveau de l'usage de l'applcition en Haiti
 			
 		\subsection*{Approche}
-
-			%Expliquer les différentes étapes par lesquelles je suis passé pour réaliser ce mémoire (étude des différentes tech, développement, validation, ...)
+			Avant de lancer le développement de cette deuxième version de l'application, un gros travail d'analyse a été réalisé afin de déterminer les différentes fonctionnalités à implémenter et la technologie à utiliser. L'analyse de Moscow \cite{ref:moscow} a été utilisée à cette fin.
+		
+			Après cette phase d'analyse, je me suis lancé dans la phase de développement durant laquelle j'ai implémenté toutes les fonctions décrites lors de la phase d'analyse. C'est cette phase qui a pris le plus clair du temps étant donné le nombre de fonctions à implémenter et la nécessité de faire de la documentation pour les futurs développeurs.
+			
+			Pour finir vient la phase de validation. L'application a été présentée à des utilisateurs ayant déjà essayé la première version de l'application ou non afin que ceux-ci puissent fournir le feedback nécessaire à l	 future évolution de l'application.
 			
 		\subsection*{Contribution}
-
-			%Qu'est ce qu'a apporté le travail réalisé
-			%Qu'elle est la plus value ?
+			Grâce au travail réalisé, Protos et les acteurs locaux Haïtiens vont pouvoir déployer l'application et l'utiliser sur le terrain même dans les zones les plus rurales. En effet celle-ci peut maintenant être utilisée lorsque le réseau n'est plus disponible. Pour l'instant ces acteurs utilisent des outils basiques tel que le crayon/papier pour faire leurs rapports sur le terrain, cela ne permet pas d'avoir un accès facile aux informations passées et cela complique beaucoup la transmission de l'information à la hiérarchie. L'utilisation de l'application permettrait de résoudre ces deux problèmes.
+			
+			J'espère avoir apporté ma contribution à une meilleure gestion de l'eau en Haïti en aidant à la création de cette application. De mon côté, ce travail m'aura permis d'acquérir de nouvelles compétences dans développement full stack d'appliactions web.
 
 		\subsection*{Plan}
-
-			%Explication dans le temps des différentes phases de travail 
+			Dans ce mémoire, je vais décrire le façon dont s'est déroulé ce travail. Pour commencer je vais faire un bref résumé du contexte Haïtien ainsi que la description de l'application existante. Par la suite je vais expliquer l'analyse des besoins et les décisions prises pour l'implémentation. Je détaillerai par après la façon dont s'est déroulée la phase de validation et je cloturerai par une présentation des évolutions possibles.
+		
 
 	\chapter{Contexte}
 
@@ -137,11 +144,11 @@
 		\section{La gestion de l'eau en Haïti}
 			\label{sec:situation}
 			
-				Haïti est l'un des pays les plus pauvres au monde. Le pays est situé dans une zone géographique où les risques de catastrophes naturelles sont très élevés. Ces intempéries détruisent les infrastructures et empêchent le bon développement des réseaux de distribution d'eau. Il y a quelques années, en 2010, le pays a subi un énorme séisme qui a ravagé une bonne partie du territoire. Parmi tous les défis à relever vient celui de la gestion et de la distribution de l'eau potable sur le territoire, surtout dans les zones les plus rurales. Le climat de la région rendant excessivement difficile l'exploitation directe des cours d'eau, il faut beaucoup d'infrastructures afin de pouvoir assumer la distribution de l'eau potable à tous.
+				Haïti est l'un des pays les plus pauvres au monde. Il est situé dans une zone géographique où les risques de catastrophes naturelles sont très élevés. Ces intempéries détruisent les infrastructures et empêchent le bon développement du réseaux de distribution d'eau potable. Il y a quelques années, en 2010, le pays a subi un énorme séisme qui a ravagé une bonne partie du territoire. Parmi tous les défis à relever vient celui de la gestion et de la distribution de l'eau potable sur ce territoire, surtout dans les zones les plus rurales. Le climat de la région rendant excessivement difficile l'exploitation directe des cours d'eau, il faut beaucoup d'infrastructures afin de pouvoir assumer la distribution de l'eau potable à tous.
 				
-				En raison de la grande pauvreté et de gros problèmes organisationnels qui règnent sur la plupart de l'île, il est très difficile de maintenir et de développer le réseau de distribution d'eau potable. Il y a un gros manque de collaboration entre les entités haïtiennes ou entre les villages dû en partie à la communication qui n'est pas du tout optimisée voir inexistante dans certains cas. Dans les zones les plus rurales de l'île, le taux de recouvrement des factures est excessivement faible, jusqu'à 11\%.
+				En raison de la grande pauvreté qui règnent sur la plupart de l'île et de gros problèmes organisationnels, il est très difficile de maintenir et de développer le réseau de distribution d'eau potable. Il y a un gros manque de collaboration entre les entités haïtiennes ou entre les villages dû en partie à la communication qui n'est pas du tout optimisée voir inexistante dans certains cas. Dans les zones les plus rurales de l'île, le taux de recouvrement des factures est excessivement faible, jusqu'à 11\%.
 				
-				Pour toutes ces raisons, l'ONG Protos vient donc en aide à Haïti afin d'aider le service national des eaux à gérer la gestion des infrastructures et la facturation des clients surtout dans les zones rurales.
+				Pour toutes ces raisons, l'ONG Protos vient donc en aide à Haïti afin d'aider le service national des eaux à gérer la gestion des infrastructures et la facturation des clients surtout dans les zones les plus rurales.
 				
 				Si vous désirez plus d'informations sur les problèmes environnementaux, politiques, sociaux ou organisationnels du contexte haïtiens, je vous invite à aller consulter le mémoire d'Adrien Hallet, Céline Deknop et Sébastien Strebelle \cite{ref:haitiwater}.
 
@@ -149,22 +156,20 @@
 
 
 		\section{Introduction à l'application}
-				Dans le cadre de la situation décrite dans la section \ref{sec:situation} (La gestion de l'eau en Haïti), Protos a fait appel à l'UCL afin de créer une application d'aide à la gestion et la distribution de l'eau potable en Haïti. Une première version de l'application a été développée en 2018-2019 par 3 personnes dans le cadre de leur mémoire \cite{ref:haitiwater}, elle comprend différents modules permettant de faciliter la gestion des infrastructures et les clients qui vont y chercher de l'eau.
-				
-				L'application est basée sur un principe hiérarchique. Pour illustrer celle-ci je vais reprendre l'image présentée ici \cite{ref:haitiwater}. 
+				Dans le cadre de la situation décrite dans la section \ref{sec:situation}, Protos a fait appel à l'UCL afin de créer une application d'aide à la gestion et la distribution de l'eau potable en Haïti. Une première version de l'application a été développée en 2018-2019 par 3 personnes dans le cadre de leur mémoire \cite{ref:haitiwater}, elle comprend différents modules permettant de faciliter la gestion des infrastructures et les clients qui vont y chercher de l'eau. L'application est basée sur un principe hiérarchique\cite{ref:haitiwater}.
 				
 				\begin{figure}[H]
 					\centering
 					\includegraphics[width=0.5\textwidth]{images/hierarchie}
-					\caption{Module consommateurs}
+					\caption{Hiérarchie dans l'application}
 				\end{figure}
 				
 				
 			\subsection{Eléments de l'application}
 				\begin{description}
-					\item[Zone] Une zone représente une partie du territoire. Une zone peut être subdivisée en plusieurs sous-zone, la zone-parent reprendra alors toutes les données des zones enfants. Cela permet de séparer les responsabilités des différents territoires.
-					\item[Elements du réseau] Ces éléments représentent les points physiques du réseau de distribution d'eau potable. Ces éléments sont au nombre de 6 : conduites, réservoirs, sources, fontaines, kiosques et prises individuelles. Tous ensembles ils forment le réseau de distribution au complet. 
-					\item[Consommateurs] Le consommateur est une personne qui va utiliser le réseau de distribution d'eau potable. Chaque consommateur se voit lors de son enregistrement attribué à un seul élément de sortie d'eau du réseau : fontaine, kiosque, prise individuelle. De cette façon, il est plus simple de gérer la facturation des consommateurs.
+					\item[Zone.] Une zone représente une partie du territoire. Elle peut être subdivisée en plusieurs sous-zones, la zone-parent reprendra alors toutes les données des zones enfants. Cela permet de séparer les responsabilités des différents territoires.
+					\item[Elements du réseau.] Ces éléments représentent les points physiques du réseau de distribution d'eau potable. Ils sont au nombre de six : conduites, réservoirs, sources, fontaines, kiosques et prises individuelles. Tous ensembles ils forment le réseau de distribution au complet. 
+					\item[Consommateurs.] Le consommateur est une personne qui va utiliser le réseau de distribution d'eau potable. Chaque consommateur se voit lors de son enregistrement attribué à un seul élément de sortie d'eau du réseau : fontaine, kiosque, prise individuelle. De cette façon, il est plus simple de gérer la facturation des consommateurs.
 				\end{description}
 				
 			
@@ -175,11 +180,11 @@
 				Il y 2 types d'utilisateurs qui peuvent se connecter à l'application
 				
 				\begin{description}
-					\item[Gestionnaire de fontaine] Ce gestionnaire va gérer la distribution de l'eau aux différents consommateurs. Il devra gérer tous les éléments du réseau qui lui sont attribués.
-					\item[Gestionnaire de zone] Ce gestionnaire va avoir la responsabilité de gérer d'autres gestionnaires de zones et/ou des gestionnaires de fontaines. Son travail est plus d'administrer et de surveiller les personnes qui sont en-dessous de lui.			 
+					\item[Gestionnaire de fontaine.] Ce gestionnaire va gérer la distribution de l'eau aux différents consommateurs. Il devra gérer tous les éléments du réseau qui lui sont attribués.
+					\item[Gestionnaire de zone.] Ce gestionnaire va avoir la responsabilité de gérer d'autres gestionnaires de zones et/ou des gestionnaires de fontaines. Son travail est plus d'administrer et de surveiller les personnes qui sont en-dessous de lui.			 
 				\end{description}
 				
-				Ces deux gestionnaires vont avoir des privilèges différents et peuvent donc interagir différemment sur les données. Pour illustrer plus simplement cela, voici un tableau tel que présenté ici \cite{ref:haitiwater} où vous pourrez retrouver plus d'informations sur les rôles des différents gestionnaires. 
+				Ces deux gestionnaires vont avoir des privilèges différents et peuvent donc interagir différemment avec les données. Pour illustrer plus simplement cela, voici un tableau \cite{ref:haitiwater} où vous pourrez retrouver plus d'informations sur les rôles des différents gestionnaires. 
 				\begin{table}[H]
 					\centering
 					\small
@@ -231,9 +236,10 @@
 \newpage
 				
 			\subsection{Carte}
-				Ce module comprend un tableau réduit des éléments du réseau ainsi qu'une carte interactive qui permet à l'utilisateur de voir où sont situés les différents éléments du réseau et de connaître ou d'encoder les coordonnées géographiques de ceux-ci. 
-				
-				Comme dans le module \ref{sec:reseau} "Réseau", il est également possible d'ajouter, modifier ou supprimer des éléments du réseau. De plus c'est ici que l'on peut ajouter des coordonnées géographiques à un élément du réseau. Soit en les entrant manuellement soit en utilisant la carte interactive.
+				Ce module comprend un tableau réduit des éléments du réseau ainsi qu'une carte interactive qui permet à l'utilisateur de voir où sont situés les différents éléments du réseau et de connaître ou d'encoder les coordonnées géographiques de ceux-ci. Pour encoder ces coordonnées, l'utilisateur peut soit les entrer manuellement soit utiliser la carte intéractive prévue à cet effet. 
+			
+			Comme dans le module décrit au point \ref{sec:reseau}, l'utilisateur peut ajouter, supprimer ou modifier des éléments du réseau dans ce module.
+			
 				\begin{figure}[H]
 					\centering
 					\includegraphics[width=1\textwidth]{images/map}
@@ -253,11 +259,11 @@
 				\end{figure}
 				
 			\subsection{Gestion de zone}
-				Ce module comprend 3 tableaux permettant à l'utilisateur de gérer sa zone.
+				Ce module comprend 3 tableaux permettant à l'utilisateur de gérer la zone qui lui est attribuée.
 				\begin{description}
-					\item[Zones] Le premier contient les différentes zones géographiques encodées dans le système. Cliquer sur un des éléments du tableau permet de filtrer les éléments des deux autres tableaux qui seront décrits plus bas afin de ne garder que les éléments de la zone concernée. Ce tableau permet également si l'utilisateur a les privilèges requis d'ajouter, supprimer ou modifier une zone.
+					\item[Zones] Le premier contient les différentes zones géographiques encodées dans le système. Cliquer sur un des éléments du tableau permet de filtrer les éléments des deux autres tableaux qui seront décrits plus bas afin de ne garder que les éléments de la zone concernée. Ce tableau permet également si l'utilisateur a les privilèges requis d'ajouter, de supprimer ou de modifier une zone.
 					\item[Gestionnaires] Le deuxième contient la liste de tous les gestionnaires. Cliquer sur un gestionnaire permet à l'utilisateur de filtrer les éléments réseaux qui sont gérés par ce gestionnaire. De nouveau si l'utilisateur possède les privilèges nécessaires, il pourra ajouter, modifier ou supprimer des gestionnaires.
-					\item [Elements du réseau] Le dernier contient le même tableau que dans la section \ref{sec:reseau} "Réseau".
+					\item [Elements du réseau] Le dernier contient le même tableau que dans la section \ref{sec:reseau}.
 				\end{description}
 				\begin{figure}[H]
 					\centering
@@ -282,8 +288,8 @@
 			\label{sec:historique}
 				Ce module contient les actions ayant été effectuées par des gestionnaires de fontaines. Ces actions doivent être validées ou refusées par un gestionnaire plus haut placé. On peut y retrouver deux tableaux.
 				\begin{description}
-					\item[A valider] Le tableau du haut contient les éléments devant être validés. Ici si l'utilisateur a les privilèges requis, il peut choisir de confirmer ou non une action qui a été encodée.
-					\item[Historique] Le tableau du bas contient les éléments qui ont été validés ou refusés dans les 3 dernières semaines. Il s'agit simplement d'un historique récent.
+					\item[A valider] Ce tableau contient les éléments devant être validés. Ici si l'utilisateur a les privilèges requis, il peut choisir de confirmer ou non une action qui a été encodée.
+					\item[Historique] Ce tableau contient les éléments qui ont été validés ou refusés dans les 3 dernières semaines. Il s'agit de l'historique récent des dernières modifications.
 				\end{description}
 				\begin{figure}[H]
 					\centering
@@ -292,9 +298,9 @@
 				\end{figure}
 			
 			\subsection{Rapports}
-				Dans ce module, l'utilisateur peut signaler les différents problèmes qu'il rencontre avec les infrastructures de distribution d'eau. Une fois le problème signalé, celui-ci peut consulter ce qu'il a encodé dans le tableau juste en dessous et modifier ou supprimer son signalement. Si ses privilèges sont suffisamment élevés, il pourra également gérer les signalements des autres personnes.
+				Dans ce module, l'utilisateur peut signaler les différents problèmes qu'il rencontre avec les infrastructures de distribution d'eau potable. Une fois le problème signalé, celui-ci peut consulter ce qu'il a encodé dans le tableau juste en dessous et modifier ou supprimer son signalement. Si ses privilèges sont suffisamment élevés, il pourra également gérer les signalements d'autres personnes.
 				
-				C'est également ici que l'utilisateur va pouvoir encoder les rapports mensuels. Si jamais la connexion internet n'est plus présente, il peut simplement enregistrer le formulaire avec les données qu'il a encodés afin de l'envoyer plus tard lorsque le réseau sera de nouveau accessible.
+				C'est également ici que l'utilisateur va pouvoir encoder les rapports mensuels. Si jamais la connexion au serveur n'est pas disponible, il peut simplement enregistrer le formulaire avec les données qu'il a encodés afin de l'envoyer plus tard lorsque la connexion sera revenue.
 				
 				\begin{figure}[H]
 					\centering
@@ -306,8 +312,8 @@
 				Dans ce module, l'utilisateur retrouve 3 parties différentes :
 				\begin{description}
 					\item[Schéma] Le même choix de schéma que décrit dans la section \ref{sec:reseau}.
-					\item[Résumé de zone] Un résumé de la situation de votre zone (nombre de foyers consommant de l'eau, nombre de consommateurs, nombre de foyers n'ayant pas payé leur facture).
-					\item[Consommateurs] Un tableau qui reprend tous les consommateurs auxquels l'utilisateur a accès. Celui-ci peut ajouter, modifier ou supprimer des consommateurs. Ou bien il peut également juste consulter tous les détails sur ceux-ci.
+					\item[Résumé de zone] Un résumé de la situation  de la zone attibué à l'utilisateur (nombre de foyers consommant de l'eau, nombre de consommateurs, nombre de foyers n'ayant pas payé leur facture).
+					\item[Consommateurs] Un tableau qui reprend tous les consommateurs auxquels l'utilisateur a accès. Celui-ci peut ajouter, modifier ou supprimer des consommateurs. Il peut également juste consulter tous les détails sur ceux-ci.
 				\end{description}
 
 				
@@ -330,7 +336,7 @@
 					\item[Zones] Un tableau contenant les différentes zones. Le fait de sélectionner une zone permet à l'utilisateur de filtrer les consommateurs en fonction de leur zone d'attribution.
 					\item[Consommateurs] Un tableau contenant les consommateurs auxquels l'utilisateur a accès. Le fait de sélectionner un consommateur permet de faire apparaître les deux tableaux suivants.
 					\item[Détails] Un tableau contenant les coordonnées du consommateur sélectionné ainsi que la somme due par celui-ci. Il n'est pas possible de modifier des données manuellement dans ce tableau.
-					\item[Paiements] Un tableau interactif contenant tous les paiements effectués par le consommateur sélectionné. Ici l'utilisateur peut ajouter, modifier ou supprimer des paiements.
+					\item[Paiements] Un tableau interactif contenant tous les paiements effectués par le consommateur sélectionné. Ici l'utilisateur peut ajouter, modifier ou supprimer des paiements du consommateur séléctionné.
 				\end{description}
 				
 				\begin{figure}[H]
@@ -343,19 +349,17 @@
 		\section{Problèmes réseaux}
 			L'application HaïtiWater est une application web classique. Cela signifie que pour fonctionner, il faut qu'il y ait nécessairement une connexion à internet. Or en Haïti, cette connexion n'est pas très stable en ville et celui-ci peut aller jusqu'à être inexistant lorsque vous vous aventurez dans les zones les plus rurales. 
 			
-			Ces problèmes de connexions font que l'application est difficilement utilisable sur le terrain en toute sérénité car on ne sait jamais quand le réseau va devenir capricieux. Pour pallier ce problème, il a été décidé de transformer l'application web existante pour que celle-ci puisse fonctionner même lorsque le réseau est absent.
+			Ces problèmes de connexions font que l'application est difficilement utilisable sur le terrain en toute sérénité car on ne sait jamais quand le réseau va devenir capricieux. Pour pallier ce problème, il a été décidé de faire évoluer l'application web existante pour que celle-ci puisse fonctionner même lorsque le réseau est absent.
 				
-			De par sa nature, une application web nécessite un connexion pour pouvoir fonctionner. Il a donc fallu étudier les différentes options qui pourraient permettre de faire fonctionner l'application hors-ligne. Parmis les ces options,  les deux qui ont été retenues étaient de soit créer une \textbf{application mobile} séparée de l'application web, soit de transformer l'application web existante en \textbf{Progressive Web App}. 
+			De par sa nature, une application web nécessite un connexion pour pouvoir fonctionner. Il a donc fallu étudier les différentes options qui pourraient permettre de faire fonctionner l'application hors-ligne. Parmis ces options,  les deux qui ont été retenues étaient de soit créer une \textbf{application mobile} séparée de l'application web, soit de transformer l'application web existante en \textbf{Progressive Web App}. 
 				
 			L'avantage de créer une application dédiée aux mobiles est qu'il est très simple de gérer le fonctionnement hors-ligne de cette application. De plus on peut plus facilement utiliser les différentes capacités de l'appareil mobile comme la caméra, la localisation, ...
-			L'inconvénient de cette solution est qu'il fallait du coup générer une nouvelle application de A à Z. De plus cela implique qu'il y aura deux codes différents dans deux langages différents à devoir maintenir.
+			L'inconvénient de cette solution est qu'il faut du coup générer une nouvelle application de A à Z. De plus cela impliquerais deux codes sources différents à devoir maintenir.
 				
 			L'avantage de la Progressive Web App est que tout se joue au niveau du navigateur. Il n'est donc pas nécessaire de devoir maintenir un deuxième code source. De plus aucune installation n'est nécessaire de la part de l'utilisateur et les mises à jour de l'application sont faites de manière transparente.
-			L'inconvénient de cette solution est que la gestion du mode hors-ligne est un peu plus complexe, on ne peut pas profiter des capacités de l'appareil mobile aussi bien qu'avec une application native et cette technologie étant assez récente, il n'y a pas énormément de ressource d'aide en ligne et tous les navigateurs ne prennent pas en charge toutes les fonctionnalités proposées.
+			L'inconvénient de cette solution est que la gestion du mode hors-ligne est un peu plus complexe, on ne peut pas profiter des capacités de l'appareil mobile aussi bien qu'avec une application native et cette technologie étant assez récente, il n'y a pas énormément de ressources d'aide en ligne et tous les navigateurs ne prennent pas en charge toutes les fonctionnalités proposées.
 				
-			Au vu de la situation compliquée en Haïti et du temps qui sera alloué à ce mémoire, il a été décidé que la meilleure option était celle de la Progressive Web-App. La raison principale est qu'il aurait difficile une fois le mémoire terminé d'avoir deux codes sources différents à maintenir et à mettre à jour.
-			
-			
+		
 			
 			
 %------------------------------------------------------------------------------------------
@@ -389,11 +393,10 @@
 				%La grande échéance posée était de pouvoir effectuer les tests de l'application avec des personnes réelles à partir de février afin d'avoir le temps de prendre compte les feedback pour améliorer l'application.
 				
 				\paragraph*{Hebdomadaire} 
-				Une réunion était prévue toutes les semaines en alternance avec mes deux promoteurs. Ces réunions permettaient de leur montrer l'état d'avancement du développement et d'avoir un feedback extérieur sur celui-ci. 
-				Ces réunions ont toutes eu lieu en vocal via l'application Teams. En effet en période de COVID, il était impossible de se voir régulièrement en présentiel.
+				Une réunion était prévue toutes les semaines en alternance avec mes deux promoteurs. Ces réunions permettaient de leur montrer l'état d'avancement du développement et d'avoir un feedback extérieur sur celui-ci. Elles ont toutes eu lieu en vocal via l'application Teams. En effet en période de COVID, il était impossible de se voir régulièrement en présentiel.
 				
 				\paragraph*{Quotidien}
-				Etant donné que j'étais le seul à travailler sur le mémoire, un outil de suivi n'était pas nécessaire. Pour gérer l'organisation du travail une simple liste de tâches était maintenue. Cette liste était modifiée tous les jours en fonction de l'avancement de celles-ci. Les plus importantes étaient maintenues en haut de la liste afin de les prioriser. 
+				Etant donné que j'étais le seul à travailler sur le mémoire, un outil de suivi n'était pas nécessaire. Pour gérer l'organisation du travail une simple liste de tâches était maintenue. Cette liste était modifiée tous les jours en fonction de l'avancement de celle-ci. Les plus importantes étaient maintenues en haut de la liste afin de les prioriser. 
 				
 				Le plan n'a malheureusement pas pu être entièrement respecté pour différentes raisons:
 				\begin{itemize}
@@ -411,19 +414,17 @@
 			
 
 			\subsection*{Agile}
-				Le méthodologie agile permet une réponse au changement plus flexible. Plûtot que de planifier tout le projet directement, on développe par petit incrément que l'on termine termine à chaque itération. 
+				Le méthodologie agile permet une réponse au changement plus flexible. Plûtot que de planifier tout le projet directement, on développe par petit incrément que l'on termine à chaque itération. 
 				
 				Cette méthode a permis de faire évoluer le projet en fonction des différents feedback que j'ai reçu de la part de mes promoteurs et de l'étudiante venue d'Haïti. Ce qui n'aurait pas été possible avec une approche waterfall beaucoup plus séquentielle.
 				
-				\paragraph*{Feature Driven Development.} L'application a été développée avec la méthode de développement par les fonctionnalités. Dans cette méthode on se focalise surtout sur la création d'une liste de fonctionnalités et sur leurs productions. Les différentes fonctionnalités ont été déterminées par mes deux promoteurs et l'étudiante de Haïti.
+				\paragraph*{Feature Driven Development.} L'application a été développée avec la méthode de développement par les fonctionnalités. Dans cette méthode on se focalise surtout sur la création d'une liste de fonctionnalités et sur leurs productions. Ces différentes fonctionnalités ont été déterminées par mes deux promoteurs et l'étudiante Haïtienne.
 				
-				\paragraph*{Itérations} Dans le cadre d'une méthodologie agile, les itérations sont de courtes durées. Lors de ce mémoire, les itérations duraient deux semaines. Cela permettait d'avoir un feedback de la part des deux promoteurs que je voyais en alternance une semaine sur deux.
-				Les avantages des itérations courtes sont que l'on peut détecter rapidement les défauts présents et de les corriger. 
+				\paragraph*{Itérations.} Dans le cadre d'une méthodologie agile, les itérations sont de courtes durées. Lors de ce mémoire, les itérations duraient deux semaines. Cela permettait d'avoir un feedback de la part des deux promoteurs que je voyais en alternance une semaine sur deux. Les avantages des itérations courtes sont que l'on peut détecter rapidement les défauts présents et les corriger rapidement. 
 
 
 			\subsection*{Phases du mémoire}
-				%Le développement des nouvelles fonctionnalités de l'application c'est fait de manière agile et est donc surtout composée de beaucoup de petites phases. Par contre, pour ce qui est du déroulement du mémoire en lui-même, il y a différentes grandes phases qui se sont dessinées.
-			%Les raisons à cela sont que certaines phases n'étaient pas réalisable avant que d'autres ne soit complètement terminées ou presque. 
+		
 			
 			\begin{figure}[H]
 					\centering
@@ -454,7 +455,7 @@
 		\label{sec:analyse_besoins}
 		Cette phase est très importante. C'est lors de celle-ci que nous, mes deux promoteurs, l'étudiante d'Haïti et moi-même, avons choisi quelle technologie était la plus adaptée afin de faire évoluer l'application existante de la meilleure façon possible. C'est également ici qu'ont été déterminées toutes les fonctionnalités à implémenter et leur ordre de priorité.
 		
-		J'ai avec l'aide de l'étudiante Haïtienne et les bons conseils de mes promoteurs, realisé une analyse de moscow qui sera décrite dans la section \ref{sec:besoins_fonctionnels}. Cette méthode permet de prioriser les tâches d'un projet en fonction de leur criticité, c'est-à-dire du niveau d'impact de la tâche sur la réalisation du projet.
+		J'ai avec l'aide de l'étudiante Haïtienne et les bons conseils de mes promoteurs, realisé une analyse de Moscow qui sera décrite dans la section \ref{sec:besoins_fonctionnels}. Cette méthode permet de prioriser les tâches d'un projet en fonction de leur criticité, c'est-à-dire du niveau d'impact de la tâche sur la réalisation du projet.
 		Cette analyse de Moscow est assez représentative de la direction que devait prendre le projet et représente bien les différentes tâches à accomplir.
 
 
@@ -481,7 +482,7 @@
 			Lors de l'analyse des besoins, nous avons bien entendu repris l'analyse faite par les anciens mémorants \cite{ref:haitiwater}. Ils proposaient trois types différents d'accès à l'application et aux données lorsque le réseau n'est pas disponible. Les 3 options proposées sont les suivantes. 
 			\begin{description}
 				\item[Accès aux formulaires.] Avec cette solution, l'utilisateur aurait toujours un accès aux différents formulaires d'ajouts de données. Celui-ci pourrait pré-remplir les formulaires et les enregistrer dans le cache du navigateur afin de pouvoir les envoyer plus tard dans le cas où le réseau ne serait pas disponible immédiatement. Cette solution est déjà partiellement mise en place dans l'application de base. Il est en effet déjà possible de pré-remplir son rapport mensuel et de le sauvegarder pour plus tard. %C'est la solution la plus simple car elle ne demande pas d'avoir les données de la base synchronisées localement. Pourtant cette solution n'a pas été retenue car celle-ci est trop simpliste et ne permet pas une utilisation suffisante en cas de perte de connexion.
-				\item[Accès statique aux données.] Cette solution demande d'avoir une version simplifiée de la base de données en copie sur l'appareil de l'utilisateur mais sans la possibilité de modifier celle-ci. Cela permettrait aux utilisateurs de consulter les données hors-ligne mais pas d'en entrer de nouvelles. L'avantage de cette solution est que la synchronisation des tâbles est très simple et qu'il n'y a pas de problèmes d'inconsistances des données.
+				\item[Accès statique aux données.] Cette solution demande d'avoir une version simplifiée de la base de données en copie sur l'appareil de l'utilisateur mais sans la possibilité de modifier celle-ci. Cela permettrait aux utilisateurs de consulter les données hors-ligne mais pas d'en entrer de nouvelles. L'avantage de cette solution est que la synchronisation des tables est très simple et qu'il n'y a pas de problèmes d'inconsistances des données qui peuvent arriver lorsque deux utilisateurs modifient la même donnée en étant hors-ligne.
 				\item[Accès complet aux données.] Cette solution permettrait aux utilisateurs de pouvoir consulter, ajouter, supprimer et modifier des données de la base de données. Ainsi même en cas de perte de réseau, l'utilisateur pourrait continuer à réaliser ses tâches sans le moindre soucis. Cette solution est la plus compliquée à mettre en place car elle demande de synchroniser les différentes versions des données. En effet si deux utilisateurs modifient en même temps les mêmes données en étant hors-ligne, il faudrait pouvoir déterminer quelle modification conserver sans créer d'inconsistances.  
 			\end{description}
 			
@@ -504,7 +505,7 @@
 				Comme on peut le voir les deux premiers points sont bien placés dans la catégorie "Must have". Les deux derniers sont dans le "Should have" car ces fonctionnalités ne sont que des schémas qui s'affichent sur certaines pages et ceux-ci ne sont pas absolument essentiels.
 				
 			\subsection*{Accès aux données}
-				La deuxième partie importante des besoins fonctionnels est d'avoir accès aux données de la base de données même lorsque la connexion internet n'est pas disponible. En effet le simple accès aux pages hors ligne n'a que peu d'intérêt si l'on ne peut pas consulter de données sur ces pages.
+				La deuxième partie importante des besoins fonctionnels est d'avoir accès aux données de la base de données même lorsque la connexion au serveur n'est pas disponible. En effet le simple accès aux pages hors ligne n'a que peu d'intérêt si l'on ne peut pas consulter de données sur ces pages.
 			Dans le tableau \ref{fig:moscow}, cela est représenté les points suivants :
 				\begin{itemize}
 					\item Lister les éléments du réseau
@@ -518,7 +519,7 @@
 				
 				Les quatres premiers points sont dans la catégorie "Must have" car ceux-ci représentent les données qui seront utilisées en permanence par les acteurs sur le terrain, dans notre cas les gestionnaires de fontaines. Ce sont donc les données qu'il faut avoir prioritairement dans l'application hors-ligne.
 				
-				Les trois derniers sont dans la catégorie "Should have" et "Could have" car ceux-ci sont surtout utile pour les gestionnaires de zones qui seront assez peu sur le terrain. Malgrè tout il reste intéressant de pouvoir accèder à ces données même lorsque le réseau internet n'est pas disponible dans le cas où un gestionnaire devrait se déplacer sur le terrain ou bien en cas de panne réseau.
+				Les trois derniers sont dans la catégorie "Should have" et "Could have" car ceux-ci sont surtout utiles pour les gestionnaires de zones qui seront assez peu sur le terrain. Malgrè tout il reste intéressant de pouvoir accèder à ces données même lorsque la connexion au serveur n'est pas disponible dans le cas où un gestionnaire devrait se déplacer sur le terrain ou bien en cas de panne du réseau internet.
 				
 				Un dernier point non listé est d'afficher les éléments du réseau de distribution d'eau sur une carte interactive même lorsque l'on a pas de connexion réseau. Ce point a été mis dans les "Could have" car l'usage de la carte en mode hors-ligne est une fonction qui prendrait beaucoup d'espace sur un appareil mobile et cette fonctionnalité n'est pas essentielle à un usage sur le terrain.
 
@@ -540,10 +541,10 @@
 					\item Faire un rapport mensuel
 				\end{itemize}
 				
-				La plupart des points sont situés dans la partie "Must have" car ces fonctionnalités sont essentielles au bon fonctionnement de l'application hors-ligne. Par contre la modification des éléments du réseau, des zones, des gestionnaires et des tickets sont dans les catégories "Should have" and "Could have" car ces données sont surtout utilisées par les gesionnaires de zones qui ne vont que peu sur le terrain et pas par les gestionnaires de fontaines.			
+				La plupart des points sont situés dans la partie "Must have" car ces fonctionnalités sont essentielles au bon fonctionnement de l'application hors-ligne. Par contre la modification des éléments du réseau, des zones, des gestionnaires et des tickets sont dans les catégories "Should have" and "Could have" car ces données sont surtout utilisées par les gesionnaires de zones qui ne vont que peu sur le terrain.			
 
 		\section{Besoins non-fonctionnels}
-			Les besoins non-fonctionnels sont soit des besoins optionnels, soit des besoins liés à l'implémentation et à l'interopérabilité générale. En réalisant ces besoins non fonctionnels, on obtient un système fiable et qualitatif.
+			Les besoins non-fonctionnels sont soit des besoins optionnels, soit des besoins liés à l'implémentation et à l'interopérabilité générale. C'est en réalisant ces besoins non fonctionnels, que l'on obtient un système fiable et qualitatif.
 					
 			\subsection*{Multi-plateforme}
 			\label{sec:multi}
@@ -578,10 +579,12 @@
 	\chapter{Implémentation}
 
 		\section{Application de base}
-			Dans cette section, un résumé de l'application HaïtiWater de base vous sera présenté. Si vous désirez de plus ample informations sur les raisons des choix technologiques suivant et les détails de leur implémentation, vous pouvez consulter le document \cite{ref:haitiwater}.
+			Dans cette section, un résumé de l'application HaïtiWater créée précédemment vous sera présenté. Si vous désirez de plus amples informations sur les raisons des choix technologiques suivants et les détails de leur implémentation, vous pouvez consulter le document \cite{ref:haitiwater}.
 			
 			\subsection*{Backend}
-				L'application HaïtiWater est une application web propulsée par le langage python. C'est ce langage qui a été choisi pour le backend car c'est un langage de programmation populaire et facile à apprendre. Il existe énormément de librairies logicielles et de documentations sur internet ce qui le rend plus adapté à la situation. Vu la taille du projet, un framework a du être utilisé. Le choix s'est porté sur Django principalement pour ses outils de gestion de base de données, particulièrement efficace pour les données géographiques.	
+				L'application HaïtiWater est une application web propulsée par le langage python. C'est ce langage qui a été choisi pour le backend car c'est un langage de programmation populaire et facile à apprendre. Il existe énormément de librairies logicielles et de documentations sur internet ce qui le rend plus facile à apprendre pour la future équipe développement. 
+				
+				Vu la taille du projet un framework a du être utilisé, l'organisation et la structure du framework permet une productivité plus élevée qu'un développement qui partirait de zéro et facilite la maintenance de l'application grâce une bonne organisation du code source. Le choix s'est porté sur Django principalement pour ses outils de gestion de base de données, particulièrement efficace pour les données géographiques.	
 			
 				Le SGBD utilisé pour l'application est PostGreSQL. Celui-ci a été choisi pour deux raisons :
 				\begin{itemize}
@@ -589,12 +592,22 @@
 					\item Ensuite parce qu'il existe l'extension PostGIS de PostGreSQL permettant de traiter facilement les données géographiques.
 				\end{itemize}			
 				
-				Le serveur possède un module API qui permet de séparer les différents rôles de celui-ci. Cela facilite également la récupération des données par les différentes bibliothèques du front-end.
+				Django utilise une architecture modulaire qui permet de faciliter l'évolution et la maintenance de l'application. la figure \ref{fig:modules} représente les relations entre les différents modules tels que présenté dans le mémoire de la première version de l'application \cite{ref:haitiwater}.
+				
+				\begin{figure}[H]
+					\centering
+					\includegraphics[width=1\textwidth]{images/modules}
+					\caption{Relations entre les modules}
+					\label{fig:modules}
+				\end{figure}
+							
+				
+				Le serveur possède également une API qui permet de séparer les différents rôles de celui-ci. Le rôle de cette API est de faire le lien entre l'ORM de Django et les requêtes du client pour récupérer des données dans la base de données. Les requêtes concernant une page à afficher et celle concernant les données sont donc séparées. Cela facilite la récupération des données par les différentes bibliothèques du frontend et permet en cas de création d'une autre application de continuer à récupérer les informations sur le serveur.
 						
 			\subsection*{Frontend}
 				Pour le front-end, aucun framework n'a été utilisé mais seulement la librairie bootstrap qui permet d'agencer l'interface graphique par blocs et de les personnaliser. La raison de son utilisation et qu'il s'agit d'une bibliothèque très connue et utilisée et donc facile à apprendre.
 				
-				Deux autres bibliothèques ont été utilisées afin de gérer l'affichage des données dans l'application. La première est "datatable.js", cette bilbiothèque permet l'affichage des données sous forme de table. La deuxième est Chart.JS, elle permet l'affichage des données sous forme de graphiques. Toutes les données sont récupérées via l'API qui a été créée pour l'occasion.
+				Deux autres bibliothèques ont été utilisées afin de gérer l'affichage des données dans l'application. La première est "datatable.js", cette bilbiothèque permet l'affichage des données sous forme de table. La deuxième est Chart.JS, elle permet l'affichage des données sous forme de graphiques. Toutes les données sont récupérées par les blibliothèques via l'API du serveur.
 				
 			\subsection*{Client}
 				Du coté du client, l'application utilise la mise en cache afin d'éviter les télechargements répétitifs des mêmes fichiers. Pour gérer cette mise en cache, on fait ici usage du Service Worker qui se place en middleware entre le client et le serveur afin d'intercepter les requêtes pour les mettre en cache.
@@ -605,22 +618,22 @@
 			Une étude a été faite pour savoir qu'elle était l'option la plus adaptée pour que l'application puisse être accessible lorsque l'utilisateur n'a plus de connexion au réseau internet. Plusieurs options ont alors été envisagées.
 			
 			\subsection*{Application android}
-				Cette option est la plus facile à implémenter et pour gérer le fonctionnement hors-ligne de l'application. On aurait dans ce cas une application android qui cohabiterait avec l'application web existante. Cela aurait permis aux gestionnaires de fontaines d'accèder à une version limitée de l'application sur leur téléphone ou tablette quand ils sont sur le terrain.
+				Cette option est la plus facile à implémenter pour gérer le fonctionnement hors-ligne de l'application. On aurait dans ce cas une application Android qui cohabiterait avec l'application web existante. Cela aurait permis aux gestionnaires de fontaines d'accèder à une version limitée de l'application sur leur téléphone ou tablette quand ils sont sur le terrain.
 			
-				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur iOS. De plus elle oblige à maintenir et à faire évoluer deux codes sources dans deux langages différents ce qui demanderait plus de temps ou deux team de développement.
+				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur les appareils Apple utilisant le système iOS. De plus elle oblige à maintenir et à faire évoluer deux codes sources dans deux langages différents ce qui demanderait plus de temps ou deux team de développement.
 				
 			\subsection*{Xamarin}
 				Xamarin est une plateforme open source qui permet de créer des applications modernes et performantes pour android, iOS et Windows grace au .NET \cite{ref:xamarin}. Le gros avantage de cette solution est qu'il suffit d'utiliser la partie API existante du serveur pour pouvoir créer une application qui serait disponible sur tous types d'appareils.
 			
-				Le gros défault de Xamarin est qu'il faut un temps d'apprentissage avant utilisation. Cette technologie n'est pas ultra répandue et il sera donc plus difficile pour Haïti de faire maintenir et évoluer le projet. De plus la méconnaissance totale de Xamarin où moment du choix à fait que cette solution n'était pas viable.
+				Le gros défault de Xamarin est qu'il faut un temps d'apprentissage avant utilisation. Cette technologie n'est pas ultra répandue et il sera donc plus difficile pour Haïti de faire maintenir et évoluer le projet. Même s'il s'agit d'une solution cross-plateforme, il faut tout de même écrire autant d'interface différentes que l'on a de plateforme cible. Dans notre cas Android, iOS et Windows
 				
 			\subsection*{React-native}
 				Cette technologie permet d'écrire des applications qui seront disponible à la fois pour Android et iOS. Il est même possible de dériver facilement du React-native pour en faire une application web react. Cela permettrait de ne pas trop diversifier les codes sources et ainsi faciliter leur maintenance.
 				
-				La difficulté ici réside de nouveau dans le fait qu'encore peu de développeur connaissent REACT. Bien que cette solution commence à être de plus en plus utilisée elle reste plus complexe à maintenir. Et même si on peut relativement facilement transformer React en React-native, il faudra tout de même maintenir deux codes sources différents à l'avenir.
+				La difficulté ici réside dans le fait que même si React-native permet de faire du cross-plateform, on va tout de même avoir besoin de connaître pertiellement le langage et les API native de la plateforme sur laquelle on crée l'application, ici iOS et Android. Bien que cette solution commence à être de plus en plus utilisée elle reste plus complexe à maintenir. De plus cette solution oblige tout de même à continuer de maintenir deux applications différents : l'application web et l'application React-native.
 				
 			\subsection*{Progressive web-app}
-				Les Progressive web-app sont de simple application web utilisant les nouvelles capacités des navigateurs modernes. Grâce aux service workers et à l'app-manifest, une application web devient fiable même sans réseau et "installable" sur un appareil mobile. Une fois installée, une progressive web-app peut tourner en full screen pour donner l'illusion qu'il s'agit d'une application native. Jusqu'à récemment, seules les applications spécifiques à une plateforme pouvaient utiliser ce genre de fonctionnalité. 
+				Les Progressive web-app sont de simples applications web utilisants les nouvelles capacités des navigateurs modernes. Grâce aux service workers, l'application peut fonctionner lorsque la connexion au serveur n'est pas disponible et grâce à l'app-manifest, celle-ci devient "installable" sur un appareil mobile. Une fois installée, une progressive web-app peut tourner en plein écran pour faire croire qu'il s'agit d'une application native. Ce n'est bien sûr par réelement cas, l'appareil va simplement ouvrir une page du navigateur en plein écran pour donner l'illusion. 
 				
 				C'est cette solution qui a été choisie pour faire évoluer le projet. Les raisons de ce choix sont que :
 				\begin{itemize}
@@ -657,7 +670,7 @@
 				 	\end{itemize}
 				 	
 				\subsubsection*{Pages fixes} 
-					Ces pages ne contiennent aucun élément personnalisé en fontion de l'utilisateur ou aucun élément qui doit être mis à jour. Le côté dynamique de ces pages est entièrement géré par les bibliothèques datatable.js et graph.js qui vont récupérer les données à afficher directement via l'API du serveur. 
+					Ces pages ne contiennent aucun élément personnalisé en fonction de l'utilisateur ou aucun élément qui doit être mis à jour. Le côté dynamique de ces pages est entièrement géré par les bibliothèques datatable.js et graph.js qui vont récupérer les données à afficher directement via l'API du serveur. 
 				
 					Toutes ces pages sont également chargées lorsque l'utilisateur se connecte pour la première fois et elles se suppriment également lorsque celui-ci se déconnecte. La suppression de ces pages lorsque l'utilisateur se déconnecte n'est pas réellement nécessaire. Mais pour une raison de sécurité ces pages sont tout même supprimées à la déconnexion. Les pages concernées par ce type de synchronisation sont les suivantes:
 					\begin{itemize}
@@ -670,7 +683,7 @@
 				
 					
 			\subsection{Stratégie de synchronisation de la DB}
-				Pour gérer l'accès aux données hors-ligne, j'ai utilisé l'API de bas niveau indexedDB. Il s'agit d'un système de gestion de bases de données orientée objet basé sur javascript, on y stocke des objets qui sont indexés avec une clé. 
+				Pour gérer l'accès aux données hors-ligne, j'ai utilisé l'API de bas niveau indexedDB. Il s'agit d'un système de gestion de bases de données orientée objet basé sur javascript, on y stocke des objets qui y sont indexés avec une clé. 
 				
 				Les opérations effectuées par indexedDB sont réalisées de manière asynchrone et transactionnelle. Cela permet de ne pas bloquer le fonctionnement de l'application lorsque des données sont en cours de chargement \cite{ref:indexedDB}. Pour faciliter l'usage d'indexedDB qui n'est pas forcément simple à prendre en main, j'ai utilisé la bibliothèque "Dexie.js" \cite{ref:dexie}. Celle-ci offre des fonctionnalités qui facilitent le développement : 
 				\begin{itemize}
@@ -680,7 +693,14 @@
 				\end{itemize}					
 				
 				\subsubsection*{Récupération des données}
-					Lors du premier chargement de l'application, le service worker va envoyer des requètes à l'API du serveur afin de récupérer toutes les données nécessaires à l'affichage des différentes tables. Toutes ces requêtes sont faites de manière asynchrone afin de ne pas bloquer l'application. Au delà de la première synchronisation automatique , l'utilisateur peut décider lui-même via l'interface de mettre à jour toutes les tables ou bien juste certaines d'entre elles en fonction de ses besoins.
+					Lors du premier chargement de l'application, le service worker va envoyer des requètes à l'API du serveur afin de récupérer toutes les données nécessaires à l'affichage des différentes tables. Toutes ces requêtes sont faites de manière asynchrone afin de ne pas bloquer l'application. Au delà de la première synchronisation automatique, l'utilisateur peut décider lui-même via l'interface de mettre à jour toutes les tables ou bien juste certaines d'entre elles en fonction de ses besoins. La figure \ref{fig:flows} montre la récupération des données des consommateurs lors de la connexion et comment le client récupère ces données lorsque l'on se trouve dans le mode hors-ligne.
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=0.9\textwidth]{images/flow}
+						\label{fig:flows}
+						\caption{Diagramme de séquence - chargement des données}
+					\end{figure}
 				
 					Pour éviter d'avoir un dédoublement des données tout en conservant le principe de la base de données non-relationnelles, les données qui sont liés et qui doivent s'afficher dans la même table sont toutes regroupées dans la même collection. Cela permet de conserver une grande vitesse de lecture des données et de ne pas ralentir le fonctionnement de l'application.
 							
@@ -693,10 +713,17 @@
 					
 					Du coup pour pallier à ce problème, j'ai implémenté une solution qui est compatible avec tous les navigateurs. Lorsque l'utilisateur essaie d'ajouter, modifier ou supprimer des données, celles-ci sont dans un premier temps stockées dans l'indexedDB avant d'être envoyées. Cela permet en cas de perte de connexion au réseau internet, de ne pas perdre les données que l'utilisateur vient d'encoder. Une fois enregistrées dans l'indexedDB, le service worker va automiquement essayer d'envoyer les données une première fois. En cas de réussite, les données sont supprimées de l'indexedDB et en cas d'échec d'envoi, les données restent stockées afin de pouvoir être envoyées plus tard. A chaque fois que l'utilisateur tentera de récupérer des données  sur le serveur, le service worker va d'abord essayer d'envoyer toutes les données en attente avant de récupérer les données du serveur. Cela permet d'éviter d'avoir des données non envoyées qui restent  en attente.
 					
-					Si l'envoi des données réussi, le serveur répond avec les nouvelles données mises à jour. Lorsque le service worker reçoit cette réponse, il va mettre à jour les données qui sont dans le navigateur afin que l'utilisateur puisse voir directement les changements qui ont été éffectués même s'il utilise le mode hors-ligne de l'application.
+					Si l'envoi des données réussi, le serveur répond avec les nouvelles données mises à jour. Lorsque le service worker reçoit cette réponse, il va mettre à jour les données qui sont dans le navigateur afin que l'utilisateur puisse voir directement les changements qui ont été éffectués même s'il utilise le mode hors-ligne de l'application \ref{fig:flows2}. La gestion des incohérence sera décrite plus loin dans la section \ref{sec:api}.
+					
+					\begin{figure}[H]
+						\centering
+						\includegraphics[width=0.9\textwidth]{images/flow2}
+						\label{fig:flows2}
+						\caption{Diagramme de séquence - envoi de données}
+					\end{figure}
 			
 			\subsection{Gestion des changements d'utilisateurs}		
-				Afin de conserver une sécurité maximale, à chaque déconnexion d'un utilisateur, toutes les données et les fichiers (hors fichiers statiques) sont supprimés du navigateur. Il aurait été possible de ne pas supprimer ces données et de gérer des fonctionnalités multi-utilisateurs mais cela aurait impliqué de demander à l'utilisateur d'effectuer des démarches supplémenataires pour supprimer ces données. 
+				Afin de conserver une sécurité maximale, à chaque déconnexion d'un utilisateur, toutes les données et les fichiers (hors fichiers statiques) sont supprimés du navigateur. Il aurait été possible de ne pas supprimer ces données et de gérer des fonctionnalités multi-utilisateurs mais cela aurait impliqué de demander à l'utilisateur d'effectuer des démarches supplémentaires pour supprimer ces données. 
 			
 				De plus à l'heure actuelle chaque utilisateur possède son propre appareil et il n'est donc pas nécessaire de gérer le multi-utilisateur au détriment de la sécurité. En effet si on décide de laisser les données dans le navigateur même après la déconnexion d'un utilisateur, les données restent accessible via l'inspection du navigateur. Du coup si une personne mal intentionnée  passait sur l'appareil après d'un utilisateur, il pourrait récupérer toutes les données qu'il souhaite. 
 				
@@ -769,6 +796,8 @@
 			Dans cette partie je vais décrire le fonctionnement du serveur. Je ferai d'abord un petit résumé sur le fonctionnement de base du serveur et ensuite j'expliquerai les changements que j'ai apporté au serveur afin de récupérer les données nécessaires à l'affichage hors-ligne.
 			
 			\subsection*{Requêtes}
+				Une réquête est une demande que le navigateur envoi au serveur afin de récupérer différents type fichiers ou de données. Le serveur permet de gérer trois types de requêtes différentes :
+				
 				\begin{description}
 					\item[Fichiers statiques.] Le serveur répond a ces requêtes en envoyant tous les fichiers CSS et Javascripts.
 					\item[Documents.] Le serveur renvoie les pages HTML à afficher à l'utilisateur. Ce sont les documents qui vont importer les fichiers statiques.
@@ -785,56 +814,104 @@
 				
 				Pour résoudre ce problème, j'ai implémenté des fonctions supplémentaires qui permettent de récupérer en une seule requête toutes les données nécessaires à l'affichage d'une table. Cela permet au service worker de récupérer toutes les données dont-il a besoin afin de les sauvegarder dans l'indexedDB lors de l'installation de celui-ci. Bien sûr ces nouvelles fonctionnalités demandent tout de même à l'utilisateur d'être connecté avec un compte utilisateur valide pour pouvoir récupérer les données.
 				
-				De plus afin d'aider le mode offline à être plus précis dans l'affichage des données, lorsque qu'une demande d'ajout, de modification ou de suppression de données, le serveur ne vas pas juste répondre avec un status 200 mais il va également renvoyer la donnée modifiée sous forme de json afin que le service worker puisse mettre à jour directement les données localement.
+				De plus afin d'aider le mode offline à être plus précis dans l'affichage des données, lorsque qu'une demande d'ajout, de modification ou de suppression de données, le serveur ne vas pas juste répondre avec un status 200, qui signifie que les changements ont bien été pris en compte, mais il va également renvoyer la donnée modifiée au format JSON afin que le service worker puisse mettre à jour directement les données localement. Le JSON est un format de données textuelles qui permet de représenter l'information sous forme de texte. 
 				
-				Une autre problématique est que lorsque que les utilisateurs ne sont plus connectés au réseau internet, il est possible qu'ils modifient en à des moments différent la même donnée. Vu que pour l'instant le travail des gestionnaires de fontaines doit être validé par un gestionnaire plus au placé via le module "Historique" décris au point \ref{sec:historique}, le serveur va simplement accepter les données comme elles viennent et les ajouter dans la liste des données qui doivent être validées.
+				Une autre problématique est que lorsque que les utilisateurs ne sont plus connectés au réseau internet, il est possible qu'ils modifient à des moments différent la même donnée. Vu que pour l'instant le travail des gestionnaires de fontaines doit être validé par un gestionnaire plus haut placé via le module "Historique" décris au point \ref{sec:historique}, le serveur va simplement accepter les données comme elles viennent et les ajouter dans la liste des données qui doivent être validées. Comme ça si des incohérences apparaisent, la gestionnaire responsable peut contacter les gestionnaires concernés par l'incohérence et la corriger et approuvant ou rejetant les modifications faites. Pour l'instant la donnée qui apparait sur le serveur est celle de l'utilisateur qui a envoyé ces données en dernier.
 			
 
 	\chapter{Validation}
+		La validation a pour objectif de tester le bon fonctionnement et le niveau de qualité du produit "fini". Pour effecuter cette validation, deux types de tests ont été utilisés. D'abord des tests automatisés afin de pouvoir tester le fonctionnement des différentes fonctions implémentées. Et ensuite des tests  de validation avec des utilisateurs réels afin de tester le fonctionnement global de l'application ainsi que son intuitivité.
 
-		%Introduction
+		
 
 		\section{Vérifications automatiques}
+			Pour tester l'application de façon automatique, j'ai utilisé des tests unitaires. Ces tests ont pour objectif de vérifier le bon fonctionnement d'une petite partie bien précise d'une application (unité ou module). Ils assurent qu'une méthode qui peut être utilisée par un utilisateur fonctionnent bien de la manière prévue. Dans le cas présent, toutes les intéractions entre l'utilisation et l'utilisateur se font à l'aide soit de requêtes envoyées directement au serveur, soit de requêtes faites au service worker. J'ai donc décider de compléter les tests unitaires qui étaient déjà présent pour la partie serveur et de créer un batterie de tests unitaires pour le service worker.
 
-			\subsection*{Tests unitaires}
-
+			Si vous voulez connaitre les détails des tests unitaires déjà présent de base vous pouvez consulter le mémoire en lien avec la création de l'application \cite{ref:haitiwater}. Les tests que j'ai rajouté au niveau des reqûetes au serveur couvrent les méthodes de récupération des données utilisées par le service worker. Je vérifie que les données récupérées sont bien uniquement celles auxquelles l'utilisateur à accès et que celles-ci sont bien complète.
 			
+			En ce qui concerne les tests sur le service worker, ceux-ci couvrent toutes les fonctions de récupération et d'envoi de données depuis et vers la base de données ainsi que la gestion de toutes pages mises en cache pour leur affichage en mode hors-ligne.
 
 		\section{Vérifications utilisateurs réels}
+			Lors de cette phase, des utilisateurs qui avaient déjà ou non testés la première version de l'application se sont retrouvés face à celle-ci pour la tester. Pendant ces tests, trois choses étaient testées: la compréhension des différents mode, la gestion des données en cas de perte de connexion et les modifications de l'interface. Le fait d'avoir des avis externes sur l'application peut permettre de l'améliorer drastiquement.
+			
+			% Marion
+			% 2 officiels
+			% 2 Nahomie
+			% Sarah
+			% Maman
+			% Robin
+			% Marlon
+			% Guillaume
+			
+			Les tests se sont déroulés en direct avec les participants ou via teams en fonction de la disponibilité des personnes et des règles de la période COVID. Un groupe de 10 personnes venant d'horizons différentes et avec des compétences diverses et variées ont testés l'application.
 
 
 			\subsection*{Méthodologie}
-
+				La méthodologie qui a été utilisée pour faire passer ces tests est restée la même que pour le mémoire précédent \cite{ref:haitiwater}. Celle-ci a été adaptée aux nouvelles fonctionnalités développées lors de ce mémoire afin que ce test reste cohérent avec le travail réalisé. Le fait de réutiliser le même type de test permet de voir concretement comment évolue le niveau de satisfaction des utilisateurs après cette deuxième année de développement.
 				
+				Les séances de validation se sont déroulées en partie physiquement et en partie à distance via les logiciels Teams et Zoom, ces logicielles permettant de faire de la transmission vocale et du partage d'écran. L'étudiante d'Haïti m'a également aidé à faire passer les tests aux différentes personnes qui étaient présentes la-bas, cela afin de me faciliter la tâche à cause du décalage horaire.
+				
+				Les testeurs ont d'abord reçu une brève introduction sur l'application et elle même et sur le but de la séance de validation. Je leur ai ensuite remis un ou deux scénarios à réaliser durant la séance. Ces scénarions contiennent une brève introduction au contexte et une liste de tâches à compléter. Après la lecture du scénario, je laissais au testeur quelques minutes au cas où il aurait des question à poser sur le scénario. Ensuite l'utilisateur est laissé seul pour faire sa tâche et est chronométré. Si celui-ci avait des questions pendant le déroulement de la tâche, celui-ci pouvait recevoir une indication pour l'aider à accomplir sa tâche.
+				
+				Une fois que le testeur avec executé entre 1 et 3 scénario en fonction de la disponibilité du celui-ci, une série de 18 questions lui étaient posées. Ces questions sont regroupées par thème. Ces quatres thrèmes sont :
+				\begin{description}
+					\item[Tâches.] Ces questions permettent de savoir si les tâches à accomplire étaient suffisament claire.
+					\item[Fonctionnalités.]  Ces questions servent à savoir si l'interface de l'application permet une utilisation simple des fonctions implémentées.
+					\item[Usabilités.] Ces questions permettent d'avoir le ressenti plus subjectif de l'utilisateur. Cela permet des indices quand à une possible amélioration de l'application au niveau l'utilisabilité.
+					\item[Esthétique.] Ces question permettent de savoir si le design de l'application plaît aux utilisateurs.
+				\end{description}
 
+				Pour répondre aux différentes questions, j'ai utilisé l'échelle de Likert. L'échelle de Likert est une échelle de mesure qui comprend dans ce cas 5 dégrés de réponse. Elle est souvent utilisée dans les questionnaires. Elle permet de jauger le niveau d'accord ou de désacord d'une affirmation \cite{ref:likert}.
+				
+	
 			\subsection*{Résultats obtenus}
-
+				En attente dans interview de Nahomie.
 				
 
-			\subsection*{Modifications apportées}
 
-		
-
+%------------------------------------------------------------------------------------------------------
 	\chapter{Améliorations futures}
-
+		Malgré les deux années de travail passées sur ce projet, d'abord pour les 3 anciens mémorants \cite{ref:haitiwater} et ensuite par moi-même, celui-ci est loin d'être terminé. Même si l'application peut commencer à être deployée dès maintenant, comme tout gros projet de développement, HaïtiWater va devoir être suivi afin d'être mis à jour et maintenu pour un bon fonctionnement au quotidien. 
 
 		\section{Suite du projet}
 			\label{ref:suite_projet}
-
-		
+			Faire la finition d'HaïtiWater sera la priorité des futures équipes de développement. Dans son état actuel, l'application peut déjà servir aux acteurs locaux afin de travailler sur le terrain. Mais la base de l'application pourrait toujours être optimisée pour être encore plus réactive et sûre.		
+			
+			Une des tâches importantes pour le futur, reste comme l'avait dit mes prédécesseurs \cite{ref:haitiwater}, d'automatiser les rapports en aggrégant les données et en trouvant une bonne façon de visualiser celles-ci. Ils proposaient également d'avoir dans le futur un serveur mail dédié afin de ne pas bloquer le serveur de l'application lorsque celui-ci doit envoyer des mails via le système de mailing inclu avec Django et pourquoi pas mettre en place un serveur de SMS.
+			
+			L'application HaïtiWater est en cours de déploiement sur un serveur Haïtien et devrait être disponible dans les semaines à venir. Cette migration devrait améliorer le temps de chargement de l'application pour les acteurs locaux. Le serveur qu'ils utiliseront devrait d'ailleurs être plus performant que celui utilisé en Belgique. Pour l'instant il s'agit d'un serveur dual-core de 2 GHz avec 2 Go de ram. Les temps de chargement devraient donc être drastiquement réduits avec un serveur plus puissant. 
+			
+			Une dernière chose à faire serait d'optimiser les requêtes faites à la base de données pour récupérer les informations des consommateurs. Actuellement, c'est la raison pour laquelle l'application prend du temps à être complétement chargée pour un utilisation hors-ligne. C'est également ce délai qui empêche l'utilisation du mode hors-ligne avec Firefox. Le problème étant que Firefox stoppe le service worker bien avant d'avoir reçu la réponse du serveur.
+			
 
 		\section{Défis rencontrés}
-
+			La plus grosse difficulté lors de se projet a été la méconnaissance de la technologie utilisée et le fait qu'il y ai encore peu de documentation trouvable sur le net. De plus les services workers sont encore en cours de développement et toutes leurs fonctionnalités ne sont donc pas supportées par tous les navigateurs. Il a donc fallu trouver des solutions pour que l'application puisse rester fonctionnelle même si l'utilisateur emploie un navigateur qui ne prend pas en charge les services workers. Une grosse période d'apprentissage autonome avant de se lancer dans le projet à été nécessaire.
+			
+			Une autre difficulté était que c'est la première fois que je me lance seule dans un projet d'une aussi grande envergure. Heureusement les anciens mémorants étaient assez disponibles et m'ont aidé au début de celui-ci à résoudre les difficultés rencontrées.
+			
+			Le dernier gros défi auquel j'ai du faire face a été la période COVID-19. En effet l'isolement social et le manque d'objectif à court terme ont causé un gros manque de motivation  qu'il a fallu surmonter afin de terminer ce mémoire.
 			
 
 		\section{Propositions}
+			L'application HaïtiWater peut encore évoluer de nombreuse manières. Une demande a été faite pour intéger un module Citizen Science afin que les consommateurs du réseau de distribution d'eau potable puissent signaler eux-mêmes les différents problèmes présents sur ce réseau ainsi que consulter leurs factures et consommations.
+			
+			Bien que l'application soit déjà bien optimisée avec la mise en cache de toutes les fichiers nécessaires à l'affichage des pages et la copie locale de la base de données, une autre amélioration possible serait d'utiliser un framework tel que vue, react ou angular afin d'améliorer la réactivité globale de l'interface. De plus ces frameworks s'intègrent parfaitement avec les Progressive Web-App.
+			
+			La gestion des données stockées localement pourraient être améliorée afin de ne plus proposer deux modes différents de fonctionnement de l'application mais un seul mode dans lequel toutes les données seraient synchronisées automatiquement au fur et à mesure que l'utilisateur fait des requêtes au serveur.
+			
+			Une autre évolution possible serait de rajouter un vrai système de notification basé sur le serveur plutôt que juste localement. Pour l'instant ce système de notification n'est pas du tout synchronisé côté serveur et ne sert que pour afficher certaines informations stockées dans le navigateur. Un service de messagerie interne à l'application pourrait également aider les utilisateurs à communiquer entre eux. Une fois ce système de notification mis en place, la gestion des incohérences de données telles que décrite dans la section \ref{sec:api} pourra être améliorée afin d'envoyer des avertissements aux deux utilisateurs qui ont modifiés les mêmes données dont un court laps de temps.
+		
+			Enfin, les modules déjà existants pourraient être améliorés afin de proposer différentes façon d'intéragir avec les données, par exemple en proposant de créer un fichier excel à partir de la base de données ou bien intégré plus d'outil graphique pour rendre les informations plus visuelles et ainsi offrir une personnalisation plus poussée de l'affichage.
+
 
 			
 	\chapter{Conclusion}
-
+		Voici donc finalement la conclusion de ce mémoire qui met aussi fin au plus gros projet sur lequel j'ai eu l'occasion de travailler durant toutes mes études. Ce travail m'aura permis d'utiliser toutes les compétences acquises pendant toutes ces années. Il m'a également apporté une expérience non négligeable dans le développement d'une application web de grosse envergure.
 		
+		Durant la validation avec de vraies personnes, l'application et son nouveau mode hors-ligne a eu l'air de susciter beaucoup d'intérêts chez les testeurs et les retours étaient plûtot positif. J'ai bon espoir qu'HaïtiWater finira par être utilisée par les acteurs locaux Haïtiens de façon régulière et j'espère que celle-ci va continuer à évoluer avec le temps. 
+		
+		J'espère qu'au même titre que les personnes qui ont testés l'application, les acteurs de Protos et d'Haïti trouveront que cette nouvelle version de l'application simple d'usage et suffisament pratique que pour être utilisée tous les jours sur le terrain. 
 
-		\section{Métriques}
 		
 
 	\bibliographystyle{plain}

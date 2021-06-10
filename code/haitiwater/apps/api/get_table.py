@@ -223,11 +223,11 @@ def get_all_details_consumers(request):
     for consumer in consumers:
         ids.append(consumer.id)
 
-    invoices = Invoice.objects.filter(consumer_id__in=ids).order_by('expiration')
+    invoices = Invoice.objects.filter(consumer_id__in=ids).order_by('-expiration')
 
     for consumer in consumers:
         if has_access(consumer.water_outlet, request):
-            invoice = invoices.filter(consumer_id=consumer.id).order_by('-expiration').first()
+            invoice = invoices.filter(consumer_id=consumer.id).first()
             validity = str(invoice.expiration) if invoice is not None else "Pas de prochaine facturation"
 
             result.append({"consumer":consumer.descript(), "validity":validity})
