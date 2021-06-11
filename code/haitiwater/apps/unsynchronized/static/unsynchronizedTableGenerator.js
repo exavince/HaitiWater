@@ -54,11 +54,6 @@ async function drawTosyncTable(){
 }
 
 function revertModification(elementID){
-    new PNotify({
-        title: 'Veuillez patienter',
-        text: "Vos données sont en cours d'envoi !",
-        type: 'info'
-    });
     postMessage({
         title:'revertModification',
         id:elementID
