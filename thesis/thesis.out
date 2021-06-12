@@ -3,18 +3,18 @@
 \BOOKMARK [0][-]{section*.4}{Glossaire}{}% 3
 \BOOKMARK [0][-]{chapter.1}{Introduction}{}% 4
 \BOOKMARK [0][-]{chapter.2}{Contexte}{}% 5
-\BOOKMARK [1][-]{section.2.1}{La gestion de l'eau en Ha\357ti}{chapter.2}% 6
+\BOOKMARK [1][-]{section.2.1}{Gestion de l'eau en Ha\357ti}{chapter.2}% 6
 \BOOKMARK [1][-]{section.2.2}{Introduction \340 l'application}{chapter.2}% 7
 \BOOKMARK [2][-]{subsection.2.2.1}{El\351ments de l'application}{section.2.2}% 8
 \BOOKMARK [2][-]{subsection.2.2.2}{Utilisateurs de l'application}{section.2.2}% 9
-\BOOKMARK [2][-]{subsection.2.2.3}{Accueil}{section.2.2}% 10
-\BOOKMARK [2][-]{subsection.2.2.4}{R\351seau}{section.2.2}% 11
-\BOOKMARK [2][-]{subsection.2.2.5}{Carte}{section.2.2}% 12
-\BOOKMARK [2][-]{subsection.2.2.6}{Gestion de zone}{section.2.2}% 13
-\BOOKMARK [2][-]{subsection.2.2.7}{Historique}{section.2.2}% 14
-\BOOKMARK [2][-]{subsection.2.2.8}{Rapports}{section.2.2}% 15
-\BOOKMARK [2][-]{subsection.2.2.9}{Consommateurs}{section.2.2}% 16
-\BOOKMARK [2][-]{subsection.2.2.10}{Finances}{section.2.2}% 17
+\BOOKMARK [2][-]{subsection.2.2.3}{Module "Accueil"}{section.2.2}% 10
+\BOOKMARK [2][-]{subsection.2.2.4}{Module "R\351seau"}{section.2.2}% 11
+\BOOKMARK [2][-]{subsection.2.2.5}{Module "Carte"}{section.2.2}% 12
+\BOOKMARK [2][-]{subsection.2.2.6}{Module "Gestion de zone"}{section.2.2}% 13
+\BOOKMARK [2][-]{subsection.2.2.7}{Module "Historique"}{section.2.2}% 14
+\BOOKMARK [2][-]{subsection.2.2.8}{Module "Rapports"}{section.2.2}% 15
+\BOOKMARK [2][-]{subsection.2.2.9}{Module "Consommateurs"}{section.2.2}% 16
+\BOOKMARK [2][-]{subsection.2.2.10}{Module "Finances"}{section.2.2}% 17
 \BOOKMARK [1][-]{section.2.3}{Probl\350mes r\351seaux}{chapter.2}% 18
 \BOOKMARK [0][-]{chapter.3}{Organisation}{}% 19
 \BOOKMARK [1][-]{section.3.1}{Approche de travail}{chapter.3}% 20
@@ -23,15 +23,15 @@
 \BOOKMARK [1][-]{section.4.1}{Besoins fonctionnels}{chapter.4}% 23
 \BOOKMARK [1][-]{section.4.2}{Besoins non-fonctionnels}{chapter.4}% 24
 \BOOKMARK [1][-]{section.4.3}{Structure des donn\351es hors-ligne}{chapter.4}% 25
-\BOOKMARK [1][-]{section.4.4}{Conclusion}{chapter.4}% 26
-\BOOKMARK [0][-]{chapter.5}{Impl\351mentation}{}% 27
-\BOOKMARK [1][-]{section.5.1}{Application de base}{chapter.5}% 28
-\BOOKMARK [1][-]{section.5.2}{Choix technologiques}{chapter.5}% 29
+\BOOKMARK [0][-]{chapter.5}{Impl\351mentation}{}% 26
+\BOOKMARK [1][-]{section.5.1}{Application de base}{chapter.5}% 27
+\BOOKMARK [1][-]{section.5.2}{Choix technologiques}{chapter.5}% 28
+\BOOKMARK [2][-]{subsection.5.2.1}{Choix d\351finitif}{section.5.2}% 29
 \BOOKMARK [1][-]{section.5.3}{Client}{chapter.5}% 30
 \BOOKMARK [2][-]{subsection.5.3.1}{Strat\351gie de synchronisation des pages}{section.5.3}% 31
 \BOOKMARK [2][-]{subsection.5.3.2}{Strat\351gie de synchronisation de la DB}{section.5.3}% 32
 \BOOKMARK [2][-]{subsection.5.3.3}{Gestion des changements d'utilisateurs}{section.5.3}% 33
-\BOOKMARK [2][-]{subsection.5.3.4}{Syt\350me de notification}{section.5.3}% 34
+\BOOKMARK [2][-]{subsection.5.3.4}{Syt\350me de notifications}{section.5.3}% 34
 \BOOKMARK [1][-]{section.5.4}{Interface utilisateur}{chapter.5}% 35
 \BOOKMARK [2][-]{subsection.5.4.1}{Changement de mode}{section.5.4}% 36
 \BOOKMARK [2][-]{subsection.5.4.2}{Module \340 synchroniser}{section.5.4}% 37
@@ -44,3 +44,11 @@
 \BOOKMARK [1][-]{section.7.2}{D\351fis rencontr\351s}{chapter.7}% 44
 \BOOKMARK [1][-]{section.7.3}{Propositions}{chapter.7}% 45
 \BOOKMARK [0][-]{chapter.8}{Conclusion}{}% 46
+\BOOKMARK [0][-]{appendix.A}{Diagramme de Gantt}{}% 47
+\BOOKMARK [0][-]{appendix.B}{Documents de validation}{}% 48
+\BOOKMARK [1][-]{section.B.1}{Questionnaire}{appendix.B}% 49
+\BOOKMARK [1][-]{section.B.2}{Scenario 1 - Gestion hors-ligne}{appendix.B}% 50
+\BOOKMARK [1][-]{section.B.3}{Scenario 2}{appendix.B}% 51
+\BOOKMARK [1][-]{section.B.4}{Scenario 3}{appendix.B}% 52
+\BOOKMARK [1][-]{section.B.5}{Scenario 4}{appendix.B}% 53
+\BOOKMARK [1][-]{section.B.6}{Scenario 5}{appendix.B}% 54
