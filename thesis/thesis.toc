@@ -19,14 +19,14 @@
 \contentsline {section}{\numberline {5.2}Choix technologiques}{34}{section.5.2}%
 \contentsline {section}{\numberline {5.3}Client}{36}{section.5.3}%
 \contentsline {section}{\numberline {5.4}Interface utilisateur}{42}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Serveur}{45}{section.5.5}%
-\contentsline {chapter}{\numberline {6}Validation}{48}{chapter.6}%
-\contentsline {section}{\numberline {6.1}V\IeC {\'e}rifications automatiques}{48}{section.6.1}%
-\contentsline {section}{\numberline {6.2}V\IeC {\'e}rifications utilisateurs r\IeC {\'e}els}{49}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Am\IeC {\'e}liorations futures}{52}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Suite du projet}{52}{section.7.1}%
-\contentsline {section}{\numberline {7.2}D\IeC {\'e}fis rencontr\IeC {\'e}s}{53}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Propositions}{54}{section.7.3}%
-\contentsline {chapter}{\numberline {8}Conclusion}{55}{chapter.8}%
-\contentsline {chapter}{\numberline {A}Diagramme de Gantt}{57}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Documents de validation}{59}{appendix.B}%
+\contentsline {section}{\numberline {5.5}Serveur}{44}{section.5.5}%
+\contentsline {chapter}{\numberline {6}Validation}{47}{chapter.6}%
+\contentsline {section}{\numberline {6.1}V\IeC {\'e}rifications automatiques}{47}{section.6.1}%
+\contentsline {section}{\numberline {6.2}V\IeC {\'e}rifications utilisateurs r\IeC {\'e}els}{48}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Am\IeC {\'e}liorations futures}{51}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Suite du projet}{51}{section.7.1}%
+\contentsline {section}{\numberline {7.2}D\IeC {\'e}fis rencontr\IeC {\'e}s}{52}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Propositions}{53}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Conclusion}{54}{chapter.8}%
+\contentsline {chapter}{\numberline {A}Diagramme de Gantt}{56}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Documents de validation}{58}{appendix.B}%

@@ -1,7 +1,7 @@
 \documentclass{EPL-master-thesis-covers-FR}
 
 \title{HaïtiWater 2.0}
-\subtitle{Evolution de l'application HaïtiWater vers une application entière  fonctionnelle hors-ligne}
+\subtitle{Evolution de l'application HaïtiWater vers une application entièrement fonctionnelle hors-ligne}
 
 \author{Vincent \textsc{Gradzielewski}}% Handcrafted third author :D
 
@@ -41,11 +41,12 @@
 \usepackage[style=long,nonumberlist,toc,xindy,acronym,nomain]{glossaries}
 %Vé
 \makenoidxglossaries
+	\PrerenderUnicode{Ãĺ}
 	\newacronym{pwa}{PWA}{Progressive Web App}
-	\newacronym{sgbd}{SGBD}{Systeme de Gestion de Base de Données}
+	\newacronym{sgbd}{SGBD}{Système de Gestion de Base de Données}
 	\newacronym{ueh}{UEH}{Université d'Etat de Haïti}
-	\newacronym{orm}{ORM}{Object Relational Maping}
-	\newglossaryentry{full_stack}{name={full-stack},  description={Développement à la fois sur le fontend et le backend}}
+	\newacronym{orm}{ORM}{Object Relational Mapping}
+	\newglossaryentry{full_stack}{name={Full-stack},  description={Développement à la fois sur le fontend et le backend}}
 	\newglossaryentry{ong}{name={ONG}, description={Organisme financé essentiellement par des dons privés, qui se consacre à l'action humanitaire}}  
 	\newglossaryentry{ares}{name={ARES-CDD}, description={L’ARES est la fédération des établissements d’enseignement supérieur de la Fédération Wallonie-Bruxelles}}
 	\newglossaryentry{moscow}{name={Moscow}, description={La méthode MoSCoW est une technique visant à prioriser des besoins ou des exigences en matière d'assistance à maîtrise d'ouvrage et de développement logiciel}}
@@ -53,7 +54,7 @@
 	\newglossaryentry{framework}{name={Framework}, description={Ensemble cohérent de composants logiciels structurels, qui sert à créer les fondations ainsi que les grandes lignes de tout ou d’une partie d'un logiciel}}
 	\newglossaryentry{django}{name={Django}, description={Django est un framework Python de haut niveau, permettant un développement rapide de sites internet, sécurisés et maintenables}}
 	\newglossaryentry{postgres}{name={PostGreSQL}, description={PostgreSQL est un système de gestion de base de données relationnelle orienté objet puissant et open source}}
-	\newglossaryentry{orm2}{name={Object relational maping}, description={Les ORM sont des frameworks qui, comme l’indique leur nom, permettent de créer une correspondance entre un modèle objet et un modèle relationnel de base de données}}
+	\newglossaryentry{orm2}{name={Object Relational Mapping}, description={Les ORM sont des frameworks qui, comme l’indique leur nom, permettent de créer une correspondance entre un modèle objet et un modèle relationnel de base de données}}
 	\newglossaryentry{postgis}{name={PostGis}, description={Extension de base de données spatiales pour postGreSQL}}
 	\newglossaryentry{api}{name={API}, description={Une API est un ensemble de définitions et de protocoles qui facilite la création et l'intégration de logiciels d'applications}}
 	\newglossaryentry{bootstrap}{name={Bootstrap}, description={Bootstrap est une collection d'outils utiles à la création du design de sites et d'applications web}}
@@ -84,7 +85,7 @@
 	
 		Cette application a pour but la gestion du réseau de distribution d'eau potable en Haïti. Je commencerai par présenter le contexte haïtien et les raisons pour lesquelles l'évolution de cette application était nécessaire. Ensuite je présenterai le principe des \gls{pwa} et pourquoi j'ai choisi d'utiliser cette technologie plûtot qu'une autre. J'aborderai par après la validation de l'application et les feedback que j'ai reçus des utilisateurs. En guise de conclusion, je dresserai une liste des améliorations possibles pour le futur développement de l'application.
 
-		Tout le code source de l'application est disponible à cette adresse: \url{https://github.com/exavince/HaitiWater}
+		Tout le code source de l'application est disponible à cette adresse:\\ \url{https://github.com/exavince/HaitiWater}
 
 		Si vous désirez tester l'application, il suffit de demander un login à un collaborateur et de vous rendre sur le lien suivant \url{https://haitiwater.sipr.ucl.ac.be} afin de vous connecter à l'application.
 		
@@ -128,7 +129,7 @@
 			
 
 		\subsection*{Problématique}
-			Actuellement, HaïtiWater est une web-application prévue pour fonctionner uniquement lorsque le réseau est stable et fonctionnel. Malheureusement, en Haïti, la connexion au réseau internet est assez instable, voire indisponible par endroits. Il faut donc trouver une solution pour que cette application puisse être utilisable et fiable dans les conditions du contexte haïtien. 
+			Actuellement, HaïtiWater est une application web prévue pour fonctionner uniquement lorsque le réseau est stable et fonctionnel. Malheureusement, en Haïti, la connexion au réseau internet est assez instable, voire indisponible par endroits. Il faut donc trouver une solution pour que cette application puisse être utilisable et fiable dans les conditions du contexte haïtien. 
 
 
 		\subsection*{Motivations}
@@ -616,9 +617,9 @@
 			\subsection*{Application android}
 				Cette option est la plus facile à implémenter pour gérer le fonctionnement hors-ligne de l'application. Dans ce cas, l'application Android cohabiterait avec l'application web existante. Cela aurait permis aux gestionnaires de fontaines d'accèder à une version limitée de l'application sur leur téléphone ou tablette quand ils sont sur le terrain.
 				
-				L'avantage principale de créer une application dédiée aux mobiles est la facilité de développement des fonctionnalités hors-ligne. De plus, l'intégration de certaines fonctions natives de l'appareil mobile (camera, localisation...) dans l'application permet une utilisation plus simple de l'outil. Un première inconvénient est la création totale d'une nouvelle application. Un second inconvénient est la maintenance de deux codes sources différents.
+				L'avantage principal de créer une application dédiée aux mobiles est la facilité de développement des fonctionnalités hors-ligne. De plus, l'intégration de certaines fonctions natives de l'appareil mobile (camera, localisation...) dans l'application permet une utilisation plus simple de l'outil. Un premier inconvénient est la création totale d'une nouvelle application. Un second inconvénient est la maintenance de deux codes sources différents.
 			
-				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur les appareils Apple utilisant le système iOS. De plus elle oblige le maintien et l'évolution deux codes sources différents, ce qui demanderait plus de temps ou deux équipes de développement.
+				Le problème de cette solution est qu'elle ne fonctionne que sur Android et pas sur les appareils Apple utilisant le système iOS. De plus, elle oblige le maintien et l'évolution de deux codes sources différents, ce qui demanderait plus de temps ou deux équipes de développement.
 				
 			\subsection*{Xamarin}
 				Xamarin \cite{ref:xamarin} est une plateforme open source qui permet de créer des applications modernes et performantes pour Android, iOS et Windows grace au ".NET". L'avantage de cette solution est qu'il suffit d'utiliser la partie \gls{api} existante du serveur pour créer une application qui serait disponible sur tout type d'appareils.
@@ -631,7 +632,7 @@
 				La difficulté réside dans le fait que, même si React-native permet de faire du multi-plateforme, il est nécessaire de connaître partiellement le langage et les \gls{api} natives de la plateforme cible (Android et iOS). Bien que cette solution commence à être de plus en plus utilisée, elle reste plus complexe à maintenir. De plus, cette solution oblige tout de même à continuer le maintien de deux applications différentes: l'application web et l'application React-native.
 				
 			\subsection*{Progressive web-app}
-				Les \gls{pwa} sont de simples applications web utilisant les nouvelles capacités des navigateurs modernes. Grâce aux service worker, l'application fonctionne lorsque la connexion au serveur n'est pas disponible. Grâce à l'app-manifest, celle-ci devient "installable" sur l'appareil de l'utilisateur. L'installation et les mises à jour se font sans intervention de l'utilisateur. Installée, une \gls{pwa} peut tourner en plein écran pour faire croire qu'il s'agit d'une application native. Ce n'est bien sûr par réellement le cas, l'appareil va ouvrir une page du navigateur en plein écran pour donner l'illusion.
+				Les \gls{pwa} sont de simples applications web utilisant les nouvelles capacités des navigateurs modernes. Grâce aux service workers, l'application fonctionne lorsque la connexion au serveur n'est pas disponible. Grâce à l'app-manifest, celle-ci devient "installable" sur l'appareil de l'utilisateur. L'installation et les mises à jour se font sans intervention de l'utilisateur. Installée, une \gls{pwa} peut tourner en plein écran pour faire croire qu'il s'agit d'une application native. Ce n'est bien sûr par réellement le cas, l'appareil va ouvrir une page du navigateur en plein écran pour donner l'illusion.
 				
 				De plus aucune installation n'est nécessaire de la part de l'utilisateur et les mises à jour de l'application sont faites de manière transparente. L'inconvénient de cette solution est que la gestion du mode hors-ligne est plus complexe, on ne peut pas profiter des capacités de l'appareil mobile aussi bien qu'avec une application native et cette technologie étant assez récente, il n'y a pas énormément de ressources d'aide en ligne.
 				
@@ -645,7 +646,7 @@
 				
 				
 		\section{Client}
-			Toute cette partie décrira le fonctionnement du service worker. Un service worker est placé ne middleware entre une application web et le navigateur. C'est lui qui va permettre une utilisation de l'application déconnectée du serveur. Il va intercepter toutes les requêtes faites par le navigateur et va effectuer différentes actions en fonction. C'est via ce service worker que s'établi l'accès aux nouvelles APIs des navigateurs \cite{ref:sw}.
+			Toute cette partie décrira le fonctionnement du service worker. Un service worker est placé en middleware entre une application web et le navigateur. C'est lui qui va permettre une utilisation de l'application déconnectée du serveur. Il va intercepter toutes les requêtes faites par le navigateur et va effectuer différentes actions en fonction. C'est via ce service worker que s'établi l'accès aux nouvelles APIs des navigateurs \cite{ref:sw}.
 			
 			
 			\subsection*{Stratégie de synchronisation des pages}			
@@ -661,7 +662,7 @@
 				 	Ces pages ne contiennent pas de contenu qui changent dynamiquement. Par contre, elles contiennent du contenu "personnalisé" en fonction de l'utilisateur qui est connecté à l'application (son nom, sa zone, les résumés de sa zone...). Le côté personnalisé de ces pages étant créé par \Gls{django}, il faut pouvoir mettre à jour ces pages régulièrement au cas où les données à afficher sur celles-ci auraient changé. 
 				 	
 				 	C'est la raison pour laquelle on va utiliser le mode de synchronisation "Stale While Revalidate". Le principe est qu'à chaque fois qu'une requête est lancée pour récupérer ces pages, le service worker répond d'abord avec la page qui est stockée dans le cache. Il va, dans le même temps, transmettre la requête au serveur afin de pouvoir mettre à jour l'ancienne page stockée dans le cache. Ces pages sont mises en cache lorsque l'utilisateur se connecte pour la première fois à l'application et sont supprimées lorsqu'il se déconnecte. Les pages concernées par ce mode de synchronisation sont les suivantes:
-				 	\begin{itemize}
+				 	\begin{itemize}[noitemsep]
 				 		\item /accueil
 				 		\item /offline
 				 		\item /aide
@@ -675,7 +676,7 @@
 					Ces pages ne contiennent aucun élément personnalisé en fonction de l'utilisateur ou aucun élément qui doit être mis à jour. Le côté dynamique de ces pages est entièrement géré par les bibliothèques "Datatable.js" et "Graph.js" qui vont récupérer les données à afficher directement via l'\gls{api} du serveur. 
 				
 					Toutes ces pages sont également chargées lorsque l'utilisateur se connecte pour la première fois et elles se suppriment également lorsque celui-ci se déconnecte. La suppression de ces pages lorsque l'utilisateur se déconnecte n'est pas réellement nécessaire mais, pour une raison de sécurité, ces pages sont tout de même supprimées à la déconnexion. Les pages concernées par ce type de synchronisation sont les suivantes:
-					\begin{itemize}
+					\begin{itemize}[noitemsep]
 						\item /carte
 						\item /gestion
 						\item /historique
@@ -688,7 +689,7 @@
 				Pour gérer l'accès aux données hors-ligne, j'ai utilisé l'\gls{api} de bas niveau indexedDB. Il s'agit d'un système de gestion de bases de données orienté objet basé sur JavaScript où sont stockés des objets indexés avec une clé. 
 				
 				Les opérations effectuées par indexedDB sont réalisées de manière asynchrone et transactionnelle. Cela permet de ne pas bloquer le fonctionnement de l'application lorsque des données sont en cours de chargement \cite{ref:indexedDB}. Pour faciliter l'usage d'indexedDB qui n'est pas forcément simple à prendre en main, j'ai utilisé la bibliothèque "Dexie.js" \cite{ref:dexie}. Celle-ci offre des fonctionnalités qui facilitent le développement: 
-				\begin{itemize}
+				\begin{itemize}[noitemsep]
 					\item Une meilleure gestion des erreurs,
 					\item Une meilleure gestion des requêtes,
 					\item Un code simplifié et plus court.
@@ -696,20 +697,20 @@
 				
 				
 				\subsubsection*{Récupération des données}
-					Lors du premier chargement de l'application, le service worker va envoyer des requètes à l'\gls{api} du serveur afin de récupérer toutes les données nécessaires à l'affichage des différentes tables. Toutes ces requêtes sont lancées de manière asynchrone afin de ne pas bloquer l'application. 
+					Lors du premier chargement de l'application, le service worker va envoyer des requêtes à l'\gls{api} du serveur afin de récupérer toutes les données nécessaires à l'affichage des différentes tables. Toutes ces requêtes sont lancées de manière asynchrone afin de ne pas bloquer l'application. 
 					
 					Au-delà de la première synchronisation automatique, l'utilisateur peut décider lui-même via l'interface de mettre à jour toutes les tables ou juste certaines d'entre elles. La figure \ref{fig:recuparation} montre la récupération des données des consommateurs d'eau potable lors de la connexion de l'utilisateur et la manière dont le client récupère ces données en étant hors-ligne.
 					
 					\begin{figure}[H]
 						\centering
 						\includegraphics[width=0.9\textwidth]{images/flow}
-						\label{fig:recuparation}
 						\caption{Diagramme de séquence du chargement des données}
+						\label{fig:recuparation}
 					\end{figure}
 				
 					Pour éviter d'avoir un dédoublement des données tout en conservant le principe de la base de données non-relationnelles, les données liées qui doivent s'afficher dans la même table sont toutes regroupées dans la même collection. Cela permet de conserver une grande vitesse de lecture des données et de ne pas ralentir le fonctionnement de l'application.
 							
-					Pour accélérer le processus, toutes les requêtes pour récupérer les données sont envoyées simultanément. Dès qu'une réponse est reçue, le service worker commence à ajouter les données dans l'indexedDB à l'aide de la bibliohtèque "Dexie.js" \cite{ref:dexie}. Pour ce faire, le service worker parcours simplement tout le fichier \gls{json} reçu de l'\gls{api} et ajoute toutes les données présentes dans la collection adéquate.
+					Pour accélérer le processus, toutes les requêtes pour récupérer les données sont envoyées simultanément. Dès qu'une réponse est reçue, le service worker commence à ajouter les données dans l'indexedDB à l'aide de la bibliohtèque "Dexie.js" \cite{ref:dexie}. Pour ce faire, le service worker parcourt simplement tout le fichier \gls{json} reçu de l'\gls{api} et ajoute toutes les données présentes dans la collection adéquate.
 				
 				\subsubsection*{Envoi des données}
 					Pour gérer l'envoi des données, la première solution envisagée a été d'utiliser la nouvelle \gls{api} "background-sync". Quand le service worker détecte qu'une requête réseau a échoué, il peut l'enregistrer comme un événement "sync" qui sera délivré quand le navigateur a récupéré la connexion. 
@@ -723,8 +724,8 @@
 					\begin{figure}[H]
 						\centering
 						\includegraphics[width=0.9\textwidth]{images/flow2}
-						\label{fig:flows2}
 						\caption{Diagramme de séquence de l'envoi de données}
+						\label{fig:flows2}
 					\end{figure}
 			
 			\subsection*{Gestion des changements d'utilisateurs}		
@@ -735,7 +736,7 @@
 			\subsection*{Sytème de notifications}
 				Le système de notification, comme indiqué dans le tableau \ref{fig:moscow}, ne faisait pas partie des fonctionnalités à implémenter pour l'instant. Toutefois, un système local de notifications a tout de même été mis en place pour notifier l'utilisateur. Ces notification concernent:
 				
-				\begin{itemize}
+				\begin{itemize}[noitemsep]
 					\item La mise en attente d'envoi,
 					\item La réussite ou l'échec d'envoi,
 					\item La réussite ou échec de synchronisation,
@@ -747,7 +748,7 @@
 			L'interface utilisateur existante a dû subir quelques modifications afin d'accueillir le mode hors-ligne. La nouvelle application permet en effet deux modes différents d'utilisations.
 			
 			\subsection*{Changement de mode}
-				Afin de passer d'un mode d'utilisation à l'autre, un bouton switch a été ajouté en haut de l'interface, à coté de la cloche de notification. Quand ce bouton affiche un rond vert, cela signifie que l'application est en mode en ligne de l'application. Lorsque le rond est noir, cela signifie que l'application est en mode hors-ligne.
+				Afin de passer d'un mode d'utilisation à l'autre, un bouton switch a été ajouté en haut de l'interface, à coté de la cloche de notification. Quand ce bouton affiche un rond vert, cela signifie que l'application est en mode en ligne. Lorsque le rond est noir, cela signifie que l'application est en mode hors-ligne.
 				
 				 A coté de ce bouton switch a été ajouté un autre bouton permettant de mettre à jour toutes les données présentes dans le navigateur, cela afin de ne pas obliger l'utilisateur à mettre à jour toutes les tables une par une. A droite de ce bouton, se trouvent la date et l'heure des données les plus anciennes présentes dans le navigateur. Lorsque l'utilisateur se connecte à l'application, la phrase "pas encore de données" s'affiche, aucune donnée n'étant encore chargée. Cela permet à l'utilisateur de savoir à quel point les données du navigateur sont à jour.
 				
@@ -759,30 +760,29 @@
 				\end{figure}
 			
 			\subsubsection*{Mode en ligne}
-				Il s'agit du mode par défaut lorsque l'utilisateur se connecte à l'application. Il faut du temps à toutes les données soient chargées dans le navigateur afin que l'application puisse fonctionner en mode hors-ligne. Programmer ce mode par défaut permet donc à l'utilisateur d'utiliser l'application bien que toutes les données ne soient pas encore chargées. Dans ce mode, les différentes pages vont récupérer les données à afficher directement dans la base de données grâce à l'\gls{api} et pas dans l'indexedDB du navigateur. 
+				Il s'agit du mode par défaut lorsque l'utilisateur se connecte à l'application. Il faut du temps pour que toutes les données soient chargées dans le navigateur afin que l'application puisse fonctionner en mode hors-ligne. Programmer ce mode par défaut permet donc à l'utilisateur d'utiliser l'application bien que toutes les données ne soient pas encore chargées. Dans ce mode, les différentes pages vont récupérer les données à afficher directement dans la base de données grâce à l'\gls{api} et pas dans l'indexedDB du navigateur. 
 				
 				Ce mode est très utile s'il est nécessaire d'avoir accès aux dernières données disponibles et quand la connexion le permet. Pour de plus amples informations sur ce mode de fonctionnement vous pouvez consulter le mémoire de la première version de l'application \cite{ref:haitiwater}.
 			
 			
 			\subsubsection*{Mode hors-ligne}
-				Ce mode permet d'afficher les données qui sont présentes localement dans l'indexedDB du navigateur. C'est dans ce mode que l'utilisateur pourra utiliser l'application lorsque la connexion au serveur n'est pas disponible. En passant en mode hors-ligne, la couleur du bandeau de l'application passe du bleu au rouge, signifiant que l'utilisateur est bien dans le mode hors-ligne, voir \ref{fig:mode}. Les données ne sont donc plus récupérées sur le serveur.
+				Ce mode permet d'afficher les données qui sont présentes localement dans l'indexedDB du navigateur. C'est dans ce mode que l'utilisateur pourra utiliser l'application lorsque la connexion au serveur n'est pas disponible. En passant en mode hors-ligne, la couleur du bandeau de l'application passe du bleu au rouge, signifiant que l'utilisateur est bien dans le mode hors-ligne (cf. figure \ref{fig:mode}). Les données ne sont donc plus récupérées sur le serveur.
 								
 				\begin{figure}[H]
-					\label{fig:mode}
 					\centering
 					\begin{subfigure}[b]{0.3\textwidth}
   						\includegraphics[width=1\linewidth]{images/consumer_blue}
   						\caption{Online}
 					\end{subfigure}%
-					\begin{subfigure}[b]{0.333\textwidth}
+					\begin{subfigure}[b]{0.332\textwidth}
   						\includegraphics[width=1\linewidth]{images/consumer_red}
   						\caption{Offline}
 					\end{subfigure}
 					\caption{Modes d'utilisation}
-					\label{fig:test}
+					\label{fig:mode}
 				\end{figure}
 			
-				Dans ce mode, lorsque des requêtes n'ont pu être envoyées, les données concernées apparaitront en mauve dans le tableau pour que l'utilisateur sache que des modifications sont en attente. Quand les données ont été envoyées et que le serveur a répondu, les données hors-ligne modifiées sont mises à jour localement pour refléter les changements effectuer sur le serveur. Elles n'apparaissent plus en mauve dans les tables, voir \ref{fig:purple}. 
+				Dans ce mode, lorsque des requêtes n'ont pu être envoyées, les données concernées apparaitront en mauve dans le tableau pour que l'utilisateur sache que des modifications sont en attente. Quand les données ont été envoyées et que le serveur a répondu, les données hors-ligne modifiées sont mises à jour localement pour refléter les changements effectuer sur le serveur. Elles n'apparaissent plus en mauve dans les tables (cf. figure \ref{fig:purple}). 
 				
 				\begin{figure}[H]
 					\centering
@@ -793,7 +793,7 @@
 				
 							
 			\subsection*{Module à synchroniser}
-				Il s'agit d'un nouveau module qui a été ajouté pour les besoins du mode hors-ligne. Dans ce module, l'utilisateur retrouve un tableau qui reprend toutes les données qui n'ont pas été envoyées vers le serveur. Dans ce tableau, il peut retrouver différentes informations, voir \ref{fig:tosync}.
+				Il s'agit d'un nouveau module qui a été ajouté pour les besoins du mode hors-ligne. Dans ce module, l'utilisateur retrouve un tableau qui reprend toutes les données qui n'ont pas été envoyées vers le serveur. Dans ce tableau, il peut retrouver différentes informations (cf. figure \ref{fig:tosync}).
 				
 				\begin{figure}[H]
 					\centering
@@ -802,20 +802,20 @@
 					\label{fig:tosync}
 				\end{figure}
 							
-				L'utilisateur peut choisir de supprimer des données du tableau, auquel cas il ne pourra plus essayer de les envoyer, celles-ci étant supprimées de l'indexedDB. Une alternative consiste à envoyer une donnée en particulier ou toutes en même temps grâce au bouton prévu situé dans l'en-tête du tableau.
+				L'utilisateur peut choisir de supprimer des données du tableau, auquel cas il ne pourra plus essayer de les envoyer, celles-ci étant supprimées de l'indexedDB. Une alternative consiste à envoyer une donnée en particulier ou toutes en même temps grâce au bouton situé dans l'en-tête du tableau.
 			
 		
 		\section{Serveur}
 		\label{sec:serveur}
-			Dans cette partie, je vais décrire le fonctionnement du serveur. Je ferai d'abord un résumé sur le fonctionnement de base du serveur et j'expliquerai ensuite les changements apportés au serveur afin de récupérer les données nécessaires à l'affichage hors-ligne.
+			Dans cette partie, je vais décrire le fonctionnement du serveur. Je ferai d'abord un résumé sur son fonctionnement de base et j'expliquerai ensuite les changements apportés afin de récupérer les données nécessaires à l'affichage hors-ligne.
 			
 			\subsection*{Requêtes}
-				Une réquête est une demande que le navigateur envoi au serveur afin de récupérer différents types de fichiers ou de données. Le serveur permet de gérer trois types de requêtes différentes.
+				Une requête est une demande que le navigateur envoi au serveur afin de récupérer différents types de fichiers ou de données. Le serveur permet de gérer trois types de requêtes différentes.
 				
 				\begin{description}
 					\item[Fichiers statiques] Le serveur répond a ces requêtes en envoyant tous les fichiers de style et Javascript.
-					\item[Documents] Le serveur renvoie les pages à l'utilisateur l'HTML à afficher. Ce sont les documents qui vont importer les fichiers statiques.
-					\item[Données] Le serveur renvoie toutes les données demandées. Pour ce faire l'Object-relational mapping est utilisé. Django se charge d'effectuer la connexion avec la base de données et de lui renvoyer toutes les requêtes. Cela permet d'interagir avec les données sans avoir à toucher au SQL.
+					\item[Documents] Le serveur renvoie à l'utilisateur les pages l'HTML à afficher. Ce sont les documents qui vont importer les fichiers statiques.
+					\item[Données] Le serveur renvoie toutes les données demandées. Pour ce faire l'\Gls{orm} est utilisé. Django se charge d'effectuer la connexion avec la base de données et de lui renvoyer toutes les requêtes. Cela permet d'interagir avec les données sans avoir à toucher au SQL.
 				\end{description}
 
 				Les fichiers statiques et les documents permettent au navigateur d'afficher toute l'interface graphique. Chaque module du serveur permet de desservir une page de l'application. Ces pages peuvent avoir des éléments personnalisés en fonction de l'utilisateur connecté. Les données sont téléchargées après le chargement de la page.
@@ -827,13 +827,13 @@
 				\label{sec:api}
 				Le module \gls{api} a subi quelques modifications afin que le service worker puisse télécharger toutes les données dont il a besoin lorsque la connexion au serveur n'est pas disponible. La version de base du serveur ne permettait que le téléchargement d'une partie des données, celle à afficher directement par la page. Par exemple, lorsque l'application doit afficher la page "Consommateurs", l'\gls{api} ne répond que les dix éléments devant être affichés sur la page et une nouvelle requête est nécessaire à chaque fois que des données différentes sont souhaitées (la page 2 du tableau par exemple).
 				
-				Pour résoudre ce problème, j'ai implémenté des fonctions supplémentaires qui permettent de récupérer en une seule requête toutes les données nécessaires à l'affichage d'une table. Cela permet au service worker de récupérer toutes les données dont il a besoin afin de les mettre dans l'indexedDB lors de son installation. Toutefois, ces nouvelles fonctionnalités nécessitent que l'utilisateur soit connecté.
+				Pour résoudre ce problème, j'ai implémenté des fonctions supplémentaires qui permettent de récupérer en une seule requête toutes les données nécessaires à l'affichage d'une table. Cela permet au service worker de récupérer toutes les données dont il a besoin afin de les mettre dans l'indexedDB lors de son installation. Ces nouvelles fonctionnalités nécessitent toujours que l'utilisateur soit connecté.
 				
-				De plus, afin d'aider le mode hors-ligne à être plus précis dans l'affichage des données, lorsqu'une requête d'ajout, de modification ou de suppression de données, le serveur ne vas pas répondre qu'avec un status 200 (signifiant que les changements ont bien été pris en compte), mais va également renvoyer la donnée modifiée au format \gls{json} afin que le service worker puisse mettre à jour directement les données localement. Le JSON est un format de données textuelles qui permet de représenter l'information sous forme de texte. 
+				De plus, afin d'aider le mode hors-ligne à être plus précis dans l'affichage des données, lorsqu'une requête d'ajout, de modification ou de suppression de données est envoyée au serveur, ce dernier ne vas pas répondre qu'avec un status 200 (signifiant que les changements ont bien été pris en compte), mais va également renvoyer la donnée modifiée au format \gls{json} afin que le service worker puisse mettre à jour directement les données localement.
 				
-				Une autre difficulté se manifest quand les utilisateurs ne sont plus connectés au serveur; il est possible qu'ils modifient la même donnée sans concertation
+				Une autre difficulté se manifeste quand les utilisateurs ne sont plus connectés au serveur; il est possible qu'ils modifient la même donnée sans concertation.
 				
-				          Pour l'instant le travail des gestionnaires de fontaines doit être validé par un gestionnaire de zone via le module "Historique" décrit au point \ref{sec:historique}. Le serveur accepte les données comme elles viennent et les ajoute dans la liste des données en attente de traitement. Si des incohérences apparaisent, le gestionnaire responsable contacte les gestionnaires concernés par l'incohérence et la corrige en approuvant ou en rejetant les modifications apportées. Pour l'instant, la donnée qui apparait sur le serveur est celle de l'utilisateur qui a envoyé ces données en dernier.
+				Pour l'instant le travail des gestionnaires de fontaines doit être validé par un gestionnaire de zone via le module "Historique" décrit au point \ref{sec:historique}. Le serveur accepte les données comme elles viennent et les ajoute dans la liste des données en attente de traitement. Si des incohérences apparaisent, le gestionnaire responsable contacte les gestionnaires concernés par l'incohérence et la corrige en approuvant ou en rejetant les modifications apportées. Pour l'instant, la donnée qui apparait sur le serveur est celle de l'utilisateur qui a envoyé ces données en dernier.
 			
 			
 			
@@ -846,14 +846,14 @@
 		
 
 		\section{Vérifications automatiques}
-			Pour tester l'application de façon automatique, j'ai utilisé des tests unitaires. Ces tests ont pour objectif de vérifier le bon fonctionnement d'une partie précise d'une application (unité ou module). Ils assurent qu'une méthode qui peut être utilisée par un utilisateur fonctionne de la manière prévue. Dans le cas présent, toutes les interactions entre l'utilisation et l'utilisateur se font à l'aide soit de requêtes envoyées directement au serveur, soit de requêtes faites au service worker. J'ai donc décidé de compléter les tests unitaires qui étaient déjà présents pour la partie serveur et de créer une batterie de tests unitaires pour le service worker.
+			Pour tester l'application de façon automatique, j'ai utilisé des tests unitaires. Ces tests ont pour objectif de vérifier le bon fonctionnement d'une partie précise d'une application (unité ou module). Ils assurent qu'une méthode qui peut être utilisée par un utilisateur fonctionne de la manière prévue. Dans le cas présent, toutes les interactions entre l'application et l'utilisateur se font à l'aide soit de requêtes envoyées directement au serveur, soit de requêtes faites au service worker. J'ai donc décidé de compléter les tests unitaires qui étaient déjà présents pour la partie serveur et de créer une batterie de tests unitaires pour le service worker.
 
 			Pour de plus amples informations le mémoire en lien avec la création de l'application est en consultation libre \cite{ref:haitiwater}. Les tests que j'ai ajoutés au niveau des reqûetes au serveur couvrent les méthodes de récupération des données utilisées par le service worker. Je vérifie que les données récupérées sont uniquement celles auxquelles l'utilisateur a accès et que celles-ci sont complètes.
 			
 			En ce qui concerne les tests sur le service worker, ceux-ci couvrent toutes les fonctions de récupération et d'envoi de données de et vers la base de données ainsi que la gestion de toute page mise en cache pour leur affichage en mode hors-ligne.
 
 		\section{Vérifications utilisateurs réels}
-.			Lors de cette phase, l'application a été présentée a des utilisateurs (certains ayant utilisés la première version, d'autres non) afin qu'ils puissent fournir le feedback nécessaire à son évolution. Trois apsects ont été testés: la compréhension des différents modes, la gestion des données au cas de perte de connexion au serveur et les modifications de l'interface. Le but est d'identifier les problèmes présents dans l'application et de réfléchir à leur solution. Dans cette optique, avoir des avis externes sur l'application permet de l'améliorer drastiquement.
+.			Lors de cette phase, l'application a été présentée a des utilisateurs (certains ayant utilisés la première version, d'autres non) afin qu'ils puissent fournir le feedback nécessaire à son évolution. Trois apsects ont été testés: la compréhension des différents modes, la gestion des données en cas de perte de connexion au serveur et les modifications de l'interface. Le but est d'identifier les problèmes présents dans l'application et de réfléchir à leur solution. Dans cette optique, avoir des avis externes sur l'application permet de l'améliorer drastiquement.
 			
 			Les tests se sont déroulés en présentiel avec les participants ou via Microsoft Teams en fonction de la disponibilité des personnes et des mesures sanitaires en vigueur. Un groupe de dix personnes venant d'horizons différents et ayant des compétences diverses et variées ont testé l'application.
 
@@ -864,14 +864,13 @@
 				
 				Les séances de validation se sont déroulées en partie physiquement et en partie à distance via le logiciel Microsoft Teams, ces logiciels permettant de faire de la transmission vocale et du partage d'écran. L'étudiante de Haïti m'a également aidé à faire passer les tests aux différents utilisateurs présents là-bas, cela afin de me faciliter la tâche à cause du décalage horaire.
 				
-				Les testeurs ont d'abord reçu une brève introduction à l'application et sur le but de la séance de validation. Je leur ai ensuite remis un à trois scénarios à réaliser durant la séance. Ces scénarios contiennent une brève introduction au contexte et une liste de tâches à compléter. Après la lecture du scénario,
-je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seul pour faire sa tâche et est chronométré. S'il avait des questions pendant le déroulement de la tâche, je lui donnais une indication pour l'aider.
+				Les testeurs ont d'abord reçu une brève introduction à l'application et sur le but de la séance de validation. Je leur ai ensuite remis un à trois scénarios à réaliser durant la séance. Ces scénarios contiennent une brève introduction au contexte et une liste de tâches à compléter. Après la lecture du scénario, je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seul pour faire sa tâche. S'il avait des questions pendant le déroulement de la tâche, je lui donnais une indication pour l'aider.
 				
-				Après la réalistion de ces tâches, le testeur a reçu une série de 21 questions. Ces questions sont regroupées par thème.
+				Après la réalistion de ses tâches, le testeur a reçu une série de 21 questions. Ces questions sont regroupées par thème.
 				\begin{description}
 					\item[Tâches] Ces questions permettent de savoir si les tâches à accomplir étaient suffisament claires.
 					\item[Fonctionnalités]  Ces questions permettent de savoir si l'interface de l'application permet une utilisation simple des fonctions implémentées.
-					\item[Usabilité] Ces questions permettent d'avoir le ressenti de l'utilisateur et permet de récolter des indices quant à une possible amélioration de l'application au niveau l'usabilité.
+					\item[Usabilité] Ces questions permettent d'avoir le ressenti de l'utilisateur et de récolter des indices quant à une possible amélioration de l'application au niveau l'usabilité.
 					\item[Esthétique] Ces questions permettent de savoir si le design de l'application plaît aux utilisateurs.
 				\end{description}
 
@@ -888,7 +887,7 @@ je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seu
 					\label{fig:validation}
 				\end{figure}
 		
-				Il y a cependant un point qui n'a pas mis tout le monde d'accord; à l'affirmation "Je trouve le fait d'avoir deux modes d'utilisation inutilement complexe", le panel de réponse est hétérogène. Cette solution ne fait pas l'unanimité et une évolution de la gestion des modes reste nécessaire.
+				Il y a cependant un point qui n'a pas mis tout le monde d'accord; à l'affirmation "Je trouve le fait d'avoir deux modes d'utilisation inutilement complexe", le panel de réponse est hétérogène. Cette solution ne fait pas l'unanimité et une évolution de la gestion des modes reste donc nécessaire.
 		
 			\subsection*{Modifications apportées}
 				Grâce aux différents commentaires reçu des utilisateurs, certains changements mineurs ont été effectués. Le premier est l'ajout d'un mode d'emploi sur la page d'accueil pour expliquer le fonctionnement du mode hors-ligne.
@@ -899,12 +898,12 @@ je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seu
 
 %------------------------------------------------------------------------------------------------------
 	\chapter{Améliorations futures}
-		Malgré les deux années de travail effectuées par les trois anciens mémorants \cite{ref:haitiwater} et moi-même, le projet est loin d'être terminé. Même si l'application peut commencer à être deployée dès maintenant, comme tout projet de développement de grande ampleur, HaïtiWater devra être suivie afin d'être mis à jour et maintenu pour un bon fonctionnement au quotidien. 
+		Malgré les deux années de travail effectuées par les trois anciens mémorants \cite{ref:haitiwater} et moi-même, le projet est loin d'être terminé. Même si l'application peut commencer à être deployée dès maintenant, comme tout projet de développement de grande ampleur, HaïtiWater devra être suivie afin d'être mise à jour et maintenue pour un bon fonctionnement au quotidien. 
 
 		\section{Suite du projet}
 			\label{ref:suite_projet}
 			S'atteler à la finition de l'application HaïtiWater sera la priorité des futures équipes de développement. En l'état actuel, l'application peut déjà servir aux acteurs locaux afin de travailler sur le terrain. Cependant, la base de l'application peut toujours être optimisée pour être encore plus sûre et réactive.		
-			Comme évoqué par mes prédécesseurs \cite{ref:haitiwater}, une des tâches importantes pour le futur reste l'automatisation des rapports en agrégeant les données et en développant une meilleure visualisation. Une autre amélioration évoquée par mes prédécesseurs est le développement d'un serveur mail et d'un serveur SMS dédié de sorte que le serveur de l'application ne soit pas surchargé.
+			Comme évoqué par mes prédécesseurs \cite{ref:haitiwater}, une des tâches importantes pour le futur reste l'automatisation des rapports en agrégeant les données et en développant une meilleure visualisation de celles-ci. Une autre amélioration évoquée par mes prédécesseurs est le développement d'un serveur mail et d'un serveur SMS dédié de sorte que le serveur de l'application ne soit pas surchargé lors de l'envoi de ceux-ci.
 			
 			L'application HaïtiWater est en cours de déploiement sur un serveur haïtien et devrait être disponible dans les semaines à venir. Cette migration devrait améliorer le temps de chargement de l'application pour les acteurs locaux. Le serveur qu'ils utiliseront devrait d'ailleurs être plus performant que celui utilisé en Belgique. Pour l'instant, il s'agit d'un serveur dual-core de 2 GHz avec 2 Go de mémoire vive. Les temps de chargement devraient donc être drastiquement réduits graĉe à un serveur plus puissant. 
 			
@@ -914,11 +913,11 @@ je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seu
 					
 
 		\section{Défis rencontrés}
-			La difficulté la plus importante lors de ce projet a été la méconnaissance de la technologie utilisée et le fait qu'il y a encore peu d'aide sur internet. De plus, les service worker sont encore en cours de développement; l'ensemble de leurs fonctionnalités ne sont pas supportées par tous les navigateurs. Il a donc fallu trouver des solutions pour que l'application puisse rester fonctionnelle même si l'utilisateur emploie un navigateur qui ne prend pas en charge les service worker. Une période conséquente d'apprentissage autonome avant de se lancer dans le projet à été nécessaire.
+			La difficulté la plus importante lors de ce projet a été la méconnaissance de la technologie utilisée et le fait qu'il y a encore peu d'aide sur internet. De plus, les service workers sont encore en cours de développement; l'ensemble de leurs fonctionnalités ne sont pas supportées par tous les navigateurs. Il a donc fallu trouver des solutions pour que l'application puisse rester fonctionnelle même si l'utilisateur emploie un navigateur qui ne prend pas en charge les service workers. 
 			
-			Une dexième difficulté était mon manque d'expérience. En effet, je ne m'étais jamais engagé dans un projet d'une telle envergure. Heureusement, les anciens mémorants étaient assez disponibles et m'ont aidé à résoudre les problèmes rencontrées.
+			Une dexième difficulté était mon manque d'expérience. En effet, je ne m'étais jamais engagé dans un projet d'une telle envergure. Une période conséquente d'apprentissage autonome avant de se lancer dans le projet a été nécessaire. Heureusement, les anciens mémorants étaient assez disponibles et m'ont aidé à résoudre les problèmes rencontrés.
 			
-			Le dernière difficulté rencontrée a été une motivation en dent de scie. Comme tout le mode, mes conditions de vie (isolement sociel) et de travail (manque d'objectifs à court terme) ont été bousculées par les mesures sanitaires faisant suite à la pandémie du COVID-19. 
+			Le dernière difficulté rencontrée a été une motivation en dents de scie. Comme tout le mode, mes conditions de vie (isolement sociel) et de travail (manque d'objectifs à court terme) ont été bousculées par les mesures sanitaires faisant suite à la pandémie du COVID-19. 
 			
 
 		\section{Propositions}
@@ -929,9 +928,9 @@ je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seu
 			
 			La gestion des données stockées localement pourrait être améliorée afin de ne plus proposer deux modes différents de fonctionnement de l'application mais un seul mode dans lequel toutes les données seraient synchronisées automatiquement au fur et à mesure que l'utilisateur adresse ses requêtes au serveur.
 			
-			Une autre évolution possible serait d'ajouter un système de notifications basé sur le serveur plutôt que localement. Pour l'instant, ce système de notifications n'est pas du tout synchronisé avec le serveur et ne sert qu'à l'affichage de certaines informations stockées dans le navigateur. Un service de messagerie interne à l'application pourrait également aider les utilisateurs à communiquer entre eux. Ce système de notifications mis en place, la gestion des incohérences de données décrite dans la section \ref{sec:api} pourra être améliorée afin d'envoyer des avertissements aux deux utilisateurs qui ont modifié les mêmes données hors-ligne.
+			Une autre évolution possible serait d'ajouter un système de notifications basé sur le serveur plutôt que localement. Pour l'instant, ce système de notifications n'est pas du tout synchronisé avec le serveur et ne sert qu'à l'affichage de certaines informations stockées dans le navigateur. Un service de messagerie interne à l'application pourrait également aider les utilisateurs à communiquer entre eux. Ce système de notifications mis en place, la gestion des incohérences de données décrite dans la section \ref{sec:api} pourra être améliorée afin d'envoyer directement des avertissements aux deux utilisateurs qui ont modifié les mêmes données hors-ligne.
 		
-			Enfin, les modules existants pourraient être améliorés afin de proposer différentes façons d'interagir avec les données. par exemple, il serait intéressant de pouvoir exporter la base de données sous forme de fichier excel ou d'intégré d'avantages d'outils graphiques rendant les informations plus visuelles.
+			Enfin, les modules existants pourraient être améliorés afin de proposer différentes façons d'interagir avec les données. Par exemple, il serait intéressant de pouvoir exporter la base de données sous forme de fichier excel ou d'intégré d'avantages d'outils graphiques rendant les informations plus visuelles.
 
 
 
@@ -940,11 +939,11 @@ je répondais aux questions éventuelles. Ensuite, l'utilisateur est laissé seu
 	\chapter{Conclusion}
 		Grâce à la réalisation de mon mémoire, j'ai pu m'inscire dans un projet d'une grande envergure, mettre en pratique les compétences acquises au cours de mes études et aquérir une expérience non négligeable dans le développement d'une application web de grande ampleur.
 		
-		Lors de la phase de validation avec des utilisateurs réels, l'application HaïtiWater et son nouveau mode hors-ligne ont sucité un intéret certain chez les testeurs. Leurs retours étaient plûtot positfs. J'ai bon espoire que l'application finira par être utilisée par les acteurs locaux de manière régulière, voire quotidienne, et qu'elle continuera à évoluer.
+		Lors de la phase de validation avec des utilisateurs réels, l'application HaïtiWater et son nouveau mode hors-ligne ont sucité un intéret certain chez les testeurs. Leurs retours étaient plûtot positifs. J'ai bon espoire que l'application finira par être utilisée par les acteurs locaux de manière régulière, voire quotidienne, et qu'elle continuera à évoluer.
 		
 		Avec plus de temps et une plus grande lattitude dans les tâches à accomplir, j'aurais pu mettre en place les améliorations précitées à la section \ref{sec:proposition}. De plus, je regrette de ne pas voir pu procéder à la validation plus tôt, ce qui m'a limité dans le champs des améliorations. Je n'ai malheureusement pu apporter que des améliorations mineures.
 
-		Cette expérience d'apprentissage m'aura permis de mieux définir dans quel domaine de l'informatique je désire travailler après l'obtention de mon diplome. De plus, cela m'a permis de définir quelles technologies je souhaiterai investiguer et maîtriser dans un futur plus ou moins proche.
+		Cette expérience d'apprentissage m'aura permis de mieux définir dans quel domaine de l'informatique je désire travailler après l'obtention de mon diplome. De plus, cela m'a permis de découvrir quelles technologies je souhaiterai investiguer et maîtriser dans un futur plus ou moins proche.
 		
 		
 
