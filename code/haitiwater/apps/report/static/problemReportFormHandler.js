@@ -91,7 +91,6 @@ function setupTicketModalAdd() {
 }
 
 function setupModalEdit(data) {
-    console.log("modal edit");
     //Show add components
     $('#modal-title-add').addClass("hidden");
     $('#modal-submit-add').addClass("hidden");
@@ -109,7 +108,6 @@ function setupModalEdit(data) {
 
     showModal('#show-ticket-modal');
 
-    console.log(data);
 
     let form = document.forms["form-add-ticket"];
 
@@ -168,52 +166,91 @@ function dismissTicketModal() {
     form["select-state"].value = "unresolved";
 }
 
-function sendTicket(addOrEdit) {
+async function sendTicket(addOrEdit) {
     if (!validateForm())
         return;
     let form = document.forms["form-add-ticket"];
 
-    var formData = new FormData();
-    formData.append("table", "ticket");
-    formData.append("id", form["input-id"].value);
-    formData.append("type", form["select-type"].value);
-    formData.append("urgency", form["select-urgency"].value);
-    formData.append("id_outlet", form["select-outlet"].value);
-    formData.append("comment", form["input-comment"].value);
-    formData.append("state", form["select-state"].value);
-    formData.append("picture", form["input-picture"].files[0]);
+    let body = "table" + "=" + "ticket" + "&" +
+    "id" + "=" + form["input-id"].value + "&"+
+    "type" + "=" + form["select-type"].value + "&"+
+    "urgency" + "=" + form["select-urgency"].value + "&"+
+    "id_outlet" + "=" + form["select-outlet"].value + "&"+
+    "comment" + "=" + form["input-comment"].value + "&"+
+    "state" + "=" + form["select-state"].value + "&"+
+    "picture" + "=" + form["input-picture"].files[0];
 
     let baseURL = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '');
     let postURL = baseURL + "/api/" + addOrEdit + "/";
-    $.ajaxSetup({
-        headers:
-            {'X-CSRFToken': getCookie('csrftoken')}
-    });
-    $.ajax({
-        url: postURL,
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
-        beforeSend(xhr, settings){
-            beforeModalRequest();
+
+    var myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
         },
-        success: function (response) {
-            document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
-            dismissModal();
-            new PNotify({
-                title: 'Succès!',
-                text: "Opération effectuée",
-                type: 'success'
-            });
-            drawDataTable("ticket");
-        },
-        error: function (jqXHR, textStatus, errorMessage) {
-            document.getElementById("form-ticket-error").className = "alert alert-danger";
-            document.getElementById("form-ticket-error-msg").innerHTML = textStatus + ': ' + errorMessage;
-        },
-        complete: function () {
-            afterModalRequest();
+        body: body
+    };
+    beforeModalRequest();
+
+    try {
+        await navigator.serviceWorker.ready
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('update_queue');
+
+        db_table.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'IssueTable',
+            init:myInit,
+            type:(addOrEdit === 'add' ? "Ajouter" : "Editer"),
+            elemId: (addOrEdit === 'add' ? "?" : "0"),
+            status:"En attente",
+            details:myInit
+        });
+
+        document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
+        if (addOrEdit !== 'add') indexedDBModify('ticket', form["input-id"].value);
+        postMessage({title:'pushData'});
+        console.log('[REPORT_sendTicket]', 'ticket sent');
+    } catch (e) {
+        console.error('[REPORT_sendTicket]', e);
+        try {
+            let response = await fetch(postURL, myInit)
+            if(response.ok) {
+                document.getElementById("form-ticket-error").className = "alert alert-danger hidden"; // hide old msg
+                dismissModal();
+                new PNotify({
+                    title: 'Succès!',
+                    text: "Opération effectuée",
+                    type: 'success'
+                });
+                console.error('[REPORT_sendTicket]', 'sent without SW');
+            } else {
+                document.getElementById("form-ticket-error").className = "alert alert-danger";
+                document.getElementById("form-ticket-error-msg").innerHTML = err;
+                new PNotify({
+                    title: 'Echec!',
+                    text: "Le serveur a refusé !",
+                    type: 'error'
+                });
+                console.error('[REPORT_sendTicket]', response.statusText);
+            }
+        } catch (e) {
+            console.error('[REPORT_sendTicket]', e);
         }
-    });
+    }
+
+    dismissModal();
+    afterModalRequest();
+    await drawDataTable('ticket');
 }
+

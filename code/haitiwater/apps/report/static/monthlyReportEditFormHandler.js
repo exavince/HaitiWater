@@ -9,41 +9,75 @@ $(document).ready(function() {
 /**
  * Try to send the current report, with validation first
  */
-function postReportEdit(){
+async function postReportEdit() {
     let report = getEditedData();
-    if(!validateReport(report)) {
-        return;
-    }
+    if(!validateReport(report)) return;
+
     beforeModalRequest();
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/edit/?table=report";
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.setRequestHeader('Content-type', 'application/json');
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                new PNotify({
-                    title: 'Échec!',
-                    text: "Le rapport mensuel n'a pas pu être édité",
-                    type: 'error'
-                });
-                formErrorMsg.html(xhttp.responseText);
-                formError.removeClass('hidden');
-            } else {
+    var myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/json",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: JSON.stringify(monthlyReport)
+    };
+
+    try {
+        await navigator.serviceWorker.ready
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('update_queue');
+
+        db_table.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: 'MonthlyReport',
+            init:myInit,
+            type:'Editer',
+            elemId: '?',
+            status:"En attente",
+            details:myInit
+        });
+
+        dismissModal();
+        postMessage({title:'pushData'});
+        console.log('[REPORT_postReportEdit]', postURL)
+    } catch (e) {
+        console.error('[REPORT_postReportEdit]', e);
+        try {
+            let response = await fetch(postURL, myInit);
+            if(response.ok) {
                 new PNotify({
                     title: 'Succès!',
                     text: 'Le rapport mensuel a été édité !',
                     type: 'success'
                 });
                 dismissModal();
+                console.error('[REPORT_postReportEdit]', 'report sent without SW');
+            } else {
+                new PNotify({
+                    title: 'Échec!',
+                    text: "Le rapport mensuel n'a pas pu être édité",
+                    type: 'error'
+                });
+                formErrorMsg.html(response.statusText);
+                formError.removeClass('hidden');
+                console.error('[REPORT_postReportEdit]', response.statusText);
             }
-            afterModalRequest()
+        } catch (e) {
+            console.error('[REPORT_postReportEdit]', e);
         }
-    };
-    console.log(JSON.stringify(report));
-    xhttp.send(JSON.stringify(report));
+    }
 }
 
 /**
@@ -57,13 +91,13 @@ function validateReport(data){
         if (!current.has_data) continue; //Skip validation if we don't have data to validate
 
         if(current.volume < 0 || current.price < 0 || current.revenue < 0){
-            console.log('Negative value');
+            console.error('Negative value');
             formErrorMsg.html('Les valeurs négatives ne sont pas acceptées.');
             formError.removeClass('hidden');
             return false;
         } else if(isNaN(current.volume) || isNaN(current.price) || isNaN(current.revenue) ||
                     current.volume.length <= 0 || current.price.length <= 0 || current.revenue.length <= 0){
-            console.log('NaN value');
+            console.error('NaN value');
             formErrorMsg.html('Seules les valeurs numériques positives sont acceptées');
             formError.removeClass('hidden');
         } else {
@@ -74,13 +108,11 @@ function validateReport(data){
 }
 
 function getEditedData(){
-
-    let report =
-        {
-            id: $('#monthly-edit-id').val(),
-            date: $('#monthly-edit-date').html(),
-            details: [],
-        };
+    let report = {
+        id: $('#monthly-edit-id').val(),
+        date: $('#monthly-edit-date').html(),
+        details: [],
+    };
 
     let sections = $('.water-outlet');
     sections.each(function(){
@@ -143,7 +175,7 @@ function cloneWaterOutletSection(n){
 function fillExistingData(data){
     let sections = $('.water-outlet');
     if(data.length !== sections.length){
-        console.log("Error parsing the data");
+        console.error("Error parsing the data");
         new PNotify({
             title: 'Échec!',
             text: "L'édition est impossible en raison d'une erreur interne",

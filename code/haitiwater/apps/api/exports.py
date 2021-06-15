@@ -116,7 +116,14 @@ def gis_infos(request):
 
             log_element(loc, request)
             loc.delete()
-            return success_200
+
+            json_object = {
+                'data': elem_id,
+                'table': 'water_element_details',
+                'type': 'delete'
+            }
+            return HttpResponse(json.dumps(json_object), status=200)
+
         else:
             return HttpResponse("Impossible de traiter cette requête", status=400)
 
@@ -171,6 +178,12 @@ def table(request):
         result = get_payment_elements(request)
         if result is None:
             return success_200
+    elif table_name == "consumer_full":
+        result = get_all_details_consumers(request)
+    elif table_name == "all_payment":
+        if is_user_fountain(request):
+            json_object["editable"] = False
+        result = get_all_payments(request)
     else:
         return HttpResponse("Impossible de charger la table demandée (" + table_name + ").", status=404)
 
@@ -179,6 +192,10 @@ def table(request):
 
     cache.set(cache_key, json.dumps(result), 60)
     json_object["recordsTotal"] = len(result)
+
+    if request.GET.get('indexDB', None) == "true":
+        json_object["data"] = result
+        return HttpResponse(json.dumps(json_object), status=200)
 
     filtered = filter_search(params, result)
 
@@ -261,19 +278,32 @@ def remove_element(request):
 
         elem_delete.delete()
 
+        tickets_list = []
         tickets = Ticket.objects.filter(water_outlet=element_id)
         for t in tickets:
+            tickets_list.append(t.descript()[0])
             if not is_same(t, request.user):
                 t.log_delete(transaction)
             t.delete()
 
+        users_list = []
         for user in User.objects.filter(profile__outlets__contains=[str(element_id)]):
+            users_list.append(user)
             old = user.profile.infos()
             user.profile.outlets.remove(str(element_id))
             user.save()
             user.profile.log_edit(old, transaction)
 
-        return success_200
+        json_object = {
+            'data': element_id,
+            'type': 'delete',
+            'table': 'water_element',
+            'linked': {
+                'ticket': tickets_list,
+            }
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "consumer":
         consumer_id = request.POST.get("id", None)
@@ -286,7 +316,13 @@ def remove_element(request):
         log_element(to_delete, request)
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': consumer_id,
+            'type': 'delete',
+            'table': 'consumer'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "manager":
         if request.user.profile.zone is None:
@@ -317,7 +353,13 @@ def remove_element(request):
         cache_key = "water_element" + request.user.username
         cache.delete(cache_key)
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': manager_id,
+            'type': 'delete',
+            'table': 'manager'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "ticket":
         ticket_id = request.POST.get("id", None)
@@ -330,11 +372,18 @@ def remove_element(request):
         log_element(to_delete, request)
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': ticket_id,
+            'type': 'delete',
+            'table': 'ticket'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "payment":
         payment_id = request.POST.get("id", None)
         to_delete = Payment.objects.filter(id=payment_id).first()
+        consumer = to_delete.infos()["Identifiant consommateur"]
         if to_delete is None:
             return HttpResponse("Impossible de supprimer ce ticket, il n'existe pas", status=400)
         elif not has_access(to_delete.water_outlet, request):
@@ -343,7 +392,14 @@ def remove_element(request):
         log_element(to_delete, request)
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': payment_id,
+            'type': 'delete',
+            'table': 'payment',
+            'consumer': consumer
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     elif element == "zone":
         if request.user.profile.zone is None:
@@ -383,7 +439,13 @@ def remove_element(request):
         transaction.save()
         to_delete.delete()
 
-        return HttpResponse({"draw": request.POST.get("draw", 0) + 1}, status=200)
+        json_object = {
+            'data': zone_id,
+            'type': 'delete',
+            'table': 'zone'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
 
     else:
         return HttpResponse("Impossible de trouver l'élement " + element, status=400)
@@ -429,6 +491,8 @@ def details(request):
         return get_payment_details(request)
     elif table_name == "water_element":
         return get_details_network(request)
+    elif table_name == "water_element_all":
+        return get_details_network_all()
     else:
         return HttpResponse("Impossible d'obtenir des détails pour la table " + table_name +
                             ", elle n'est pas reconnue", status=400)
@@ -459,12 +523,29 @@ def compute_logs(request):
         log_finished(transaction, "ACCEPT")
         cache.delete(cache_key)
         cache.delete(cache_key2)
-        return success_200
+
+        json_object = {
+            'data': id_val,
+            'type': 'edit',
+            'action': action,
+            'table': 'logs'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
     elif action == "revert":
         roll_back(transaction)
         cache.delete(cache_key)
         cache.delete(cache_key2)
-        return success_200
+
+        json_object = {
+            'data': id_val,
+            'type': 'edit',
+            'action': action,
+            'table': 'logs'
+        }
+
+        return HttpResponse(json.dumps(json_object), status=200)
+
     else:
         return HttpResponse("Action non reconnue", status=400)
 
@@ -495,6 +576,15 @@ def is_same(element, user):
 
 
 def parse(request):
+    indexDB = request.GET.get("indexDB", None)
+    if indexDB == "true":
+        params = {
+            "table_name": request.GET.get('name', None),
+            "month_wanted": request.GET.get("month", "none")
+        }
+
+        return params
+
     column_regex = re.compile('order\[\d*\]\[column\]')
     dir_regex = re.compile('order\[\d*\]\[dir\]')
 
@@ -520,45 +610,9 @@ def parse(request):
     return params
 
 
-def get_zone(request):
+def check_authentication(request):
     if not request.user.is_authenticated:
-        return HttpResponse("Vous n'êtes pas connecté", status=403)
-
-    result = []
-    table_name = request.GET.get('name', None)
-
-    if table_name == "water_element":
-        result = get_water_elements(request)
-    elif table_name == "consumer":
-        result = get_consumer_elements(request)
-    elif table_name == "zone":
-        if is_user_fountain(request):
-            return HttpResponse("Vous ne pouvez pas accéder à ces informations", status=403)
-        result = get_zone_elements(request)
-    elif table_name == "manager":
-        if is_user_fountain(request):
-            return HttpResponse("Vous ne pouvez pas accéder à ces informations", status=403)
-        result = get_manager_elements(request)
-    elif table_name == "report":
-        if is_user_zone(request):
-            return HttpResponse("Vous ne pouvez pas accéder à ces informations", status=403)
-        result = get_last_reports(request)
-    elif table_name == "ticket":
-        result = get_ticket_elements(request)
-    elif table_name == "logs":
-        result = get_logs_elements(request, archived=False)
-    elif table_name == "logs_history":
-        result = get_logs_elements(request, archived=True)
-    elif table_name == "payment":
-        result = get_payment_elements(request)
-        if result is None:
-            return success_200
+        return HttpResponse("notConnected", status=403)
     else:
-        return HttpResponse("Impossible de charger la table demandée (" + table_name + ").", status=404)
+        return HttpResponse("connected", status=200)
 
-    if result is None:
-        return HttpResponse("Problème à la récupération des données", status=400)
-
-    json_object = {"data": result}
-
-    return HttpResponse(json.dumps(json_object), status=200)

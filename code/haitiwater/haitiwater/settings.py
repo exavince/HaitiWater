@@ -45,6 +45,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'haitiwater-1.herokuapp.com',
     'haitiwater.sipr.ucl.ac.be',
+    'tfe-haiti.info.ucl.ac.be',
     '.ngrok.io',
 ]
 
@@ -71,6 +72,7 @@ INSTALLED_APPS = [
     'apps.offline',
     'apps.help',
     'apps.financial',
+    'apps.unsynchronized',
     'compressor',
     'django_tables2',  # not used anymore
     'bootstrap3',
@@ -131,8 +133,8 @@ DATABASES = {
         'NAME': 'haitiwater',
         'HOST': 'localhost',
         'PORT': '5432',
-        'USER': 'exavince',
-        'PASSWORD': 'passwd',
+        'USER': 'haitiwater',
+        'PASSWORD': 'zYe5PRRE',
     },
 }
 

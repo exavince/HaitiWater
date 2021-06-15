@@ -7,13 +7,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
         e.stopPropagation();
     });
     $('#datatable-example-collapsible').on('click', function(){
-        console.log('hello');
         setTimeout(datatableHelpTour, 1000);
     });
 });
 
 function datatableHelpTour(){
-    console.log('starting tour');
     let intro = introJs();
     intro.setOptions({
         nextLabel: 'Suivant',

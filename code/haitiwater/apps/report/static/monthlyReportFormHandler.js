@@ -1,9 +1,5 @@
-var monthlyReport = {
-	// Complete on validation
-};
-
+var monthlyReport = {}; // Complete on validation
 const CUBICMETER_GALLON_RATIO = 264.172;
-
 
 $(document).ready(function() {
 
@@ -44,29 +40,57 @@ $(document).ready(function() {
 	let $wizardMonthlyReportfinish = wizardReport.find('ul.pager li.finish');
 	let $wizardMonthlyReportSave = wizardReport.find('ul.pager li.save');
 
-	$wizardMonthlyReportfinish.on('click', function( ev ) {
+	$wizardMonthlyReportfinish.on('click', async function( ev ) {
 		ev.preventDefault();
 		var validated = validate();
-		if ( validated ) {
+		if (validated) {
 			beforeModalRequest();
 			let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
 			let postURL = baseURL + "/api/report/";
-			let xhttp = new XMLHttpRequest();
-			xhttp.open("POST", postURL, true);
-			xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-			xhttp.setRequestHeader('Content-type', 'application/json');
-			xhttp.onreadystatechange = function() {
-				if(xhttp.readyState === 4) {
-					if (xhttp.status !== 200) {
-						new PNotify({
-							title: 'Échec!',
-							text: "Le rapport mensuel n'a pas pu être envoyé",
-							type: 'error'
-						});
-						$('#form-monthly-report-error-msg').html(xhttp.responseText);
-						$('#form-monthly-report-error').removeClass('hidden');
-						afterModalRequest();
-					} else {
+			var myInit = {
+				method: 'post',
+				headers: {
+					"Content-type": "application/json",
+					'X-CSRFToken':getCookie('csrftoken')
+				},
+				body: JSON.stringify(monthlyReport)
+			};
+
+			try {
+				await navigator.serviceWorker.ready
+				let dexie = await new Dexie('user_db');
+				let db = await dexie.open();
+				let db_table = db.table('update_queue');
+
+				db_table.put({
+					url:postURL,
+					date: new Date().toLocaleString('en-GB', {
+						day: 'numeric',
+						month: 'numeric',
+						year: 'numeric',
+						hour: '2-digit',
+						minute: '2-digit',
+						hourCycle: 'h23'
+					}),
+					table: 'MonthlyReport',
+					init:myInit,
+					type:'Ajouter',
+					elemId: '?',
+					status:"En attente",
+					details:myInit
+				});
+
+				localStorage.removeItem("monthlyReport");
+				drawDataTable('report');
+				dismissModal();
+				afterModalRequest();
+				postMessage({title:'pushData'});
+				console.log('[REPORT_ready]', 'Monthly report')
+			} catch (e) {
+				console.error('[REPORT_ready]', e);
+				try {
+					let response = await fetch(postURL, myInit)
+					if(response.ok) {
 						new PNotify({
 							title: 'Succès!',
 							text: 'Le rapport mensuel a été envoyé !',
@@ -76,11 +100,21 @@ $(document).ready(function() {
 						drawDataTable('report');
 						dismissModal();
 						afterModalRequest();
+					} else {
+						new PNotify({
+							title: 'Échec!',
+							text: "Le rapport mensuel n'a pas pu être envoyé",
+							type: 'error'
+						});
+						$('#form-monthly-report-error-msg').html(response.statusText);
+						$('#form-monthly-report-error').removeClass('hidden');
+						afterModalRequest();
+						console.error('[REPORT_ready]', response.statusText)
 					}
+				} catch (e) {
+					console.error('[REPORT_ready]', e);
 				}
-			};
-			console.log(JSON.stringify(monthlyReport));
-			xhttp.send(JSON.stringify(monthlyReport));
+			}
 		}
 		else {
 			return false;
@@ -91,7 +125,6 @@ $(document).ready(function() {
 		ev.preventDefault();
 		const validated = validate();
 		if (validated) {
-			console.log(JSON.stringify(monthlyReport));
 			localStorage.setItem('monthlyReport', JSON.stringify(monthlyReport));
 			new PNotify({
 				title: 'Succès!',
@@ -352,8 +385,6 @@ function validateStepThree(){
 		}
 		let id = $(this).attr('id').replace('bill-','');
 		let value = $(this).find('.real-bill').val();
-		console.log("value : " + value);
-		console.log("id : " + id);
 		if (value < 0 || value === ''){
 			$(this).find('.error').removeClass('hidden');
 			valid = false;
@@ -529,7 +560,6 @@ function setupStepThree(savedData){
 	billingWindow.empty(); // Flush old content
 
 	let checkboxActiveService = $('#checkbox-active-service');
-	console.log($('.water-outlet .bill'));
 	if (checkboxActiveService.is(':checked')){
 		// Service was active, ask user to input details
 		selectedOutlets.each(function(index){
@@ -543,7 +573,7 @@ function setupStepThree(savedData){
 			billingWindow.append(sectionHeader + createPanelBody(selectedOutlets[index].value));
 			billingWindow.append('</section>');
 		});
-		console.log(monthlyReport);
+
 		let details = monthlyReport.details;
 		for(var i = 0; i < details.length; i++){
 			let id = details[i].id;
@@ -563,7 +593,7 @@ function setupStepThree(savedData){
 	}
 	// Display text if we have no data for any element
 	if ($('.bill').length < 1){
-		console.log("empty");
+		console.error("empty");
 		billingWindow.html("<div class=\"well info text-center\">" +
 			"Vous n'avez aucun détail de recette à entrer puisque aucune donnée de volume n'a été collectée.<br>" +
 			"Si vous avez des volumes à entrer, revenez à l'étape 2.<br>" +
@@ -589,8 +619,6 @@ function setupConfirmation(){
 			selectionAsHTMLList +
 			"</ul>"+
 			"Cette opération est irréversible, cliquez sur \"Envoyer\" pour confirmer l'envoi. <br>" +
-			"Cliquez sur \"Sauvegarder\" pour sauvegarder les informations sans les envoyer. <br>" +
-			"Vous pourrez encore les modifier en revenant sur ce formulaire." +
 			"</div>");
 }
 

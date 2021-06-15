@@ -1,12 +1,15 @@
 let paymentTable = 'undefined';
+let user = 'undefined';
 
 $(document).ready(function() {
     // Draw DataTables
-    let zoneTable = drawZoneTable();
-    let consumerTable = drawConsumerTable(false);
-
-    attachHandlers(zoneTable, consumerTable);
+    drawZoneTable().then(zoneTable => {
+        drawConsumerTable(false).then(consumerTable => {
+                attachHandlers(zoneTable, consumerTable);
+        })
+    })
 });
+
 
 /**
  * Attach the handlers for onclick navigation
@@ -14,13 +17,12 @@ $(document).ready(function() {
  * @param consumerTable to attach event to
  */
 function attachHandlers(zoneTable, consumerTable){
-    $('#datatable-consumer').first('tbody').on('click', 'tr td:not(:last-child)', function(){
+    $('#datatable-consumer').first('tbody').on('click', 'tr td:not(:last-child)', async function(){
         $('#consumer-payment-details').removeClass('hidden');
-        consumerDetails(consumerTable.row($(this).closest('tr')).data());
+        await consumerDetails(consumerTable.row($(this).closest('tr')).data());
     });
 
     $('#datatable-zone').first('tbody').on('click', 'tr td:not(:last-child)', function(){
-        let row = ($(this).closest('tr'));
         filterConsumersFromZone(zoneTable);
     });
 }
@@ -40,26 +42,34 @@ function filterConsumersFromZone(zoneTable){
     }
     let zoneName = data[1];
     consumerTable.search(zoneName).draw();
-
 }
 
 /**
  * Setup the consumer details window
  * @param data the datatable row
  */
-function consumerDetails(data){
+async function consumerDetails(data){
     let userID = data[0];
-    if (paymentTable === 'undefined') {
-        paymentTable = drawPaymentTable();
+    let offline = localStorage.getItem("offlineMode") === "true";
+    if (paymentTable === 'undefined') paymentTable = drawPaymentTable(null);
+
+    if (offline) {
+        let result  = await getPaymentData(userID);
+        let table = $('#datatable-payment');
+        table.DataTable().clear();
+        table.DataTable().rows.add(result).draw();
     }
-    setTableURL('payment', '&user=' + userID);
-    drawDataTable('payment');
+    else {
+        setTableURL('payment', '&user=' + userID);
+        drawDataTable('payment');
+    }
+
     $('#input-payment-id-consumer').val(userID);
 
     let userName = data[1] + " " + data[2];
     $('.consumer-name-details').html(userName);
 
-    requestFinancialDetails(userID);
+    await requestFinancialDetails(userID);
 
     $('#consumer-details-id').html(data[0]);
     $('#consumer-details-lastname').html(data[1]);
@@ -76,32 +86,60 @@ function consumerDetails(data){
  * @param userID the user ID
  * @return {object} the data
  */
-function requestFinancialDetails(userID){
-    let requestURL = "../api/details?table=payment&id=" + userID;
-    let xhttp = new XMLHttpRequest();
-
-    xhttp.onreadystatechange = function(){
-        if (this.readyState === 4) {
-            if (this.status === 200) {
-                let financialDetails = JSON.parse(this.response);
+async function requestFinancialDetails(userID) {
+    let offline = localStorage.getItem("offlineMode") === "true";
+    if (offline) {
+        let financialDetails = await getConsumerDetailsData(userID);
+        $('#consumer-details-amount-due').html('(HTG) ' + financialDetails[1]);
+        $('#consumer-details-next-bill').html(financialDetails[2]);
+    }
+    else {
+        let requestURL = "../api/details?table=payment&id=" + userID;
+        try {
+            let response = await fetch(requestURL);
+            if (response.ok) {
+                let financialDetails = await response.json()
                 $('#consumer-details-amount-due').html('(HTG) ' + financialDetails.amount_due);
                 $('#consumer-details-next-bill').html(financialDetails.validity);
             }
-            else{
-                console.log(this);
+            else {
+                console.error('[FINANCIAL_requestFinancialDetails]', response.statusText);
                 new PNotify({
                     title: 'Échec du téléchargement',
                     text: "Impossible de récupérer les détails financiers de l'utilisateur.",
                     type: 'warning'
-                })
+                });
             }
+        } catch (e) {
+            console.error('[FINANCIAL_requestFinancialDetails]', e);
         }
-    };
-
-    xhttp.open('GET', requestURL, true);
-    xhttp.send();
+    }
 }
 
 function refreshFinancialDetails() {
     requestFinancialDetails($('#input-payment-id-consumer').val());
+}
+
+async function getConsumerDetailsData(userID) {
+    try {
+        if (userID === null) return [];
+
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('consumer');
+        let result = [];
+        let users = await table.where("id").equals(userID);
+        await users.each(user => {
+            result.push(
+            user.id,
+            user.argent_du,
+            user.validity,
+            )
+        });
+
+        return result;
+    } catch (e) {
+        console.error('[FINANCIAL_getConsumerDetailsData]', e);
+        throw e;
+    }
 }

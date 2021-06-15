@@ -27,6 +27,19 @@
 
         <!-- Uncompessed (minified) Vendor JS -->
         <script src="{% static "vendor/intro/intro.min.js" %}"></script>
+        <script type="application/javascript">
+            {% if user.is_authenticated %}
+                const outlets = [];
+                {% for outlet in water_outlets_report %}
+                    outlets.push([{{ outlet.0 }}, "{{ outlet.1 }}"]);
+                {% endfor %}
+                localStorage.setItem("username", "{{ user.get_username }}");
+                localStorage.setItem("outlets", JSON.stringify(outlets));
+            {% else %}
+                localStorage.removeItem("username");
+                localStorage.removeItem("outlets");
+            {% endif %}
+        </script>
 
         {% compress css %}
             {# Local Vendors #}
@@ -57,6 +70,7 @@
             <script src="{% static "vendor/modernizr/modernizr.js"%}"></script>
             <script src="{% static "vendor/pnotify/pnotify.custom.js"%}"></script>
             <script src="{% static "vendor/bootstrap-datepicker/js/bootstrap-datepicker.js"%}"></script>
+            <script src="{% static "vendor/dexie/dexie.js"%}"></script>
 
             {# Theme Base, Components and Settings #}
             <script src="{% static "javascripts/theme.js" %}"></script>
@@ -114,6 +128,22 @@
                                     </div>
                                 </div>
                             </li>
+                            <li>
+                                <a id="offline-parent" href="#" class="dropdown-toggle notification-icon" data-toggle="dropdown">
+                                    <i class="fa fa-satellite-dish"></i>
+                                    <span id="alert-offline" class="badge">o</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a id="db-parent" href="#" class="dropdown-toggle notification-icon">
+                                    <i class="fa fa-redo"></i>
+                                </a>
+                            </li>
+                            <li>
+                                <p id="date-parent">
+                                    <i id ="last-update" class="">Données pas encore chargées</i>
+                                </p>
+                            </li>
                         </ul>
                     {% endif %}
 
@@ -168,7 +198,7 @@
 
 				<section id="page-content" role="main" class="content-body">
 					<header class="page-header">
-                        <div class="row">
+                        <div class="row" id="flavoured-part">
                             <div class="col-sm-11">
 						        <h2>{% block page_name %}{% endblock %}</h2>
                             </div>

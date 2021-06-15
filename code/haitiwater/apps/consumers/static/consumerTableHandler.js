@@ -3,20 +3,25 @@
  * Used to prettify the table and make it respond to custom input and commands
  *
  */
-function drawConsumerTable(fullView = true) {
-    let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let dataURL = baseURL + "/api/table/?name=consumer";
-    console.log(dataURL);
+async function drawConsumerTable(fullView = true) {
+    let config;
+    let offline = localStorage.getItem("offlineMode") === "true"
+
+    if (offline) {
+        config = await getConsumerDatatableOfflineConfiguration(fullView);
+        addLastUpdateToTitle('consumer');
+    }
+    else {
+        let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
+        let dataURL = baseURL + "/api/table/?name=consumer";
+        config = getConsumerDatatableConfiguration(dataURL, fullView)
+    }
 
     let datatable = $('#datatable-consumer');
+    let table = datatable.DataTable(config);
 
-    datatable.DataTable(getConsumerDatatableConfiguration(dataURL, fullView));
-
-    let table = datatable.DataTable();
     datatable.find('tbody').on('click', 'tr', function () {
-        if ($(this).hasClass('selected')) {
-            //$(this).removeClass('selected');
-        }
+        if ($(this).hasClass('selected')) $(this).removeClass('selected');
         else {
             table.$('tr.selected').removeClass('selected');
             $(this).addClass('selected');
@@ -25,32 +30,60 @@ function drawConsumerTable(fullView = true) {
 
     datatable.find('tbody').on( 'click', '.remove-row', function () {
         let data = $(this).parents('tr')[0].getElementsByTagName('td');
-        if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?')){
-            removeElement("consumer", data[0].innerText);
-        } else {}
-    } );
+        if (confirm("Voulez-vous supprimer: " + data[1].innerText + ' ' + data[2].innerText + ' ?'))  removeElement("consumer", data[0].innerText);
+    });
+
     datatable.find('tbody').on( 'click', '.edit-row', function () {
         let data = table.row($(this).closest('tr')).data();
         setupModalConsumerEdit(data);
     } );
 
     prettifyHeader('consumer');
-
     return table;
 }
 
+async function getConsumerData() {
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('consumer');
+        let result = [];
+
+        await table.each(row => {
+            result.push([
+                row.id,
+                row.nom,
+                row.prenom,
+                row.genre,
+                row.adresse,
+                row.telephone,
+                row.membres,
+                row.sortie_eau,
+                row.argent_du,
+                row.zone,
+                row.sync
+            ]);
+        });
+
+        return result;
+    } catch (e) {
+        console.error('[CONSUMER_getConsumerData]', e);
+        throw e;
+    }
+}
+
 function getConsumerDatatableConfiguration(dataURL, fullView){
-    let config = {
+    return {
         lengthMenu: [
-            [ 10, 25, 50, -1 ],
-            [ '10', '25', '50', 'Tout afficher' ]
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
         ],
         dom: 'Bfrtip',
         buttons: [
             {
                 extend: 'print',
                 exportOptions: {
-                    columns: [0,1,2,3,4,5,6,7,8,9],
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                 },
             },
             'pageLength'
@@ -60,17 +93,17 @@ function getConsumerDatatableConfiguration(dataURL, fullView){
         "serverSide": true,
         "responsive": true,
         "autoWidth": true,
-        scrollX:        true,
+        scrollX: true,
         scrollCollapse: true,
-        paging:         true,
+        paging: true,
         pagingType: 'full_numbers',
-        fixedColumns:   {
+        fixedColumns: {
             leftColumns: 1,
             rightColumns: 1
         },
         "columnDefs": [
             {
-                targets: [3,4,5,6,7],
+                targets: [3, 4, 5, 6, 7],
                 searchable: fullView,
                 visible: fullView,
             },
@@ -86,18 +119,75 @@ function getConsumerDatatableConfiguration(dataURL, fullView){
 
         //Callbacks on fetched data
         "createdRow": function (row, data, index) {
-            if ($("#datatable-consumer th:last-child, #datatable-ajax td:last-child").hasClass("hidden")){
+            if ($("#datatable-consumer th:last-child, #datatable-ajax td:last-child").hasClass("hidden")) {
                 $('td', row).eq(10).addClass('hidden');
             }
         },
 
-        "initComplete": function(settings, json){
+        "initComplete": function (settings, json) {
             // Removes the last column (both header and body) if we cannot edit
-            if(!(json.hasOwnProperty('editable') && json['editable'])){
+            if (!(json.hasOwnProperty('editable') && json['editable'])) {
                 $("#datatable-consumer th:last-child, #datatable-ajax td:last-child").addClass("hidden");
                 $("#datatable-ajax_wrapper tr:last-child th:last-child").addClass("hidden");
             }
         }
     };
-    return config;
+}
+
+async function getConsumerDatatableOfflineConfiguration(fullView){
+    return {
+        lengthMenu: [
+            [10, 25, 50, -1],
+            ['10', '25', '50', 'Tout afficher']
+        ],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'print',
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                },
+            },
+            'pageLength'
+        ],
+        "sortable": true,
+        "processing": true,
+        "serverSide": false,
+        "responsive": true,
+        "autoWidth": true,
+        scrollX: true,
+        scrollCollapse: true,
+        paging: true,
+        pagingType: 'full_numbers',
+        fixedColumns: {
+            leftColumns: 1,
+            rightColumns: 1
+        },
+        "columnDefs": [
+            {
+                targets: [3, 4, 5, 6, 7],
+                searchable: fullView,
+                visible: fullView,
+            },
+            {
+                "targets": -1,
+                "data": null,
+                "orderable": false,
+                "defaultContent": getActionButtonsHTML("modalConsumer"),
+            }
+        ],
+        "language": getDataTableFrenchTranslation(),
+        "data": await getConsumerData(),
+
+        //Callbacks on fetched data
+        "createdRow": function (row, data, index) {
+            if ($("#datatable-consumer th:last-child, #datatable-ajax td:last-child").hasClass("hidden")) {
+                $('td', row).eq(10).addClass('hidden');
+            }
+            if (data[10] > 0) {
+                $(row).css('background-color', '#4B0082');
+                $(row).css('color', 'white');
+            }
+        },
+    };
 }

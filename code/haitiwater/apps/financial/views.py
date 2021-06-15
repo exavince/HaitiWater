@@ -16,3 +16,4 @@ def index(request):
         'water_outlets': get_outlets(request),
     }
     return HttpResponse(template.render(context, request))
+

@@ -2,7 +2,7 @@
     "name": "Django PWA",
     "short_name": "djangopwa",
     "start_url": "/",
-    "scope": ".",
+    "scope": "/",
     "display": "standalone",
     "background_color": "#FFF",
     "theme_color": "#493174",
@@ -14,9 +14,5 @@
         "src": "/static/icons/aurss.96x96.png",
         "type": "image/png",
         "sizes": "96x96"
-    }, {
-        "src": "/static/icons/aurss.512x512.png",
-        "type": "image/png",
-        "sizes": "512x512"
     }]
 }

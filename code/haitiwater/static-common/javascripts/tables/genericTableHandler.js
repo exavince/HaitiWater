@@ -12,8 +12,7 @@ window.onload = function() {
 };
 
 function getAjaxController(dataURL){
-    return (
-    {
+    return ({
         url: dataURL,
         error: function (xhr, error, thrown) {
             if(xhr.status === 200) { return; } //301
@@ -22,7 +21,7 @@ function getAjaxController(dataURL){
             $('#datatable-ajax_wrapper').hide();
             new PNotify({
                 title: 'Échec du téléchargement!',
-                text: "Les données de la table n'ont pas pu être téléchargées: " + xhr.responseText,
+                text: "Veuillez passer en mode Hors-ligne.",
                 type: 'failure',
             });
         }
@@ -41,43 +40,151 @@ function editElement(data){
     }
 }
 
-function drawDataTable(tableName){
-    $('#datatable-' + tableName).DataTable().draw();
+async function drawDataTable(tableName, consumerID){
+    try {
+        let table = $('#datatable-' + tableName).DataTable();
+
+        if (tableName === 'tosync') {
+            let data = await getTosyncData();
+            table.clear();
+            table.rows.add(data);
+            table.draw();
+            return;
+        }
+
+        if (localStorage.getItem("offlineMode") === "true") {
+            let data;
+            switch (tableName) {
+                case 'payment':
+                    await drawDataTable('consumer');
+                    data = await getPaymentData(parseInt(consumerID));
+                    break;
+                case 'consumer':
+                    data = await getConsumerData();
+                    break;
+                case 'zone':
+                    data = await getZoneData();
+                    break;
+                case 'ticket':
+                    data = await getTicketData();
+                    break;
+                case 'manager':
+                    data = await getManagerData();
+                    break;
+                case 'water_element':
+                    data = await getWaterElementData();
+                    break;
+                case 'tosync':
+                    data = await getTosyncData();
+                    break;
+                case 'logs':
+                    data = await getLogsData();
+                    break;
+                default:
+                    data = null;
+                    return
+            }
+            table.clear();
+            table.rows.add(data);
+            table.draw();
+        }
+        else {
+            console.log("ajax");
+            table.ajax.reload();
+            table.draw();
+        }
+        console.log('[GTH_drawDataTable]', tableName + ' drawn')
+    } catch (e) {
+        console.error('[GTH_drawDataTable]', e)
+    }
+}
+
+function postMessage(message) {
+    navigator.serviceWorker.ready.then( registration => {
+        registration.active.postMessage(message);
+    });
 }
 
 /**
  * Request the removal of element # id in table
  * @param table a String containing the table name
  * @param id an integer corresponding to the primary key of the element to remove
+ * @param otherParameters
  */
-function removeElement(table, id, otherParameters){
+async function removeElement(table, id, otherParameters) {
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/remove/";
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                console.log("POST error on remove element");
-                new PNotify({
-                    title: 'Échec!',
-                    text: xhttp.responseText,
-                    type: 'error'
-                });
-            } else {
+    if (typeof otherParameters === 'undefined') { otherParameters = ''; }
+    let myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: "table=" + table + "&id=" + id + otherParameters
+    };
+
+    try {
+        await navigator.serviceWorker.ready;
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_queue = db.table('update_queue');
+
+        db_queue.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: table,
+            init:myInit,
+            type:'Supprimer',
+            elemId: id,
+            status:"En attente",
+            details:myInit
+        });
+
+        postMessage({title:'pushData'});
+        await indexedDBModify(table, id);
+        console.log('[GTH_removeElement]', table + ' ' + id)
+    } catch (e) {
+        try {
+            let networkResponse = fetch(postURL, myInit)
+            if(networkResponse.ok) {
                 new PNotify({
                     title: 'Succès!',
                     text: 'Élément supprimé avec succès',
                     type: 'success'
                 });
-                drawDataTable(table);
+                console.error('[GTH_removeElement]', table + ' ' + id + ' removed without SW')
             }
+            else {
+                new PNotify({
+                    title: 'Échec!',
+                    text: 'Veuillez vérifier votre connexion.',
+                    type: 'error'
+                });
+                console.error('[GTH_removeElement]', networkResponse.statusText)
+            }
+        } catch (e) {
+            new PNotify({
+                title: 'Échec!',
+                text: 'Veuillez vérifier votre connexion.',
+                type: 'error'
+            });
+            console.error('[GTH_removeElement]', e)
         }
-    };
-    if (typeof otherParameters === 'undefined') { otherParameters = ''; }
-    xhttp.send("table=" + table + "&id=" + id + otherParameters);
+    }
+
+    if (table === 'payment') {
+        let consumerID = otherParameters.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
+        await drawDataTable(table, parseInt(consumerID));
+    }
+    else await drawDataTable(table);
 }
 
 /**
@@ -114,7 +221,7 @@ function prettifyHeader(tableName){
         print.trigger('click');
     });
 
-    let pageLength = wrapper.find('.buttons-page-length');
+    wrapper.find('.buttons-page-length');
     $('#' + tableName + '-options').on('click', function(){
         (buttons.hasClass('hidden') ? buttons.removeClass('hidden') : buttons.addClass('hidden'))
     })
@@ -137,30 +244,60 @@ function getRequest(table){
 /**
  * Send a post request to server and handle it
  */
-function postNewRow(table, callback){
+async function postNewRow(table){
     let request = getRequest(table);
     if(!request){
-        // Form is not valid (missing/wrong fields)
-        console.log("invalid form");
+        console.error('[GTH_postNewRow]', "invalid form");
         return false;
     }
-    beforeModalRequest();
+
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let postURL = baseURL + "/api/add/";
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                if(xhttp.responseText !== ''){
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = xhttp.responseText;
-                } else {
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = xhttp.status + ': ' + xhttp.statusText;
-                }
-            } else {
+    let myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: request
+    };
+    beforeModalRequest();
+
+    try {
+        await navigator.serviceWorker.ready;
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('update_queue');
+
+        db_table.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: table,
+            init:myInit,
+            type:'Ajouter',
+            elemId: '?',
+            status:"En attente",
+            details:myInit
+        });
+
+        document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+        if (table === 'payment') {
+            let rowID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
+            indexedDBModify('payment', rowID, true)
+        }
+        postMessage({title:'pushData'});
+        console.log('[GTH_postNewRow]', table);
+    } catch (e) {
+        try {
+            let networkResponse = await fetch(postURL, myInit);
+            if(networkResponse.ok) {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
                 dismissModal();
                 new PNotify({
@@ -168,54 +305,122 @@ function postNewRow(table, callback){
                     text: 'Élément ajouté avec succès',
                     type: 'success'
                 });
-                drawDataTable(table);
+                console.error('[GTH_postNewRow]', table + ' Added without SW');
             }
-            afterModalRequest();
-            typeof callback === 'function' && callback(xhttp.responseText);
+            else {
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+                document.getElementById("form-" + table + "-error-msg").innerHTML = networkResponse.statusText;
+                new PNotify({
+                    title: 'Échec!',
+                    text: 'Veuillez vérifier votre connexion.',
+                    type: 'error'
+                });
+                console.error('[GTH_postNewRow]', networkResponse.statusText);
+            }
+        } catch (e) {
+            document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+            document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+            new PNotify({
+                title: 'Échec!',
+                text: 'Veuillez vérifier votre connexion.',
+                type: 'error'
+            });
+            console.error('[GTH_postNewRow]', e);
         }
-    };
-    xhttp.send(request)
+    }
+
+    dismissModal();
+    afterModalRequest();
 }
 
 /**
  * Send a post request to server and handle it
  */
-function postEditRow(table, callback){
+async function postEditRow(table){
     let request = getRequest(table);
-    if(!request){
-        // Form is not valid (missing/wrong fields)
-        return false;
-    }
-    beforeModalRequest();
+    if(!request) return;
+
+    let rowID = request.split("&").filter(entry => entry.includes('id='))[0].replace("id=", "");
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
-    let postURL = baseURL + "/api/edit/?" + request;
-    let xhttp = new XMLHttpRequest();
-    xhttp.open("POST", postURL, true);
-    xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhttp.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
-    xhttp.onreadystatechange = function() {
-        if(xhttp.readyState === 4) {
-            if (xhttp.status !== 200) {
-                if (xhttp.responseText) {
-                    console.log("POST error on new element");
-                    document.getElementById("form-" + table + "-error").className = "alert alert-danger";
-                    document.getElementById("form-" + table + "-error-msg").innerHTML = xhttp.responseText;
-                }
-            } else {
+    let postURL = baseURL + "/api/edit/?";
+    let myInit = {
+        method: 'post',
+        headers: {
+            "Content-type": "application/x-www-form-urlencoded",
+            'X-CSRFToken':getCookie('csrftoken')
+        },
+        body: request
+    };
+    beforeModalRequest();
+
+    try {
+        await navigator.serviceWorker.ready
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let db_table = db.table('update_queue');
+        db_table.put({
+            url:postURL,
+            date: new Date().toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hourCycle: 'h23'
+            }),
+            table: table,
+            init:myInit,
+            type:'Editer',
+            elemId: rowID,
+            status:'En attente',
+            details:myInit
+        });
+
+        document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
+        indexedDBModify(table, rowID);
+        postMessage({title:'pushData'});
+        console.log('[GTH_postEditRow]', table + ' ' + rowID);
+    } catch (e) {
+        try {
+            let networkResponse = await fetch(postURL,myInit)
+            if (networkResponse.ok) {
                 document.getElementById("form-" + table + "-error").className = "alert alert-danger hidden"; // hide old msg
-                dismissModal();
                 new PNotify({
                     title: 'Succès!',
                     text: 'Élément édité avec succès',
                     type: 'success'
                 });
-                drawDataTable(table);
+                console.error('[GTH_postEditRow]', table + ' ' + rowID + ' edited without SW');
             }
-            afterModalRequest();
-            typeof callback === 'function' && callback();
+            else {
+                document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+                document.getElementById("form-" + table + "-error-msg").innerHTML = await networkResponse.statusText;
+                new PNotify({
+                    title: 'Échec!',
+                    text: 'Veuillez vérifier votre connexion.',
+                    type: 'error'
+                });
+                console.error('[GTH_postEditRow]', networkResponse.statusText);
+            }
+        }  catch (e) {
+            document.getElementById("form-" + table + "-error").className = "alert alert-danger";
+            document.getElementById("form-" + table + "-error-msg").innerHTML = err;
+            new PNotify({
+                title: 'Échec!',
+                text: 'Veuillez vérifier votre connexion.',
+                type: 'error'
+            });
+            console.error('[GTH_postEditRow]', e);
         }
-    };
-    xhttp.send(request)
+    }
+
+    dismissModal();
+    afterModalRequest();
+    if (table === 'payment') {
+        let consumerID = request.split("&").filter(entry => entry.includes('id_consumer='))[0].replace("id_consumer=", "");
+        await drawDataTable(table, parseInt(consumerID));
+    }
+    else await drawDataTable(table);
 }
 
 /**
@@ -311,4 +516,75 @@ function setTableURL(table, optional){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=" + table + optional;
     $('#datatable-'+table).DataTable().ajax.url(dataURL).load();
+}
+
+async function indexedDBModify(table, rowID, isAdd = false) {
+    try {
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+
+        switch (table) {
+            case "payment":
+                if (isAdd) {
+                    await db.table('consumer').where('id').equals(parseInt(rowID)).modify(data => {
+                        data.sync += 1;
+                    });
+                } else {
+                    let consumerID = undefined;
+                    await db.table('payment').where('id').equals(parseInt(rowID)).modify(data => {
+                        data.sync += 1;
+                        consumerID = data.user_id;
+                    });
+                    await db.table('consumer').where('id').equals(consumerID).modify(data => {
+                        data.sync += 1;
+                    });
+                }
+                break;
+            case "manager":
+                db.table(table).where('id').equals(rowID).modify(data => {
+                    data.sync += 1;
+                });
+                break;
+            default:
+                db.table(table).where('id').equals(parseInt(rowID)).modify(data => {
+                    data.sync += 1;
+                });
+                break;
+        }
+        console.log("[GTH_indexedDBModify]", table + ' ' + rowID + ' modified');
+    } catch (e) {
+        consolo.error('[GTH_indexedDBModify]', e);
+        throw e;
+    }
+}
+
+async function reloadTable(table) {
+    postMessage({
+        title:'updateDB',
+        db:table
+    })
+    console.log('[GTH_reloadTable]', table)
+}
+
+async function addLastUpdateToTitle(tableName) {
+    try {
+        let title = $('#' + tableName + '-title')
+        let dexie = await new Dexie('user_db');
+        let db = await dexie.open();
+        let table = db.table('editable');
+        table.where('table').equals(tableName).first().then(result => {
+            if(result.last_sync !== null && result.last_sync !== undefined && localStorage.getItem('offlineMode') === 'true') {
+                title.append("   " + result.last_sync.toLocaleString('en-GB', {
+                    day: 'numeric',
+                    month: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hourCycle: 'h23'
+                }).fontsize(2))
+            }
+        })
+    } catch (e) {
+        console.error('[GTH_addLastUpdateToTitle]', e);
+    }
 }

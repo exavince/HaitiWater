@@ -1,0 +1,4 @@
+Maj des tables automatiques apres update de la table
+Demander comment on ajoute un paiement dû
+Changer dans le module historique le titre des tableaux
+Vérfiier que le user est bien log avant de load le cache

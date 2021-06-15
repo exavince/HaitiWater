@@ -35,6 +35,7 @@ urlpatterns = [
     path('offline/', include('apps.offline.urls')),
     path('aide/', include('apps.help.urls')),
     path('finances/', include('apps.financial.urls')),
+    path('modifications/', include('apps.unsynchronized.urls')),
 ]
 
 # Add Django site authentication urls (for login, logout, password management)

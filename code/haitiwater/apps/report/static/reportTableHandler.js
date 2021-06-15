@@ -15,7 +15,7 @@ function format ( d ) {
 function drawReportTable(){
     let baseURL = location.protocol+'//'+location.hostname+(location.port ? ':'+location.port: '');
     let dataURL = baseURL + "/api/table/?name=report";
-    console.log("Request data from: " + dataURL);
+    console.log("[REQUEST DATA]" ,dataURL);
     let table = $('#datatable-report').DataTable(getReportDatatableConfiguration(dataURL));
 
     $('#datatable-report tbody').on( 'click', 'tr', function (event) {

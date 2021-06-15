@@ -15,3 +15,5 @@ def index(request):
         'zone_name': get_zone(request)
     }
     return HttpResponse(template.render(context, request))
+
+

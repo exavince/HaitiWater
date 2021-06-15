@@ -20,7 +20,6 @@ def index(request):
     }
     return HttpResponse(template.render(context, request))
 
-
 @login_required(login_url='/login/')
 def gis(request):
     template = loader.get_template('water_gis.html')
@@ -29,3 +28,4 @@ def gis(request):
         'project_name': PROJECT_NAME,
     }
     return HttpResponse(template.render(context, request))
+

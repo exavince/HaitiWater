@@ -210,6 +210,52 @@ def get_payment_details(request):
     return HttpResponse(json.dumps(result))
 
 
+def get_all_details_consumers(request):
+    consumers = []
+    ids = []
+    result = []
+
+    if is_user_zone(request):
+        consumers = Consumer.objects.filter(water_outlet__zone__name__in=request.user.profile.zone.subzones)
+    elif is_user_fountain(request):
+        consumers = Consumer.objects.filter(water_outlet_id__in=request.user.profile.outlets)
+
+    for consumer in consumers:
+        ids.append(consumer.id)
+
+    invoices = Invoice.objects.filter(consumer_id__in=ids).order_by('-expiration')
+
+    for consumer in consumers:
+        if has_access(consumer.water_outlet, request):
+            invoice = invoices.filter(consumer_id=consumer.id).first()
+            validity = str(invoice.expiration) if invoice is not None else "Pas de prochaine facturation"
+
+            result.append({"consumer":consumer.descript(), "validity":validity})
+
+    return result
+
+
+def get_all_payments(request):
+    consumers = []
+    ids = []
+    result = []
+
+    if is_user_zone(request):
+        consumers = Consumer.objects.filter(water_outlet__zone__name__in=request.user.profile.zone.subzones)
+    elif is_user_fountain(request):
+        consumers = Consumer.objects.filter(water_outlet_id__in=request.user.profile.outlets)
+
+    for consumer in consumers:
+        ids.append(consumer.id)
+
+    payments = Payment.objects.filter(consumer_id__in=ids)
+
+    for payment in payments:
+        result.append({"consumer_id": payment.consumer_id, "payments":payment.descript()})
+
+    return result
+
+
 def get_details_network(request):
     id_outlet = request.GET.get("id", None)
     outlet = Element.objects.filter(id=id_outlet).first()
@@ -235,3 +281,27 @@ def get_details_network(request):
     }
 
     return HttpResponse(json.dumps(infos))
+
+
+def get_details_network_all():
+    result = []
+
+    for outlet in Element.objects.all():
+        location = Location.objects.filter(elem=outlet.id).first()
+        geo_json = location.json_representation if location is not None else None
+
+        infos = {
+            "id": outlet.id,
+            "type": outlet.get_type(),
+            "localization": outlet.location,
+            "manager": outlet.manager_names,
+            "users": outlet.get_consumers(),
+            "state": outlet.get_status(),
+            "currentMonthCubic": outlet.get_current_output(),
+            "averageMonthCubic": outlet.get_all_output()[1],
+            "totalCubic": outlet.get_all_output()[0],
+            "geoJSON": geo_json
+        }
+        result.append(infos)
+
+    return HttpResponse(json.dumps(result))

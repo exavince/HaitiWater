@@ -1,0 +1,22 @@
+[0;1;32m●[0m gunicorn.service - gunicorn daemon
+     Loaded: loaded (/etc/systemd/system/gunicorn.service; enabled; vendor preset: enabled)
+     Active: [0;1;32mactive (running)[0m since Mon 2021-04-19 01:09:52 CEST; 1s ago
+   Main PID: 226093 (gunicorn)
+      Tasks: 4 (limit: 18687)
+     Memory: 108.5M
+     CGroup: /system.slice/gunicorn.service
+             ├─226093 /home/exavince/Documents/HaitiWater/code/env/bin/python /home/exavince/Documents/HaitiWater/code/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/exavince/Documents/HaitiWater/code/haitiwater/haitiwater.sock haitiwater.wsgi:application
+             ├─226095 /home/exavince/Documents/HaitiWater/code/env/bin/python /home/exavince/Documents/HaitiWater/code/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/exavince/Documents/HaitiWater/code/haitiwater/haitiwater.sock haitiwater.wsgi:application
+             ├─226096 /home/exavince/Documents/HaitiWater/code/env/bin/python /home/exavince/Documents/HaitiWater/code/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/exavince/Documents/HaitiWater/code/haitiwater/haitiwater.sock haitiwater.wsgi:application
+             └─226097 /home/exavince/Documents/HaitiWater/code/env/bin/python /home/exavince/Documents/HaitiWater/code/env/bin/gunicorn --access-logfile - --workers 3 --bind unix:/home/exavince/Documents/HaitiWater/code/haitiwater/haitiwater.sock haitiwater.wsgi:application
+
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226093]: [2021-04-19 01:09:52 +0200] [226093] [INFO] Using worker: sync
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226095]: /usr/lib/python3.8/os.py:1023: RuntimeWarning: line buffering (buffering=1) isn't supported in binary mode, the default buffer size will be used
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226095]:   return io.open(fd, *args, **kwargs)
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226095]: [2021-04-19 01:09:52 +0200] [226095] [INFO] Booting worker with pid: 226095
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226096]: /usr/lib/python3.8/os.py:1023: RuntimeWarning: line buffering (buffering=1) isn't supported in binary mode, the default buffer size will be used
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226096]:   return io.open(fd, *args, **kwargs)
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226096]: [2021-04-19 01:09:52 +0200] [226096] [INFO] Booting worker with pid: 226096
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226097]: /usr/lib/python3.8/os.py:1023: RuntimeWarning: line buffering (buffering=1) isn't supported in binary mode, the default buffer size will be used
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226097]:   return io.open(fd, *args, **kwargs)
+avril 19 01:09:52 exavince-XPS-15-9570 gunicorn[226097]: [2021-04-19 01:09:52 +0200] [226097] [INFO] Booting worker with pid: 226097
