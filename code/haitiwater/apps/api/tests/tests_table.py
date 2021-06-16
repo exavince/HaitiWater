@@ -112,6 +112,14 @@ class TableTests(TestCase):
         self.assertEqual(result["recordsFiltered"], 2)
         self.assertEqual(len(result["data"]), 2)
 
+
+    def test_get_zone_indexedDB(self):
+        response = self.client.get("/api/table/?name=zone&indexDB=true")
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 2)
+        self.assertEqual(len(result["data"]), 2)
+
+
     def test_get_zone_sub(self):
         self.client.login(username="user_zone", password="test")
 
@@ -150,6 +158,14 @@ class TableTests(TestCase):
         result = json.loads(response.content)
         self.assertEqual(result["recordsTotal"], 2)
         self.assertEqual(result["recordsFiltered"], 2)
+        self.assertEqual(len(result["data"]), 2)
+
+    def test_get_element_indexedDB(self):
+        response = self.client.get("/api/table/?name=water_element&indexDB=true")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 2)
         self.assertEqual(len(result["data"]), 2)
 
     def test_get_element_sub(self):
@@ -197,6 +213,14 @@ class TableTests(TestCase):
         self.assertEqual(result["recordsFiltered"], 2)
         self.assertEqual(len(result["data"]), 2)
 
+    def test_get_consumer_indexedDB(self):
+        response = self.client.get("/api/table/?name=consumer_full&indexDB=true")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 2)
+        self.assertEqual(len(result["data"]), 2)
+
     def test_get_consumer_sub(self):
         self.client.login(username="user_zone", password="test")
 
@@ -242,6 +266,14 @@ class TableTests(TestCase):
         self.assertEqual(result["recordsFiltered"], 3)
         self.assertEqual(len(result["data"]), 3)
 
+    def test_get_manager_indexedDB(self):
+        response = self.client.get("/api/table/?name=manager&indexDB=true")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 3)
+        self.assertEqual(len(result["data"]), 3)
+
     def test_get_manager_sub(self):
         self.client.login(username="user_zone", password="test")
 
@@ -282,6 +314,14 @@ class TableTests(TestCase):
         self.assertEqual(result["recordsFiltered"], 1)
         self.assertEqual(len(result["data"]), 1)
 
+    def test_get_ticket_indexedDB(self):
+        response = self.client.get("/api/table/?name=ticket&indexDB=true")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 1)
+        self.assertEqual(len(result["data"]), 1)
+
     def test_get_ticket_sub(self):
         self.client.login(username="user_zone", password="test")
 
@@ -320,6 +360,10 @@ class TableTests(TestCase):
             "order[0][column]": "0",
             "order[0][dir]": "asc"
         })
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_payment_indexedDB(self):
+        response = self.client.get("/api/table/?name=all_payment&indexDB=true")
         self.assertEqual(response.status_code, 200)
 
     def test_get_payment_user(self):
@@ -386,6 +430,14 @@ class TableTests(TestCase):
         self.assertEqual(result["recordsFiltered"], 0)
         self.assertEqual(len(result["data"]), 0)
 
+    def test_get_log_indexedDB(self):
+        response = self.client.get("/api/table/?name=logs&indexDB=true")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 0)
+        self.assertEqual(len(result["data"]), 0)
+
     def test_get_log_history(self):
         response = self.client.get("/api/table/", {
             "name": "logs_history",
@@ -397,6 +449,14 @@ class TableTests(TestCase):
         result = json.loads(response.content)
         self.assertEqual(result["recordsTotal"], 0)
         self.assertEqual(result["recordsFiltered"], 0)
+        self.assertEqual(len(result["data"]), 0)
+
+    def test_get_log_history_indexedDB(self):
+        response = self.client.get("/api/table/?name=logs_history&indexDB=true")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(result["recordsTotal"], 0)
         self.assertEqual(len(result["data"]), 0)
 
     # Datatable
@@ -561,6 +621,13 @@ class TableTests(TestCase):
         result = json.loads(response.content)
         self.assertEqual(len(result), 1)
 
+    def test_get_gis_indexedDB(self):
+        response = self.client.get("/api/details/?table=water_element_all")
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+        self.assertEqual(len(result), 2)
+
     def test_get_gis_sub(self):
         self.client.login(username="user_zone", password="test")
 
@@ -690,3 +757,12 @@ class TableTests(TestCase):
 
         result = json.loads(response.content)
         self.assertEqual(len(result["data"]), 1)
+
+    def check_authentication(self):
+        self.client.login(username="user_fountain", password="test")
+
+        response = self.client.get("/api/check-authentication")
+        self.assertEqual(response.status_code, 200)
+
+        self.client.logout()
+        self.assertEqual(response.status_code, 403)

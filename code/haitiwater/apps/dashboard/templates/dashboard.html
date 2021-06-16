@@ -81,5 +81,21 @@
             <h3>Contenu réservé, veuillez <a href="{% url 'login' %}">vous connecter</a></h3>
 
         {% endif %}
+
+        <div class="row">
+            <div class="pricing-table">
+                <div class="plan">
+                    <h3>Mode d'emploi<span><i class="fa fa-book-open"></i></span></h3>
+                    <ul>
+                        <li><b>Changement de mode:</b> Pour changer de mode d'utilisation il suffit de cliquer sur le bouton <i class="fa fa-satellite-dish"></i> situé dans la bar du haut</li>
+                        <li><b>Mode en ligne:</b> Ce mode est utilisable tant que vous êtes connectés au serveur. Il permet d'afficher les données les plus récentes.</li>
+                        <br><b>Mode hors-ligne:</b> Ce mode n'est utilisable que lorsque les données sont chargées dans votre navigateur (quand la date et l'heure de la dernière synchronisation sont indiquées dans le bar du haut.</li>
+                        <li><b>Mise à jour des données:</b> Dans chaque tableau est indiqué la date et l'heure de la dernière synchronisation des données. Si vous voulez les mettre à jour, il suffit de cliquer sur ce bouton <i class="fa fa-redo"></i>.</li>
+                        <li><b>Données non-envoyées:</b> Toutes les modifications qui n'ont pas pu être envoyées sont visibles dans la partie <a href="/modifications"> A synchroniser.</a></li>
+                        <li><b>Données mauves:</b> Les données qui apparaissent en mauve dans les tableaux sont des données que vous avez tentées de modifier mais qui n'ont pas pu être envoyées au serveur.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
