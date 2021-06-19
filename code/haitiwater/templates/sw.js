@@ -1,4 +1,4 @@
-self.importScripts("https://unpkg.com/dexie@3.0.2/dist/dexie.js")
+self.importScripts("/static/javascripts/dexie.js")
 self.importScripts("/static/javascripts/indexedDB.js")
 self.importScripts("/static/javascripts/swUtils.js")
 

@@ -6,7 +6,8 @@ describe('Mocha', () => {
     })
 })
 
-describe('Service Worker - Cached files and pages', () => {
+
+describe('Service Worker - Cache functions', () => {
     it('Should empty the cache', async () => {
         await cacheClean()
         chai.expect(await caches.has('user_1')).to.equal(false)
@@ -58,7 +59,6 @@ describe('Service Worker - Cached files and pages', () => {
         }))
     }).timeout(timeout * 1000)
 })
-
 
 
 describe('Service Worker - DB functions', () => {
