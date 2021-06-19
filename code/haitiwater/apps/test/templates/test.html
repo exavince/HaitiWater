@@ -1,0 +1,50 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Mocha</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.js"
+            integrity="sha512-TfAL33PtGUxii1awTCbr3qbzQT5fYi7ItCGUfzWlnMJ4cK5BA8JNY4gJzEs+tQVbyElVbtcI2Jlaf9EFVMvyeg=="
+            crossorigin="anonymous"
+        ></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/mocha/8.3.2/mocha.min.css"
+            crossorigin="anonymous"
+        />
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.4/chai.min.js"
+            crossorigin="anonymous"
+        ></script>
+        <script src="{% static "vendor/dexie/dexie.js"%}"></script>
+    </head>
+
+    <body>
+        <div id="mocha">
+        </div>
+        <script type="module">mocha.setup('bdd')</script>
+        <script src="{% static "javascripts/indexedDB.js" %}"></script>
+        <script>function getCookie(cookieName) {
+    if (document.cookie.length > 0)
+    {
+        let cookieStart = document.cookie.indexOf(cookieName + "=");
+        if (cookieStart !== -1)
+        {
+            cookieStart = cookieStart + cookieName.length + 1;
+            let cookieEnd = document.cookie.indexOf(";", cookieStart);
+            if (cookieEnd === -1) cookieEnd = document.cookie.length;
+            return unescape(document.cookie.substring(cookieStart,cookieEnd));
+        }
+    }
+    return "";
+}</script>
+        <script src="{% static "javascripts/swUtils.js" %}"></script>
+        <script type="module" src="{% static "wait-for-sw.js" %}"></script>
+        <script type="module" src="{% static "sw-test.js" %}"></script>
+        <script type="module">mocha.run()</script>
+    </body>
+</html>
