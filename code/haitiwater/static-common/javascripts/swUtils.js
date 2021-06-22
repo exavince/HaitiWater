@@ -60,6 +60,19 @@ const staticFiles = [
     '/static/zoneManagement.js',
     '/static/zoneModalHandler.js',
     '/static/zoneTableGenerator.js',
+    '/static/vendor/fontawesome/webfonts/fa-regular-400.woff',
+    '/static/vendor/fontawesome/webfonts/fa-regular-400.ttf',
+    '/static/vendor/fontawesome/webfonts/fa-regular-400.woff2',
+    '/static/images/favicon.ico',
+    '/static/vendor/leaflet/images/marker-icon.png',
+    '/static/vendor/leaflet/images/marker-shadow.png',
+    '/static/vendor/jquery-datatables-bs3/assets/images/sort_both.png',
+    '/static/vendor/jquery-datatables-bs3/assets/images/sort_asc.png',
+    '/static/vendor/jquery-datatables-bs3/assets/images/sort_desc.png',
+    '/static/javascripts/dexie.js',
+    '/static/javascripts/indexedDB.js',
+    '/static/javascripts/swUtils.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.min.js'
 ]
 const channel = new BroadcastChannel('sw-messages')
 
@@ -77,6 +90,13 @@ let needDisconnect = false
 /*********************************************************************************
  * Utils
  *********************************************************************************/
+
+/**
+ * Get files and put it in the cache
+ * @param cache - the cache to use
+ * @param tab - An array containing link of files
+ * @returns {Promise<void>}
+ */
 const addCache = async (cache, tab) => {
     try {
         let files = await caches.open(cache)
@@ -87,6 +107,11 @@ const addCache = async (cache, tab) => {
     }
 }
 
+
+/**
+ * Delete the caches
+ * @returns {Promise<void>}
+ */
 const cacheClean = async () => {
     try {
         let keys = await caches.keys()
@@ -101,6 +126,11 @@ const cacheClean = async () => {
     }
 }
 
+/**
+ * Return true if page is a page to revalidate
+ * @param url - URL of the page
+ * @returns {boolean}
+ */
 const isRevalidatePages = (url) => {
     for (const ext of revalidatePages) {
         if (url.includes(ext)) return true
@@ -108,6 +138,10 @@ const isRevalidatePages = (url) => {
     return false
 }
 
+/**
+ * Populate all the caches
+ * @returns {Promise<void>}
+ */
 const getCache = async () => {
     if (isCacheLoading) return
     isCacheLoading = true
@@ -131,6 +165,10 @@ const getCache = async () => {
     }
 }
 
+/**
+ * Get the old state of service worker in indexedDB or create a new state
+ * @returns {Promise<void>}
+ */
 const getInfos = async () => {
     try {
         let data = await db.sessions.toCollection().first()
@@ -166,6 +204,12 @@ const getInfos = async () => {
     }
 }
 
+/**
+ * Change the state value of the service worker
+ * @param info - the value to change in the state
+ * @param value - The value to pass to info
+ * @returns {Promise<void>}
+ */
 const setInfos = async (info, value) => {
     try {
         switch (info) {
@@ -192,6 +236,10 @@ const setInfos = async (info, value) => {
     }
 }
 
+/**
+ * Reset the state of the service worker
+ * @returns {Promise<void>}
+ */
 const resetState = async () => {
     try {
         channel.postMessage({
@@ -213,16 +261,35 @@ const resetState = async () => {
     }
 }
 
+/**
+ * return the page or files in cache before trying to get them from network
+ * @param event
+ * @returns {Promise<Response | undefined>}
+ * @constructor
+ */
 const CacheFirst = event => {
     return caches.match(event.request)
         .then(response => response || fetch(event.request).catch(() => caches.match('/offline/')))
 }
 
+/**
+ * return the files or pages from the network first and if not try the cache
+ * @param event
+ * @param page
+ * @returns {Promise<Response | undefined>}
+ * @constructor
+ */
 const NetworkFirst = (event, page) => {
     return fetch(event.request)
         .catch(() => caches.match(page))
 }
 
+/**
+ * Return the page from cache first and then fetch the server the get latest files
+ * @param event
+ * @returns {Promise<Response | undefined>}
+ * @constructor
+ */
 const StaleWhileRevalidate = event => {
     return caches.open(userCache)
         .then(cache => cache.match(event.request)
@@ -235,6 +302,13 @@ const StaleWhileRevalidate = event => {
         )
 }
 
+/**
+ *
+ * @param event
+ * @param cacheToUse
+ * @returns {Promise<Response | undefined>}
+ * @constructor
+ */
 const CacheOrFetchAndCache = (event,cacheToUse) => {
     return caches.match(event.request)
         .then(cacheResponse =>

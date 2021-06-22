@@ -19,6 +19,10 @@ db.version(dbVersion).stores({
     outlets: 'id, name',
 })
 
+/**
+ * Return null or the date of the oldest data
+ * @returns {Promise<null|Date>}
+ */
 const getOldestDate = async () => {
     if (!dbLoaded) return null
 
@@ -33,6 +37,10 @@ const getOldestDate = async () => {
     return date
 }
 
+/**
+ * Get outlets from server
+ * @returns {Promise<any>|json}
+ */
 const outletHandler = async () => {
     try {
         let networkResponse = await fetch('../api/outlets/')
@@ -53,6 +61,10 @@ const outletHandler = async () => {
     }
 }
 
+/**
+ * Get water elements from server
+ * @returns {Promise<any>|json}
+ */
 const waterElementHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=water_element&indexDB=true')
@@ -81,6 +93,10 @@ const waterElementHandler = async () => {
     }
 }
 
+/**
+ * Get water elements details from server
+ * @returns {Promise<any>|json}
+ */
 const waterElementDetailsHandler = async () => {
     try {
         let networkResponse = await fetch('../api/details/?table=water_element_all')
@@ -111,6 +127,10 @@ const waterElementDetailsHandler = async () => {
 
 }
 
+/**
+ * Get logs from server
+ * @returns {Promise<any>|json}
+ */
 const logsHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=logs&indexDB=true')
@@ -137,6 +157,10 @@ const logsHandler = async () => {
 
 }
 
+/**
+ * Get logs history from server
+ * @returns {Promise<any>|json}
+ */
 const logsHistoryHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=logs_history&indexDB=true')
@@ -163,6 +187,10 @@ const logsHistoryHandler = async () => {
     }
 }
 
+/**
+ * Get consumer from server
+ * @returns {Promise<any>|json}
+ */
 const consumerHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=consumer_full&indexDB=true')
@@ -193,6 +221,10 @@ const consumerHandler = async () => {
     }
 }
 
+/**
+ * Get payment from server
+ * @returns {Promise<any>|json}
+ */
 const paymentHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=all_payment&indexDB=true')
@@ -218,6 +250,10 @@ const paymentHandler = async () => {
 
 }
 
+/**
+ * Get zone from server
+ * @returns {Promise<any>|json}
+ */
 const zoneHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=zone&indexDB=true')
@@ -245,6 +281,10 @@ const zoneHandler = async () => {
 
 }
 
+/**
+ * Get manager from server
+ * @returns {Promise<any>|json}
+ */
 const managerHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=manager&indexDB=true')
@@ -272,6 +312,10 @@ const managerHandler = async () => {
     }
 }
 
+/**
+ * Get ticket from server
+ * @returns {Promise<any>|json}
+ */
 const ticketHandler = async () => {
     try {
         let networkResponse = await fetch('../api/table/?name=ticket&indexDB=true')
@@ -298,6 +342,11 @@ const ticketHandler = async () => {
     }
 }
 
+/**
+ * Wrapper function to get data from the db
+ * @param table - table name of the data to sync
+ * @returns {Promise<void>}
+ */
 const getDataFromDB = async (table) => {
     channel.postMessage({
         title: 'updateStatus',
@@ -375,6 +424,10 @@ const getDataFromDB = async (table) => {
     }
 }
 
+/**
+ * Clear all the tables in indexedDB
+ * @returns {Promise<void>}
+ */
 const emptyDB = async () => {
     try {
         await Promise.all([
@@ -397,6 +450,11 @@ const emptyDB = async () => {
     }
 }
 
+/**
+ * Update the data after server answer in indexedDB
+ * @param data - data to update in indexedDB
+ * @returns {Promise<void>}
+ */
 const updateIndexedDB = async (data) => {
     try {
         if (data.type === 'delete' && data.table !== 'manager' && data.table !== 'water_element_details' && data.table !== 'payment') {
@@ -550,6 +608,12 @@ const updateIndexedDB = async (data) => {
     }
 }
 
+/**
+ * Send the waiting modification to the server
+ * @param dataID - Id of the data inside indexedDB
+ * @param silent - if true don't send notif to client
+ * @returns {Promise<void>}
+ */
 const sendDataToDB = async(dataID, silent=false) => {
     if (isSending) return
     isSending = true
@@ -604,6 +668,11 @@ const sendDataToDB = async(dataID, silent=false) => {
     }
 }
 
+/**
+ * Cancel the modification created by the user
+ * @param id - Id of the modification to cancel
+ * @returns {Promise<void>}
+ */
 const cancelModification = async (id) => {
     try {
         let data = await db.update_queue.where('id').equals(id).first()
